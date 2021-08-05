@@ -1,6 +1,9 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PropuestaController;
+use SebastianBergmann\CodeUnit\FunctionUnit;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +17,24 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+
+    
+
+    //return view('welcome');
 });
+
+Route::get('/propuestas', [ PropuestaController::class, 'callpropuesta' ]);
+Route::post('/consultapoliza', [ PropuestaController::class, 'consultapoliza' ]);
+Route::get('/descargapdfpoliza', [ PropuestaController::class, 'descargapdfpoliza' ]);
+
+Route::get('/polizas', function(){
+    $data = [];
+    $success = true;
+    return view('polizas.index', compact('data','success'));
+});
+
+
+Route::get('/cotizadoronline', [ PropuestaController::class, 'cotizadoronline' ]);
+
+
+
