@@ -24,7 +24,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::middleware('auth:api')->post('/propuestas', [ MigracionBarriosController::class, 'callpropuesta' ]);
 Route::middleware('auth:api')->post('/editarpuntodeventa', [ UserController::class, 'editarpuntodeventa' ]);
+Route::middleware('auth:api')->post('/getPuntos', [ UserController::class, 'getPuntos' ]);
 Route::middleware('auth:api')->get('/confirmarpuntodeventa', [ UserController::class, 'confirmarpuntodeventa' ]);
 
 Route::middleware('auth:api')->post('/parametros', [ PropuestaController::class, 'consultaparametros' ]);
+Route::middleware('auth:api')->post('/paypro', [ PropuestaController::class, 'paypro' ]);
 

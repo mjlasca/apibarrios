@@ -1,8 +1,9 @@
 <?php
 
-
+use App\Http\Controllers\clienteController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropuestaController;
+use App\Http\Controllers\webhookcontroller;
 use SebastianBergmann\CodeUnit\FunctionUnit;
 
 /*
@@ -23,18 +24,19 @@ Route::get('/', function () {
     //return view('welcome');
 });
 
+
+
+Route::get('/resp', function () {
+    //
+});
+
 Route::get('/propuestas', [ PropuestaController::class, 'callpropuesta' ]);
 Route::post('/consultapoliza', [ PropuestaController::class, 'consultapoliza' ]);
 Route::get('/descargapdfpoliza', [ PropuestaController::class, 'descargapdfpoliza' ]);
 
-Route::get('/polizas', function(){
-    $data = [];
-    $success = true;
-    return view('polizas.index', compact('data','success'));
-});
-
-
+Route::get('/polizas', [ PropuestaController::class, 'polizas' ]);
 Route::get('/cotizadoronline', [ PropuestaController::class, 'cotizadoronline' ]);
-
-
+Route::post('/savepropuesta', [ PropuestaController::class, 'savepropuesta' ]);
+Route::get('/paypropuesta', [ PropuestaController::class, 'paypropuesta' ]);
+Route::post('/webhooksmp', webhookcontroller::class);
 

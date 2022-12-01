@@ -45,6 +45,11 @@ class CreatePropuestasTable extends Migration
             $table->string('productor',150)->nullable();
             $table->string('puntodeventa',150)->nullable();
             $table->string('prefijo',10)->nullable();
+            $table->string('formadepago',10)->nullable();
+            $table->string('usuariopaga',150)->nullable();
+            $table->string('tipopago',20)->nullable();
+            $table->string('compformadepago',50)->nullable();
+            $table->date('fecha_nacimiento')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->timestamp('created_at')->nullable();
         });

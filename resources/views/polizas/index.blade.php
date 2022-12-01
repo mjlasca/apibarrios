@@ -1,16 +1,4 @@
-<!doctype html>
-<html lang="es">
-
-<head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-  <title>Descargar póliza</title>
-</head>
+@include('header.index')
 
 <style>
   .formpoliza {
@@ -34,6 +22,19 @@
     background-color: #fff;
     color: #000;
   }
+
+  #modalfeedback {
+    z-index: 999;
+    display: none;
+    background: rgba(0, 0, 0, 0.4);
+    color: #171c32;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    transition: all .5s;
+}
 </style>
 
 <body>
@@ -48,7 +49,8 @@
 
         </div>
         <div class="formpoliza">
-          <h4>Aqui podras consultar y descargar tu poliza de accidentes personales si esta vigente. Ingresa tu numero de documento: </h4>
+          <h4>Aquí podrás consultar y descargar tu póliza de accidentes personales si está vigente. Ingresa el tipo y tu número de documento:
+            </h4>
           <form id="formpoliza" method="POST" action="{{ url('/consultapoliza') }}">
             @csrf
             <div class="mb-3">
@@ -62,7 +64,8 @@
                     <option value="CI">CI</option>
                   </select>
                 </div>
-                <input type="text" require='require' class="form-control" placeholder="Nro. Documento" name="documento" id="documento" require>
+                <input type="text" class="form-control" placeholder="Nro. Documento" name="documento" id="documento" require>
+                <input onfocus="(this.type='date')" type="text" class="form-control" placeholder="Fecha Nacimiento(dd/mm/aaaa)"  name="fechanacimiento" id="fechanacimiento"  required>
               </div>
 
               <button type="submit" class="btn btn-broker mt-2" onclick="descargapdf()">Descargar</button>
@@ -82,7 +85,7 @@
       <p class="text-center">
         <small>
           BROKER DEL PUERTO / TU TRANQUILIDAD VALE
-          <br>www.brokerdelpuerto.com / barriosprivados@brokerdelpuerto.com
+          <br>www.brokerdelpuerto.com / comercial@brokerdelpuerto.com
           <br>Tel. (03327-485189) Cel. 15-55841038 / Sarmiento 3314 (1621 - Benavidez)
         </small>
       </p>
@@ -112,13 +115,57 @@
 
   </div>
 
+  <div id="modalfeedback">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+          <div id="barratitle" class="">
+              <h5 class="modal-title" id="titlecontent"></h5>
+              <button onclick="cerrarmodalfeedback()" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div id="contentfeedback">
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button onclick="cerrarmodalfeedback()" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+          </div>
+      </div>
+  </div>
+
   <script>
+    cerrarmodalfeedback();
     const status = "{{$success}}";
+    const estado = "{{$estado}}";
+
+    if(estado != ""){
+      if(estado == "success"){
+        contentfeedback("Se ha procesado el pago con éxito, descargue la póliza ingresando su documento.","Pago Exitoso");
+      }
+      if(estado == "pending"){
+        contentfeedback("Cuando se haga el pago visite esta página y consulte su póliza para descargar","Pago Pendiente");
+      }
+    }
+    
     if (status == null || status == "")
-      document.getElementById('lista').innerHTML = `<h4 class="text-danger">
+      document.getElementById('lista').innerHTML = `<h4 class="text-danger text-center">
       Con ese número de Documento no encontramos ninguna Póliza vigente. </h4>
-      <h5>Caso necesario sugerimos que entres en contacto con nosotros al whatsapp: <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a> y hagas tu pedido</h5>
+      <h5 class='text-center'>Caso necesario sugerimos que entres en contacto con nosotros al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a> o al e-mail comercial@brokerdelpuerto.com y hagas tu pedido. <br> ¡Tu tranquilidad Vale!</h5>
       `;
+      
+    function contentfeedback(content,title = "Mensaje", barra = "bg-primary text-white"){
+
+      document.getElementById("titlecontent").innerHTML = title;
+      document.getElementById("contentfeedback").innerHTML = content;
+
+      const classbarra = "modal-header "+barra;
+      document.getElementById("barratitle").className = classbarra;
+      document.getElementById("modalfeedback").style.display = "block";
+    }
+
+    function cerrarmodalfeedback(){
+            document.getElementById("modalfeedback").style.display = "none";
+    }
   </script>
 
 
@@ -134,6 +181,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
     -->
+    @include('footer.index')
 </body>
+
 
 </html>
