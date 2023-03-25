@@ -357,6 +357,7 @@ class MigracionBarriosController extends Controller
                                 "comisionprima" => $value["comisionprima"],
                                 "comisionpremio" => $value["comisionpremio"],
                                 "codigoproductor" => $value["codigoproductor"],
+                                "codorganizador" => isset($value["codorganizador"]) ? $value["codorganizador"] : null ,
                                 "codestado" => $value["codestado"],
                                 "codempresa" => $value["codempresa"],
                                 "adminempresa" => $value["adminempresa"]
@@ -371,6 +372,7 @@ class MigracionBarriosController extends Controller
                             $usuario->allow = $value["allow"];
                             $usuario->comisionprima = $value["comisionprima"];
                             $usuario->codigoproductor = $value["codigoproductor"];
+                            $usuario->codorganizador = isset($value["codorganizador"]) ? $value["codorganizador"] : null;
                             $usuario->comisionpremio = $value["comisionpremio"];
                             $usuario->codestado = $value["codestado"];
                             $usuario->codempresa = $value["codempresa"];
