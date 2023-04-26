@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ActividadesController;
+use App\Http\Controllers\ClasificacionesController;
+use App\Http\Controllers\CoberturasController;
 use App\Http\Controllers\MigracionBarriosController;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
@@ -7,17 +10,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -36,4 +28,13 @@ Route::middleware('auth:api')->post('/usuarios', [ UsuariosController::class, 's
 
 Route::middleware('auth:api')->post('/propuestas/refpropuesta/{codempresa}', [ PropuestasControllerV2::class, 'getReference' ]);
 Route::middleware('auth:api')->post('/propuestas/setreference/{codempresa}', [ PropuestasControllerV2::class, 'setReference' ]);
+
+Route::middleware('auth:api')->get('/coberturas/{codempresa}', [ CoberturasController::class, 'getEmpresa' ]);
+Route::middleware('auth:api')->post('/coberturas/setcoberturas/{codempresa}', [ CoberturasController::class, 'setCobertura' ]);
+
+Route::middleware('auth:api')->get('/clasificaciones/{codempresa}', [ ClasificacionesController::class, 'getEmpresa' ]);
+Route::middleware('auth:api')->post('/clasificaciones/setclasificaciones/{codempresa}', [ ClasificacionesController::class, 'setClasificaciones' ]);
+
+Route::middleware('auth:api')->get('/actividades/{codempresa}', [ ActividadesController::class, 'getEmpresa' ]);
+Route::middleware('auth:api')->post('/actividades/setactividades/{codempresa}', [ ActividadesController::class, 'setActividades' ]);
 
