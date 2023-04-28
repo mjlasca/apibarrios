@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\ClasificacionesController;
 use App\Http\Controllers\CoberturasController;
+use App\Http\Controllers\GrupoBarriosController;
 use App\Http\Controllers\MigracionBarriosController;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
@@ -28,6 +29,9 @@ Route::middleware('auth:api')->post('/usuarios', [ UsuariosController::class, 's
 
 Route::middleware('auth:api')->post('/propuestas/refpropuesta/{codempresa}', [ PropuestasControllerV2::class, 'getReference' ]);
 Route::middleware('auth:api')->post('/propuestas/setreference/{codempresa}', [ PropuestasControllerV2::class, 'setReference' ]);
+
+Route::middleware('auth:api')->get('/grupobarrios/{codempresa}', [ GrupoBarriosController::class, 'getEmpresa' ]);
+Route::middleware('auth:api')->post('/grupobarrios/setgrupobarrios/{codempresa}', [ GrupoBarriosController::class, 'setGrupoBarrios' ]);
 
 Route::middleware('auth:api')->get('/coberturas/{codempresa}', [ CoberturasController::class, 'getEmpresa' ]);
 Route::middleware('auth:api')->post('/coberturas/setcoberturas/{codempresa}', [ CoberturasController::class, 'setCobertura' ]);
