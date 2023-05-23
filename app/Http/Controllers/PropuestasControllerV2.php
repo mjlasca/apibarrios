@@ -47,7 +47,6 @@ class PropuestasControllerV2 extends Controller
                                 'referencia' => $registro['referencia'],
                                 'nota' => $registro['nota'],
                                 'prima' => $registro['prima'],
-                                'updated_at' => DB::raw('updated_at')
                             ]);
             }
     
