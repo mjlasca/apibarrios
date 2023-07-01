@@ -275,18 +275,22 @@ class PropuestaController extends Controller
     {
         $data = request()->all();
 
-        $data = DB::table('propuestas')->where('reg',$data['id'])->where('prefijo', $data['prefijo'])->get();
-        
-        
+        $data = DB::table('propuestas')->where('idpropuesta',$data['id'])->where('prefijo', $data['prefijo'])->get();
+
         if (count($data) > 0) {
 
-        $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
-        
-        $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
+            $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
+            if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
+                $barriospropuesta = json_decode( $data[0]->data_barrios);
+                $barriospropuesta = $barriospropuesta->barrios;
+            }
+            else
+                $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
 
-        $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
+            $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
         
             $pdf = PDF::loadView('pdf-propuesta.index', compact('cliente','data','lineasdata','barriospropuesta'));
+
             return $pdf->stream();
         } else {
             return response()->json(['res' => 'El documento solicitado no existe o no se ha generado en la nube'], 400);

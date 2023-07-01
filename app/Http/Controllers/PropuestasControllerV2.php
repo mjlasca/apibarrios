@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cobertura;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
+use Barryvdh\DomPDF\Facade as PDF;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -33,6 +34,7 @@ class PropuestasControllerV2 extends Controller
         return response()->json($resultados);
     }
 
+   
 
     
     public function setReference($codempresa){
@@ -70,59 +72,36 @@ class PropuestasControllerV2 extends Controller
     }
 
 
-    public function getDuplicate(Request $req){
+    public function duplicatePendingProposal(Request $req){
         
         try{
-            $data = [];
 
-            if((isset($req['pref']) && isset( $req['id']) ) && ($req['pref'] != '' && $req['id'] != '')){
-                $prefijo = $req['pref'];
-                $idPropuesta = $req['id'];
-                $data = Propuesta::query()
-                ->where(function ($query) use ($prefijo, $idPropuesta) {
-                    $query->where('prefijo', $prefijo)
-                        ->where('idpropuesta', $idPropuesta);
-                })->get();    
-            }
-    
-            if(isset($req['ref']) && $req['ref'] != "" ){
-                $referencia = $req['ref'];
-                $data = Propuesta::query()
-                        ->where(function ($query) use ($referencia) {
-                            $query->where('referencia', $referencia);
-                        })->get();
-            }
-            
+            $proposal = new Propuesta();
+            $data = $proposal->validateProposal($req);
 
             if(count($data) > 0){
 
-                $total = 0;
-                $cobertura = Cobertura::query()->where('nombre',$data[0]->id_cobertura)->get();
-                if(count($cobertura) > 0){
-                    $total = $cobertura[0]->vrMensual * $req['monthly'] * $data[0]->num_polizas ;
+                $resp = $proposal->calculateProposedTotal($req['pref'],$req['id'],$req['monthly']);
+
+                if(count( $resp ) > 0){
+
+                    $duplicate = PendingDuplicate::updateOrCreate(
+                        ['prefijo' => $data[0]->prefijo, 'idpropuesta' => $data[0]->idpropuesta, 'status' => 0],
+                        [
+                            'idpropuesta' => $data[0]->idpropuesta,
+                            'prefijo' => $data[0]->prefijo,
+                            'meses' => $req['monthly'],
+                            'premio' => $resp['vrunit'],
+                            'premio_total' => $resp['total'],
+                        ]
+                    );
+    
+                    return response()->json(["success" => TRUE, "data" => $resp]);
                 }
-
-                $duplicate = PendingDuplicate::updateOrCreate(
-                    ['prefijo' => $data[0]->prefijo, 'idpropuesta' => $data[0]->idpropuesta],
-                    [
-                        'idpropuesta' => $data[0]->idpropuesta,
-                        'prefijo' => $data[0]->prefijo,
-                        'meses' => $req['monthly'],
-                        'premio' => $cobertura[0]->vrMensual,
-                        'premio_total' => $total
-                    ]
-                );
-
-                $res = [
-                    'total' => $total,
-                    'banco' => 'Banco de la república',
-                    'cuenta' => '1000000001'
-                ];
-
-                return response()->json(["success" => TRUE, "data" => $res]);
+                
             }
 
-            return response()->json(["success" => FALSE]);
+            return response()->json(["success" => FALSE, 'msg' => 'No hay coincidencia con la póliza']);
             
 
         }catch(Exception $ex){
@@ -131,5 +110,51 @@ class PropuestasControllerV2 extends Controller
         }   
         
     }
+
+
+    public function duplicateProposal(Request $req){
+        try{
+
+            $regpending = PendingDuplicate::where('prefijo', $req['pref'])->where('idpropuesta', $req['id'])->where('status',0)->first();
+            
+                if( $regpending ){
+                    
+                    $prop = new Propuesta();
+                    
+                    $data= [
+                        'meses' => $regpending->meses,
+                        'premio' => $regpending->premio,
+                        'premio_total' => $regpending->premio_total,
+                        'pref' => $req['pref'],
+                        'id' => $req['id'],
+                        'forma_pago' => $req['forma_pago'],
+                        'nro_comprobante' => $req['nro_comprobante'],
+                    ];
+                    
+                    $resDuplicate = $prop->duplicate('O', $data);
+                    
+                    if($resDuplicate){
+                        $regpending->status = 1; 
+                        $regpending->save();
+
+                        return redirect()->route('descargapdfpoliza', [
+                            'id' => $resDuplicate->idpropuesta,
+                            'prefijo' => $resDuplicate->prefijo
+                        ]);
+
+                    }
+
+                     //response()->json(["success" => TRUE, "data" => $resp]);
+                }
+                
+                return response()->json(["success" => FALSE, 'msg' => 'No hay coincidencia con la póliza']);
+
+        }catch(Exception $ex){
+
+            return response()->json(["success" => FALSE, "msg" => $ex->getMessage()]);
+            
+        }   
+    }
+
     
 }
