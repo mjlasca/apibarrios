@@ -69,6 +69,13 @@ class Propuesta extends Model
 
         $data = [];
 
+            if (isset($req['ref']) && $req['ref'] != "" && preg_match('/^[A-Z]-\d+$/', $req['ref'])) {
+    
+                $partes = explode('-', $req['ref']);
+                $req['pref'] = $partes[0];
+                $req['id'] = $partes[1];
+            }
+
             if((isset($req['pref']) && isset( $req['id']) ) && ($req['pref'] != '' && $req['id'] != '')){
                 $prefijo = $req['pref'];
                 $idPropuesta = $req['id'];
@@ -145,6 +152,8 @@ class Propuesta extends Model
                         $data['vrunit'] = $cobertura[0]->vrMensual;
                         $data['total'] = $total;
                         $data['info'] = $concatInfo;
+                        $data['url'] = 'http://apibarrios.3enterprise.online/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        
 
                         return $data;
                     }
@@ -251,7 +260,7 @@ class Propuesta extends Model
     }
 
     public function consecutive($pref){
-        $maxid = Propuesta::where('prefijo', $pref)->count();
+        $maxid = Propuesta::where('prefijo', $pref)->max('idpropuesta');
 
         $newid = 1;
         if ($maxid) {

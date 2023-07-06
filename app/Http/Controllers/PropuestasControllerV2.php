@@ -80,9 +80,9 @@ class PropuestasControllerV2 extends Controller
             $data = $proposal->validateProposal($req);
 
             if(count($data) > 0){
-
-                $resp = $proposal->calculateProposedTotal($req['pref'],$req['id'],$req['monthly']);
-
+                
+                $resp = $proposal->calculateProposedTotal($data[0]->prefijo, $data[0]->idpropuesta, $req['monthly']);
+                
                 if(count( $resp ) > 0){
 
                     $duplicate = PendingDuplicate::updateOrCreate(

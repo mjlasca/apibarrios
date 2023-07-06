@@ -65,10 +65,6 @@ $fechavigenciadesde = date("Y-m-d");
                     <label for="nro_comprobante">Nó de comprobante:</label>
                     <input type="text" name="nro_comprobante" id="nro_comprobante" required>
                 </div>
-                <div>
-                    <label for="pay_date">Fecha de pago:</label>
-                    <input type="date" name="pay_date" id="pay_date">
-                </div>
                 
                 <p></p>
                 <button type="submit">Enviar</button>
