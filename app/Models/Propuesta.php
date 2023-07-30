@@ -204,8 +204,7 @@ class Propuesta extends Model
             $propNew->usuariopaga = 'online';
             $propNew->tipopago = $data['forma_pago'];
             $propNew->compformadepago = $data['nro_comprobante'];
-            $fecha = new DateTime($propNew->fecha_nacimiento);
-            $propNew->fecha_nacimiento = $fecha->format('Y-m-d');
+            $propNew->fecha_nacimiento = $prop->fecha_nacimiento;
             $propNew->codempresa = $prop->codempresa;
             $propNew->data_barrios = $prop->data_barrios;
 
