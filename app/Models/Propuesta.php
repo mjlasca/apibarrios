@@ -69,10 +69,10 @@ class Propuesta extends Model
 
         $data = [];
 
-            if (isset($req['ref']) && $req['ref'] != "" && preg_match('/^[A-Z]-\d+$/', $req['ref'])) {
+            if (isset($req['ref']) && $req['ref'] != "" && strpos($req['ref'],'-') > -1) {
     
                 $partes = explode('-', $req['ref']);
-                $req['pref'] = $partes[0];
+                $req['pref'] = strtoupper($partes[0]);
                 $req['id'] = $partes[1];
             }
 
@@ -143,12 +143,12 @@ class Propuesta extends Model
 
                         $total =  $total_prom * count($prop_lines);
                         foreach ($prop_lines as $key => $value) {
-                            if( $this->calculateAge( $value->fecha_nacimiento ) > 65){
+
+                            if( $this->calculateAge( $value->fecha_nacimiento ) >= 65){
                                 $total += $total_prom;
                             }
                             $concatInfo .= $value->apellidos. " ". $value->nombres . " ". $value->tipo_documento. ":".$value->documento. " ".$value->fecha_nacimiento. " ";
                         }
-                        
                         $data['vrunit'] = $cobertura[0]->vrMensual;
                         $data['total'] = $total;
                         $data['info'] = $concatInfo;

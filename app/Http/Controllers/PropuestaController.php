@@ -640,6 +640,22 @@ class PropuestaController extends Controller
 
                     if(isset($req["solicitud"])){
 
+                        if($req["solicitud"] == "solicitud_barrios"){
+
+                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "barrios");
+
+                            $datos["barrios"] = DB::table('barrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
+
+                            $migpunto = new migracionespunto();
+                            $migpunto->puntodeventa = $req["prefijositio"];
+                            $migpunto->codempresa = $req["codempresa"];                                    
+                            $migpunto->tipo = "barrios";
+                            $migpunto->save();
+                        }
+                    }
+
+                    if(isset($req["solicitud"])){
+
                         if($req["solicitud"] == "solicitud_barrios_propuestas"){
 
                             $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "barrios_propuestas");
@@ -842,21 +858,7 @@ class PropuestaController extends Controller
                             }
                             
 
-                            if(isset($req["solicitud"])){
-
-                                if($req["solicitud"] == "solicitud_barrios"){
-
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "barrios");
-
-                                    $datos["barrios"] = DB::table('barrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "barrios";
-                                    $migpunto->save();
-                                }
-                            }
+                            
 
                             if(isset($req["solicitud"])){
                                 if($req["solicitud"] == "solicitud_gruposbarrios"){
@@ -949,7 +951,7 @@ class PropuestaController extends Controller
         if(count($migpunto) > 0)  {
             if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
                 $fechamigracion = new DateTime($migpunto[0]->fecha);
-                $fechamigracion = $fechamigracion->modify('-30 minute')->format('Y-m-d'.' 00:00:00');
+                $fechamigracion = $fechamigracion->modify('-960 minute')->format('Y-m-d'.' 00:00:00');
             }
                 
         }

@@ -215,11 +215,10 @@ class MigracionBarriosController extends Controller
                             $gbarrio->idbarrio = $value["idbarrio"];
                             $gbarrio->nombrebarrio = $value["nombrebarrio"];
                             $gbarrio->ultmod = $value["ultmod"];
-                            $gbarrio->save();
-
-                            if($aux != $value["id"]){
-                                DB::select("DELETE FROM gruposbarrios WHERE id = '".$gbarrio->id."' ");
-                                $aux = $value["id"];
+                            
+                            DB::select("DELETE FROM gruposbarrios WHERE id = '".$gbarrio->id."' AND idbarrio = '".$gbarrio->idbarrio."' ");
+                                if($value['codestado'] != "0"){                                
+                                    $gbarrio->save();
                             }
                     }
                 }
@@ -590,22 +589,6 @@ class MigracionBarriosController extends Controller
             $logs->saveerror($ex->getMessage(), "", "", "112");
         }
 
-        
-
-        if($req["rolpuntodeventa"] != "PRINCIPAL"){
-            return $errores;
-        }
-
-        if(isset($req["apiversion"])){
-            if($req["apiversion"] == "2"){
-                return $errores;
-            }
-            
-            /*if($req["apiversion"] == "3"){
-                return $errores;
-            }*/
-        }
-
         try{
        
             if ($req["listbarrios"] != null) {
@@ -661,6 +644,24 @@ class MigracionBarriosController extends Controller
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "114");
         }
+
+        
+
+        if($req["rolpuntodeventa"] != "PRINCIPAL"){
+            return $errores;
+        }
+
+        if(isset($req["apiversion"])){
+            if($req["apiversion"] == "2"){
+                return $errores;
+            }
+            
+            /*if($req["apiversion"] == "3"){
+                return $errores;
+            }*/
+        }
+
+        
 
 
         if ($req["listactividades"] != null) {

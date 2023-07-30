@@ -115,7 +115,7 @@ class PropuestasControllerV2 extends Controller
     public function duplicateProposal(Request $req){
         try{
 
-            $regpending = PendingDuplicate::where('prefijo', $req['pref'])->where('idpropuesta', $req['id'])->where('status',0)->first();
+            $regpending = PendingDuplicate::where('prefijo', strtoupper($req['pref']))->where('idpropuesta', $req['id'])->where('status',0)->first();
             
                 if( $regpending ){
                     
@@ -125,7 +125,7 @@ class PropuestasControllerV2 extends Controller
                         'meses' => $regpending->meses,
                         'premio' => $regpending->premio,
                         'premio_total' => $regpending->premio_total,
-                        'pref' => $req['pref'],
+                        'pref' => strtoupper($req['pref']),
                         'id' => $req['id'],
                         'forma_pago' => $req['forma_pago'],
                         'nro_comprobante' => $req['nro_comprobante'],
