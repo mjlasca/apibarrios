@@ -192,7 +192,7 @@ class Propuesta extends Model
             $propNew->clausula = $prop->clausula;
             $propNew->barrio_beneficiario = $prop->barrio_beneficiario;
             $propNew->ultmod = $propNew->fechaDesde;
-            $propNew->useredit = 'api_barrios';
+            $propNew->useredit = 'online';
             $propNew->codestado = '1';
             $propNew->cobertura_suma = $prop->cobertura_suma;
             $propNew->cobertura_deducible = $prop->cobertura_deducible;
@@ -201,10 +201,11 @@ class Propuesta extends Model
             $propNew->paga = 1;
             $propNew->fecha_paga = $propNew->fechaDesde;
             $propNew->formadepago = 'whatsapp_api';
-            $propNew->usuariopaga = 'api_barrios';
+            $propNew->usuariopaga = 'online';
             $propNew->tipopago = $data['forma_pago'];
             $propNew->compformadepago = $data['nro_comprobante'];
-            $propNew->fecha_nacimiento = $propNew->fecha_nacimiento;
+            $fecha = new DateTime($propNew->fecha_nacimiento);
+            $propNew->fecha_nacimiento = $fecha->format('Y-m-d');
             $propNew->codempresa = $prop->codempresa;
             $propNew->data_barrios = $prop->data_barrios;
 
