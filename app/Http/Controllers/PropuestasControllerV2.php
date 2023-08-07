@@ -156,5 +156,30 @@ class PropuestasControllerV2 extends Controller
         }   
     }
 
+    public function descargarPdfLibreDeuda($id,$prefijo){
+        if(!empty($id) && !empty($prefijo)){
+            $data = DB::table('propuestas')->where('idpropuesta',$id)->where('prefijo', $prefijo)->get();
+
+            if (count($data) > 0) {
+
+                $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
+                if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
+                    $barriospropuesta = json_decode( $data[0]->data_barrios);
+                    $barriospropuesta = $barriospropuesta->barrios;
+                }
+                else
+                    $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
+
+            
+                $pdf = PDF::loadView('pdf-libre-deuda.index', compact('data','lineasdata','barriospropuesta'));
+
+                return $pdf->stream();
+            }
+        }
+
+        return response()->json(['res' => 'El documento solicitado no existe o no se ha generado'], 404);
+        
+    }
+
     
 }

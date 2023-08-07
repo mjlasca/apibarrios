@@ -114,7 +114,7 @@ class UserController extends Controller
                         $user = new User();
                         $cons = $data = DB::table('users')->where('email',$value['usuario'])->get();
                         if(count($cons) > 0){
-                            $user->where('email',$value['usuario'])->update([
+                            /*$user->where('email',$value['usuario'])->update([
                                 "name" => $value["nombre"],
                                 "prefijo" => $value["prefijo"],
                                 "rol" => $value["rol"],
@@ -126,7 +126,7 @@ class UserController extends Controller
                                 "codmaster" => $value["codmaster"],
                                 "codorganizador" => $value["codorganizador"],
                                 "aseguradora" => $value["aseguradora"]
-                            ]);
+                            ]);*/
                         }else{
                             $user->name = $value["nombre"];
                             $user->prefijo = $value["prefijo"];
@@ -141,10 +141,15 @@ class UserController extends Controller
                             $user->aseguradora = $value["aseguradora"];
                             $user->codmaster = $value["codmaster"];
                             $user->codorganizador = $value["codorganizador"];
-                            
-                            if (!$user->save()) {
-                                $errores .= "No se pudo guardar el registro con usuario " . $user->email;
+                            try{
+                                if (!$user->save()) {
+                                    $errores .= "No se pudo guardar el registro con usuario " . $user->email;
+                                }
+                            }catch (Exception $e){
+                                $logs = new logs();
+                                $logs->saveerror($e->getMessage(), "", "", "161");                    
                             }
+                            
                         }
                     
                 }

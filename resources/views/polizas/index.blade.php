@@ -35,6 +35,10 @@
     width: 100vw;
     transition: all .5s;
 }
+
+.bc-white{
+  border: 1px solid white;
+}
 </style>
 
 <body>
@@ -101,6 +105,11 @@
               <a href="{{ url('/descargapdfpoliza') }}?id={{$value->id_propuesta}}&prefijo={{$value->prefijo}}" target="_blank">
                 <div class="text-white">
                   {{$value->prefijo}}{{$value->id_propuesta}} <b> Vigencia desde : </b> {{ $value->fechaDesde }} <b> hasta </b> {{ $value->fechaHasta }}
+                </div>
+              </a>
+              <a href="{{ url('/libre-deuda') }}/{{$value->id_propuesta}}/{{$value->prefijo}}" target="_blank">
+                <div class="text-white bc-white">
+                  Certificado libre deuda  
                 </div>
               </a>
             </li>
