@@ -8,43 +8,11 @@
 $fechavigenciadesde = date("Y-m-d");
 @endphp
 
-<body>
+
 
     <div class="container">
         
-        <section class="header">
-            <div class="row  justify-content-sm-center">
-                <div class="col-sm-12">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;" src="img/brokerlogo.png" alt="">
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;margin-top:50px;" src="img/imgsancor1.png"
-                                    alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="text-center">
-                    <small>
-                        BROKER DEL PUERTO / TU TRANQUILIDAD VALE
-                        <br>www.brokerdelpuerto.com / barriosprivados@brokerdelpuerto.com
-                        <br>Tel. (03327-485189) Cel. 15-55841038 / Sarmiento 3314 (1621 - Benavidez)
-                    </small>
-                </p>
-
-                <div id="lista">
-
-                </div>
-
-            </div>
-
-        </section>
+        
         <form id="formpoliza" >
             <input type="hidden" id="_token" name="_token" value="{{ csrf_token() }}" />
             <input type="hidden" name="iidd" value="1" >

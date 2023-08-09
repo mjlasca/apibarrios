@@ -41,17 +41,13 @@
 }
 </style>
 
-<body>
+
 
   <div class="container">
 
     <div class="row  justify-content-md-center">
       <div class="cuadro col-sm-6">
-        <div class="text-center">
-          <img width="200" src="img/brokerlogo.png" alt="">
-
-
-        </div>
+        
         <div class="formpoliza">
           <h4>Aquí podrás consultar y descargar tu póliza de accidentes personales si está vigente. Ingresa el tipo y tu número de documento:
             </h4>

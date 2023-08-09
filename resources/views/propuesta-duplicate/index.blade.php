@@ -8,43 +8,6 @@
 $fechavigenciadesde = date("Y-m-d");
 @endphp
 
-<body>
-
-    <div class="container">
-        
-        <section class="header">
-            <div class="row  justify-content-sm-center">
-                <div class="col-sm-12">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;" src="img/brokerlogo.png" alt="">
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;margin-top:50px;" src="img/imgsancor1.png"
-                                    alt="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="text-center">
-                    <small>
-                        BROKER DEL PUERTO / TU TRANQUILIDAD VALE
-                        <br>www.brokerdelpuerto.com / barriosprivados@brokerdelpuerto.com
-                        <br>Tel. (03327-485189) Cel. 15-55841038 / Sarmiento 3314 (1621 - Benavidez)
-                    </small>
-                </p>
-
-                <div id="lista">
-
-                </div>
-
-            </div>
-
-        </section>
         <section>
             <form action="{{  url('api/propuestas/duplicate') }}" method="post">
                 @csrf
@@ -62,7 +25,7 @@ $fechavigenciadesde = date("Y-m-d");
                 <input type="hidden" name="pref" value="{{$pref}}">
                 <input type="hidden" name="id" value="{{$id}}">
                 <div>
-                    <label for="nro_comprobante">Nó de comprobante:</label>
+                    <label for="nro_comprobante">No. de comprobante:</label>
                     <input type="text" name="nro_comprobante" id="nro_comprobante" required>
                 </div>
                 

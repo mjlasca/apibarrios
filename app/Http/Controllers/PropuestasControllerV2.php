@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cobertura;
+use App\Models\barrio;
+use App\Models\gruposbarrio;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
 use Barryvdh\DomPDF\Facade as PDF;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Builder;
+
 
 
 
@@ -179,6 +178,47 @@ class PropuestasControllerV2 extends Controller
 
         return response()->json(['res' => 'El documento solicitado no existe o no se ha generado'], 404);
         
+    }
+
+    public function agregar_barrios(Request $request, gruposbarrio $gruposbarrios, $prefijo, $idpropuesta){
+        
+        $propuesta = Propuesta::where('prefijo', $prefijo)->where('idpropuesta',$idpropuesta)->get();
+
+        if(count($propuesta) > 0){
+            
+            $exclude = json_decode( $propuesta[0]->data_barrios );
+            $excludedIdBarrios = collect($exclude->barrios)->pluck('id_barrio')->toArray();
+            
+            $valorComparacion = $propuesta[0]->cobertura_suma;
+            $grupos = GruposBarrio::whereIn('idbarrio', function ($query) use ($valorComparacion) {
+                $query->select('id')
+                    ->from('barrios')
+                    ->where('suma_muerte', '>=', $valorComparacion);
+            })
+            ->whereNotIn('idbarrio', $excludedIdBarrios)
+            ->groupBy('id')
+            ->orderBy('nombre','asc')
+            ->get();
+
+            $barrios = barrio::where('nombre', 'LIKE', "%$request->search%")->orWhere('id',$request->search)->where('suma_muerte', '>=', $valorComparacion)->whereNotIn('id', $excludedIdBarrios)->orderBy('nombre','asc')->latest()->paginate();
+
+            return view('propuestas.agregar-barrios', ['gruposbarrios' => $grupos, 'propuesta' => $propuesta[0], 'barrios' => $barrios]);  
+        }
+
+        return view('propuestas.agregar-barrios', ['gruposbarrios' => [], 'propuesta' => $propuesta = new Propuesta, 'barrios' => $barrios = [] ]);  
+
+        
+    }
+
+    public function agregar_barrios_barrio(Request $request){
+
+        $request->validate([
+            'idbarrio' => 'required',
+            'id' => 'required',
+            'prefijo' => 'required'
+        ]);
+
+        return redirect()->route("descargapdfpoliza", $request);
     }
 
     
