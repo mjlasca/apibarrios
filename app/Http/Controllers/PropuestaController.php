@@ -951,7 +951,7 @@ class PropuestaController extends Controller
         if(count($migpunto) > 0)  {
             if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
                 $fechamigracion = new DateTime($migpunto[0]->fecha);
-                $fechamigracion = $fechamigracion->modify('-960 minute')->format('Y-m-d'.' 00:00:00');
+                $fechamigracion = $fechamigracion->modify('-360 minute')->format('Y-m-d'.' 00:00:00');
             }
                 
         }
