@@ -95,22 +95,26 @@
         <div class="text-center">
 
           <h3>Póliza(s) vigentes a descargar</h3>
-          <ol>
+          <div>
             @foreach($data as $value)
-            <li class="bg-primary mb-1 p-1 ">
-              <a href="{{ url('/descargapdfpoliza') }}?id={{$value->id_propuesta}}&prefijo={{$value->prefijo}}" target="_blank">
-                <div class="text-white">
+              <div class="row p-3">
+                <div class="col-12">
                   {{$value->prefijo}}{{$value->id_propuesta}} <b> Vigencia desde : </b> {{ $value->fechaDesde }} <b> hasta </b> {{ $value->fechaHasta }}
                 </div>
-              </a>
-              <a href="{{ url('/libre-deuda') }}/{{$value->id_propuesta}}/{{$value->prefijo}}" target="_blank">
-                <div class="text-white bc-white">
-                  Certificado libre deuda  
-                </div>
-              </a>
-            </li>
+                <div class="d-flex justify-content-center">
+                  <a class="btn btn-success" href="{{ url('/descargapdfpoliza') }}?id={{$value->id_propuesta}}&prefijo={{$value->prefijo}}" target="_blank">
+                    Descargar PDF
+                  </a>
+                  <a class="btn btn-primary" href="{{ url('/libre-deuda') }}/{{$value->id_propuesta}}/{{$value->prefijo}}" target="_blank">
+                      Certificado libre deuda  
+                  </a>
+                  <a class="btn btn-warning" href="{{ route('agregar_barrios', ['prefijo' => $value->prefijo, 'idpropuesta' => $value->id_propuesta]) }}" target="_blank">
+                      Agregar claúsula
+                  </a>
+                </div>     
+              </div>   
             @endforeach
-          </ol>
+          </div>
         </div>
         @endif
       </div>

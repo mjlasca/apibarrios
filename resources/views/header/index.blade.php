@@ -25,17 +25,8 @@
                                 <img style="width: 100%;max-width: 200px;" src=" {{ asset('img/brokerlogo.png' ) }} " alt="">
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;margin-top:50px;" src="{{ asset('img/imgsancor1.png' ) }}"
-                                    alt="">
-                            </div>
-                        </div>
                     </div>
                 </div>
-
-                
-
                 <div id="lista">
 
                 </div>

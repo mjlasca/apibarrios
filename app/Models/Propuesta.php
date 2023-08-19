@@ -270,4 +270,8 @@ class Propuesta extends Model
         return $newid;
     }
     
+    public function cliente(){
+        return $this->belongsTo(cliente::class);
+    }
+    
 }

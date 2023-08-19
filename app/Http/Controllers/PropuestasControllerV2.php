@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\barrio;
 use App\Models\gruposbarrio;
+use App\Models\logs;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
 use Barryvdh\DomPDF\Facade as PDF;
@@ -201,7 +202,7 @@ class PropuestasControllerV2 extends Controller
             ->get();
 
             $barrios = barrio::where('nombre', 'LIKE', "%$request->search%")->orWhere('id',$request->search)->where('suma_muerte', '>=', $valorComparacion)->whereNotIn('id', $excludedIdBarrios)->orderBy('nombre','asc')->latest()->paginate();
-
+            
             return view('propuestas.agregar-barrios', ['gruposbarrios' => $grupos, 'propuesta' => $propuesta[0], 'barrios' => $barrios]);  
         }
 
@@ -213,12 +214,126 @@ class PropuestasControllerV2 extends Controller
     public function agregar_barrios_barrio(Request $request){
 
         $request->validate([
-            'idbarrio' => 'required',
             'id' => 'required',
             'prefijo' => 'required'
         ]);
 
-        return redirect()->route("descargapdfpoliza", $request);
+        try{
+            $data_barrios = Propuesta::where('prefijo', $request->prefijo)->where('idpropuesta',$request->id)->value('data_barrios');
+            $suma = Propuesta::where('prefijo', $request->prefijo)->where('idpropuesta',$request->id)->value('cobertura_suma');
+
+            if($data_barrios){
+
+                $savetrue = false;
+                $data_barrios =  json_decode($data_barrios);
+                $coleccionBarrios = collect($data_barrios->barrios);
+
+                if(isset($request->grupo)){
+
+                    $grupoBarrios = gruposbarrio::where('id',$request->grupo)->groupBy('idbarrio')->get();
+
+                    foreach ($grupoBarrios as $key => $barrio) {
+                        $id = $barrio->idbarrio;
+                        
+                        $estaEnBarrios = $coleccionBarrios->contains(function ($barrio) use ($id) {
+                            return $barrio->id_barrio == $id;
+                        });    
+
+                        if($estaEnBarrios == false){
+                            
+                            $nuevobarrio = $this->validateBarrio((double)$suma,$id);
+                            if( is_array( $nuevobarrio )){
+                                $data_barrios->barrios[] = (object)$nuevobarrio;    
+                                
+                                $savetrue = true;
+                            }
+                            
+                        }
+                    }
+
+                    
+                }
+                
+                if(isset($request->cuit)){
+                    $id = $request->cuit;
+                    $estaEnBarrios = $coleccionBarrios->contains(function ($barrio) use ($id) {
+                        return $barrio->id_barrio == $id;
+                    });
+                    
+                    if($estaEnBarrios == false){
+                        
+                        $nuevobarrio = $this->validateBarrio((double)$suma,$id);
+                        
+                        if( is_array( $nuevobarrio )){
+                            $data_barrios->barrios[] = (object)$nuevobarrio;    
+                            $savetrue = true;
+                        }else if($nuevobarrio == 2){
+                            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => "El CUIT $request->cuit pertenece a un barrio con una suma asegurada mayor a la de tu póliza actual, sugerimos que entres en contacto con nosotros al Whatsapp : ".'<a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>', 'cuit' => $request->cuit]);            
+                        }else{
+                            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => "El CUIT $request->cuit no existe", 'cuit' => $request->cuit]);            
+                        }
+                        
+                    }else{
+                        return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => "El CUIT $request->cuit ya se encuentra entre las claúsulas de tu propuesta", 'cuit' => $request->cuit]);        
+                    }
+                }
+                
+                if($savetrue){
+                    Propuesta::where('prefijo', $request->prefijo)
+                    ->where('idpropuesta', $request->id)
+                    ->update(['data_barrios' => json_encode($data_barrios)]);
+
+                    if(isset($request->grupo))
+                        return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_grupo' => $request->grupo]);        
+                    if(isset($request->cuit))
+                        return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_barrio' => $request->cuit]);        
+
+                }else{
+                    return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_grupo' => 'No se ha agregado ningún barrio con el grupo seleccionado']);        
+                }
+                
+            }
+            
+            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id]);  
+
+        }catch (Exception $ex){
+            $error = new logs();
+            $error->saveerror($ex->getMessage(), "", "", "ADDBARRIO 101");
+            return redirect()->route("polizas");
+        }
+        
+
+    }
+
+
+    public function validateBarrio($suma, $idBarrio){
+        $aplica = barrio::where('id',$idBarrio)->where('suma_muerte','<=',$suma)->first();
+        
+        if($aplica){
+            $nuevobarrio = [
+                "id" => null,
+                "id_propuesta" => null,
+                "id_barrio" => $aplica->id,
+                "nombre" => $aplica->nombre,
+                "ultmod" => null,
+                "user_edit" => null,
+                "codestado" => null,
+                "prefijo" => null,
+                "idprefijo" => null,
+                "codempresa" => null,
+                "sumamuerte" => $aplica->suma_muerte,
+                "sumagm" => $aplica->suma_gm,
+                "email" => $aplica->email
+            ];
+            return $nuevobarrio;
+        }
+
+        $aplica = barrio::where('id',$idBarrio)->where('suma_muerte','>',$suma)->first();
+        if($aplica){
+            return 2;
+        }
+
+        return FALSE;
     }
 
     

@@ -386,7 +386,9 @@ class PropuestaController extends Controller
 
         if (count($data) > 0) {
             $success = true;
-            //return response()->json($data, 200);
+            // Almacenar una variable en la sesión
+            session(['get_prop' => true]);
+
             return view('polizas.index', compact('data','success','estado'));
         } else {
             return view('polizas.index', compact('data','success','estado'));

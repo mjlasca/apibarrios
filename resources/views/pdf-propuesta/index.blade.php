@@ -156,7 +156,7 @@
 
           @foreach($barriospropuesta as $val)
             @php
-              $concatbarrios .= $val->id_barrio ." - ".$val->nombre;
+              $concatbarrios .= $val->id_barrio ." - ".$val->nombre .", ";
             @endphp
 
           @endforeach
