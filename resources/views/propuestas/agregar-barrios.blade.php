@@ -52,6 +52,11 @@
 
         <div class="mt-5">
             <h4>Agregar por barrio</h4>
+            <label for="">
+                <small>
+                Si conoces el cuit del barrio a ingresar, asegurate que sea por la suma asegurada que el barrio te pide para que puedas incluirla. Caso la suma asegurada sea mayor, por favor entra en contacto con nosotros al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>  (haz click y escribenos) y te aumentamos la suma asegurada y/o caso no aparezca la clausula que necesitas para poder incluirtela.
+                </small>
+            </label>
             <form action="{{ route('agregar_barrios_barrio') }}" method="post">
                 @csrf
                 @method('put')

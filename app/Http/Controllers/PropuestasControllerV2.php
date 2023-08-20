@@ -194,9 +194,11 @@ class PropuestasControllerV2 extends Controller
             $grupos = GruposBarrio::whereIn('idbarrio', function ($query) use ($valorComparacion) {
                 $query->select('id')
                     ->from('barrios')
+                    ->whereNotNull('suma_muerte')
                     ->where('suma_muerte', '>=', $valorComparacion);
             })
             ->whereNotIn('idbarrio', $excludedIdBarrios)
+            ->whereNotIn('id', $excludedIdBarrios)
             ->groupBy('id')
             ->orderBy('nombre','asc')
             ->get();
@@ -238,10 +240,11 @@ class PropuestasControllerV2 extends Controller
                         $estaEnBarrios = $coleccionBarrios->contains(function ($barrio) use ($id) {
                             return $barrio->id_barrio == $id;
                         });    
-
+                        
                         if($estaEnBarrios == false){
                             
                             $nuevobarrio = $this->validateBarrio((double)$suma,$id);
+                            
                             if( is_array( $nuevobarrio )){
                                 $data_barrios->barrios[] = (object)$nuevobarrio;    
                                 
@@ -253,6 +256,7 @@ class PropuestasControllerV2 extends Controller
 
                     
                 }
+                
                 
                 if(isset($request->cuit)){
                     $id = $request->cuit;
@@ -283,8 +287,9 @@ class PropuestasControllerV2 extends Controller
                     ->where('idpropuesta', $request->id)
                     ->update(['data_barrios' => json_encode($data_barrios)]);
 
-                    if(isset($request->grupo))
+                    if(isset($request->grupo)){
                         return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_grupo' => $request->grupo]);        
+                    }
                     if(isset($request->cuit))
                         return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_barrio' => $request->cuit]);        
 

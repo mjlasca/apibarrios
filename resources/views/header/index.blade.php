@@ -17,20 +17,10 @@
 <body>
         <div class="container">
             <section class="header">
-            <div class="row  justify-content-sm-center">
-                <div class="col-sm-12">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="text-center">
-                                <img style="width: 100%;max-width: 200px;" src=" {{ asset('img/brokerlogo.png' ) }} " alt="">
-                            </div>
-                        </div>
-                    </div>
+            <div class="d-flex  justify-content-center">
+                <div class="text-center">
+                    <img style="width: 200px;" src=" {{ asset('img/brokerlogo.png' ) }} " alt="">
                 </div>
-                <div id="lista">
-
-                </div>
-
             </div>
 
         </section>

@@ -119,7 +119,7 @@
 
   <div>
     <p class="text-center">
-      Constancia de Póliza - Propuesta N°: {{$data[0]->prefijo}} - {{ $data[0]->reg }}
+      Constancia de Póliza - P N°: {{$data[0]->prefijo}} - {{ $data[0]->reg }}
     </p>
     <p>Por medio del presente, damos constancia que se otorga cobertura en el seguro de Accidentes Personales (con motivo y ocasión del trabajo) de Sancor
       Cooperativa de Seguros Ltda. las personas que se detallan a continuación y en las condiciones descriptas seguidamente, encontrándose la correspondiente

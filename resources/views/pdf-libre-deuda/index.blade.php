@@ -111,7 +111,7 @@
   <section id="recibo">
 
     <div>
-      <img src="img/sancorcerlibre.png?v=2" alt="">
+      <img src="img/sancorcerlibre.png" alt="">
     </div>
     <br><br><br><br><br><br>
     <div>
