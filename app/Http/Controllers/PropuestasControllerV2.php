@@ -190,19 +190,27 @@ class PropuestasControllerV2 extends Controller
             $exclude = json_decode( $propuesta[0]->data_barrios );
             $excludedIdBarrios = collect($exclude->barrios)->pluck('id_barrio')->toArray();
             
+            dump($excludedIdBarrios);
             $valorComparacion = $propuesta[0]->cobertura_suma;
-            $grupos = GruposBarrio::whereIn('idbarrio', function ($query) use ($valorComparacion) {
-                $query->select('id')
-                    ->from('barrios')
-                    ->whereNotNull('suma_muerte')
-                    ->where('suma_muerte', '>=', $valorComparacion);
-            })
-            ->whereNotIn('idbarrio', $excludedIdBarrios)
-            ->whereNotIn('id', $excludedIdBarrios)
+            $barrios_ = barrio::select('id') 
+                ->whereNotNull('suma_muerte')
+                ->where('suma_muerte', '<=', $valorComparacion)
+                ->whereNotIn('id', $excludedIdBarrios)
+                ->get();
+
+            //dump($barrios_);
+            $barr = [];
+            foreach ($barrios_ as $key => $value) {
+                $barr[] = $value->id;
+            }
+            
+            dump( implode(",", $barr ));
+            $grupos = GruposBarrio::where('id','54')
+            ->whereIn('idbarrio', $barr)
             ->groupBy('id')
             ->orderBy('nombre','asc')
             ->get();
-
+            
             $barrios = barrio::where('nombre', 'LIKE', "%$request->search%")->orWhere('id',$request->search)->where('suma_muerte', '>=', $valorComparacion)->whereNotIn('id', $excludedIdBarrios)->orderBy('nombre','asc')->latest()->paginate();
             
             return view('propuestas.agregar-barrios', ['gruposbarrios' => $grupos, 'propuesta' => $propuesta[0], 'barrios' => $barrios]);  
@@ -233,18 +241,18 @@ class PropuestasControllerV2 extends Controller
                 if(isset($request->grupo)){
 
                     $grupoBarrios = gruposbarrio::where('id',$request->grupo)->groupBy('idbarrio')->get();
-
+//dump($grupoBarrios);                    
                     foreach ($grupoBarrios as $key => $barrio) {
                         $id = $barrio->idbarrio;
-                        
+                        //dump($id);
                         $estaEnBarrios = $coleccionBarrios->contains(function ($barrio) use ($id) {
                             return $barrio->id_barrio == $id;
                         });    
-                        
+                        //dump($estaEnBarrios);
                         if($estaEnBarrios == false){
                             
                             $nuevobarrio = $this->validateBarrio((double)$suma,$id);
-                            
+                            //dump($nuevobarrio);
                             if( is_array( $nuevobarrio )){
                                 $data_barrios->barrios[] = (object)$nuevobarrio;    
                                 
@@ -256,7 +264,7 @@ class PropuestasControllerV2 extends Controller
 
                     
                 }
-                
+                //dd($savetrue);
                 
                 if(isset($request->cuit)){
                     $id = $request->cuit;
@@ -318,7 +326,7 @@ class PropuestasControllerV2 extends Controller
             $nuevobarrio = [
                 "id" => null,
                 "id_propuesta" => null,
-                "id_barrio" => $aplica->id,
+                "id_barrio" => $aplica->id."",
                 "nombre" => $aplica->nombre,
                 "ultmod" => null,
                 "user_edit" => null,

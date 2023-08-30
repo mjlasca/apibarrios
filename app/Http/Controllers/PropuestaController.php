@@ -335,7 +335,8 @@ class PropuestaController extends Controller
                 $req["compformapago"],
                 $req["usuariopaga"],
                 $req["fecha_paga"],
-                $req["codempresa"]
+                $req["codempresa"],
+                $req["version"]
             )){
                 return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
             }else{
@@ -355,9 +356,6 @@ class PropuestaController extends Controller
         if($req){
             $prop = new Propuesta();
             $estado = request()->get('estado');
-            if($estado == "success"){
-                $prop->pagarpropuesta($req["idpropuesta"],$req["prefijo"],$req["payment_type"],$req["payment_id"]);
-            }
         }
         return view('polizas.index', compact('data','success','estado'));
     }

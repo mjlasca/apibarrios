@@ -105,7 +105,7 @@
             @foreach($data as $value)
               <div class="row p-3">
                 <div class="col-12">
-                  {{$value->prefijo}}{{$value->id_propuesta}} <b> Vigencia desde : </b> {{ $value->fechaDesde }} <b> hasta </b> {{ $value->fechaHasta }}
+                  {{$value->prefijo}}-{{$value->id_propuesta}} <b> Vigencia desde : </b> {{ $value->fechaDesde }} <b> hasta </b> {{ $value->fechaHasta }}
                 </div>
                 <div class="d-flex justify-content-center">
                   <a class="btn btn-success" href="{{ url('/descargapdfpoliza') }}?id={{$value->id_propuesta}}&prefijo={{$value->prefijo}}" target="_blank">

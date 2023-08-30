@@ -111,7 +111,7 @@
   <section id="recibo">
 
     <div>
-      <img src="img/sancorcerlibre.png" alt="">
+    <img  src="img/certificadolibreSancor.png" alt="">
     </div>
     <br><br><br><br><br><br>
     <div>
@@ -138,7 +138,7 @@
         <br>
         Productor : {{ $data[0]->productor }}
       </p>
-      <img  src="img/imgpago.png" alt="">
+      <img  src="img/firmaCeLibre.png" alt="">
     </div>
     
 

@@ -21,7 +21,7 @@ class Propuesta extends Model
             return 1;
     }
 
-    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default"){
+    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default", $version = 0){
 
         try{
             $propuesta = new Propuesta();
@@ -36,7 +36,8 @@ class Propuesta extends Model
                 "usuariopaga" => $userpay,
                 "fecha_paga" => $fecha_paga,
                 "tipopago" => $formadepago,
-                "compformadepago" => $idpago
+                "compformadepago" => $idpago,
+                "version" => $version,
             ]);
 
             $lineapropuesta = new LineasPropuesta();
@@ -186,12 +187,19 @@ class Propuesta extends Model
             $propNew->nueva_poliza = $prop->nueva_poliza;
             $propNew->premio =  isset($data['premio']) ? $data['premio'] : $prop->premio;
             $propNew->premio_total = isset($data['premio_total']) ? $data['premio_total'] : $prop->premio_total;
-            $propNew->fechaDesde = date('Y-m-d H:i:s');
-            $fecha = new DateTime($propNew->fechaDesde);
+
+            $fecha = new DateTime(now('America/Argentina/Buenos_Aires'));
+            $fecha_hasta_a = new DateTime( $prop->fechaHasta );
+            
+            if($fecha < $fecha_hasta_a){
+                $fecha = $fecha_hasta_a->modify("+1 day");
+            }
+
+            $propNew->fechaDesde = $fecha->format('Y-m-d H:i:s');                
             $propNew->fechaHasta =  isset($data['meses']) ? $fecha->modify("+".$data['meses']." months")->format('Y-m-d H:i:s') : $fecha->modify("+1 months")->format('Y-m-d H:i:s');
             $propNew->clausula = $prop->clausula;
             $propNew->barrio_beneficiario = $prop->barrio_beneficiario;
-            $propNew->ultmod = $propNew->fechaDesde;
+            $propNew->ultmod = now('America/Argentina/Buenos_Aires')->format('Y-m-d H:i:s');
             $propNew->useredit = 'online';
             $propNew->codestado = '1';
             $propNew->cobertura_suma = $prop->cobertura_suma;
@@ -200,9 +208,9 @@ class Propuesta extends Model
             $propNew->promocion = $prop->promocion;
             $propNew->paga = 1;
             $propNew->fecha_paga = $propNew->fechaDesde;
-            $propNew->formadepago = 'whatsapp_api';
+            $propNew->formadepago = 'CREDITO';
             $propNew->usuariopaga = 'online';
-            $propNew->tipopago = $data['forma_pago'];
+            $propNew->tipopago = $data['forma_pago'] ;
             $propNew->compformadepago = $data['nro_comprobante'];
             $propNew->fecha_nacimiento = $prop->fecha_nacimiento;
             $propNew->codempresa = $prop->codempresa;

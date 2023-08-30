@@ -57,91 +57,182 @@ class MigracionBarriosController extends Controller
                     $propuesta = new Propuesta();
                     $cons = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->get();
                     if(count($cons) > 0){
-
-                        if($value["tipopago"] != "" && $value["usuariopaga"] != "" && $value["paga"] = 1 &&  $value["formadepago"] = 'CREDITO'){
-                            $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
-                                "documento" => $value["documento"],
-                                "nombre" => $value["nombre"],
-                                "num_polizas" => $value["num_polizas"],
-                                "meses" => $value["meses"],
-                                "id_cobertura" => $value["id_cobertura"],
-                                "id_barrio" => $value["id_barrio"],
-                                "nueva_poliza" => $value["nueva_poliza"],
-                                "premio" => $value["premio"],
-                                "premio_total" => $value["premio_total"],
-                                "fechaDesde" => $value["fechaDesde"],
-                                "fechaHasta" => $value["fechaHasta"],
-                                "clausula" => $value["clausula"],
-                                "barrio_beneficiario" => $value["barrio_beneficiario"],
-                                "ultmod" => $value["ultmod"],
-                                "useredit" => $value["user_edit"],
-                                "codestado" => $value["codestado"],
-                                "cobertura_suma" => $value["cobertura_suma"],
-                                "cobertura_deducible" => $value["cobertura_deducible"],
-                                "cobertura_gastos" => $value["cobertura_gastos"],
-                                "promocion" => $value["promocion"],
-                                "paga" => $value["paga"],
-                                "fecha_paga" => $value["fecha_paga"],
-                                "referencia" => $value["referencia"],
-                                "prima" => $value["prima"],
-                                "master" => $value["master"],
-                                "organizador" => $value["organizador"],
-                                "productor" => $value["productor"],
-                                "reg" => $value["idpropuesta"],
-                                "formadepago" => $value["formadepago"],
-                                "usuariopaga" => $value["usuariopaga"],
-                                "tipopago" => $value["tipopago"],
-                                "compformadepago" => $value["compformapago"],
-                                "codempresa" => $value["codempresa"],
-                                "idpropuesta" => $value["idpropuesta"],
-                                "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
-                                "nota" => $value["nota"],
-                                "prefijo" => $value["prefijo"]
-                            ]);
-                        }else{
-                            $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
-                                "documento" => $value["documento"],
-                                "nombre" => $value["nombre"],
-                                "num_polizas" => $value["num_polizas"],
-                                "meses" => $value["meses"],
-                                "id_cobertura" => $value["id_cobertura"],
-                                "id_barrio" => $value["id_barrio"],
-                                "nueva_poliza" => $value["nueva_poliza"],
-                                "premio" => $value["premio"],
-                                "premio_total" => $value["premio_total"],
-                                "fechaDesde" => $value["fechaDesde"],
-                                "fechaHasta" => $value["fechaHasta"],
-                                "clausula" => $value["clausula"],
-                                "barrio_beneficiario" => $value["barrio_beneficiario"],
-                                "ultmod" => $value["ultmod"],
-                                "useredit" => $value["user_edit"],
-                                "codestado" => $value["codestado"],
-                                "cobertura_suma" => $value["cobertura_suma"],
-                                "cobertura_deducible" => $value["cobertura_deducible"],
-                                "cobertura_gastos" => $value["cobertura_gastos"],
-                                "promocion" => $value["promocion"],
-                                "paga" => $value["paga"],
-                                "referencia" => $value["referencia"],
-                                "prima" => $value["prima"],
-                                "master" => $value["master"],
-                                "organizador" => $value["organizador"],
-                                "productor" => $value["productor"],
-                                "reg" => $value["idpropuesta"],
-                                "formadepago" => $value["formadepago"],
-                                "codempresa" => $value["codempresa"],
-                                "idpropuesta" => $value["idpropuesta"],
-                                "nota" => $value["nota"],
-                                "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
-                                "prefijo" => $value["prefijo"]
-                            ]);
-                        }
-
                         
-
-                        if(isset($value["codempresa"])){
-                            DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
-                            DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
+                        if(isset($value["version"])){
+                            $res = false;
+                            if($value["tipopago"] != "" && $value["usuariopaga"] != "" && $value["paga"] = 1 &&  $value["formadepago"] = 'CREDITO'){
+                                $res =  $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->where('version','<',$value["version"])->update([
+                                    "documento" => $value["documento"],
+                                    "nombre" => $value["nombre"],
+                                    "num_polizas" => $value["num_polizas"],
+                                    "meses" => $value["meses"],
+                                    "id_cobertura" => $value["id_cobertura"],
+                                    "id_barrio" => $value["id_barrio"],
+                                    "nueva_poliza" => $value["nueva_poliza"],
+                                    "premio" => $value["premio"],
+                                    "premio_total" => $value["premio_total"],
+                                    "fechaDesde" => $value["fechaDesde"],
+                                    "fechaHasta" => $value["fechaHasta"],
+                                    "clausula" => $value["clausula"],
+                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
+                                    "ultmod" => $value["ultmod"],
+                                    "useredit" => $value["user_edit"],
+                                    "codestado" => $value["codestado"],
+                                    "cobertura_suma" => $value["cobertura_suma"],
+                                    "cobertura_deducible" => $value["cobertura_deducible"],
+                                    "cobertura_gastos" => $value["cobertura_gastos"],
+                                    "promocion" => $value["promocion"],
+                                    "paga" => $value["paga"],
+                                    "fecha_paga" => $value["fecha_paga"],
+                                    "referencia" => $value["referencia"],
+                                    "prima" => $value["prima"],
+                                    "master" => $value["master"],
+                                    "organizador" => $value["organizador"],
+                                    "productor" => $value["productor"],
+                                    "reg" => $value["idpropuesta"],
+                                    "formadepago" => $value["formadepago"],
+                                    "usuariopaga" => $value["usuariopaga"],
+                                    "tipopago" => $value["tipopago"],
+                                    "compformadepago" => $value["compformapago"],
+                                    "codempresa" => $value["codempresa"],
+                                    "idpropuesta" => $value["idpropuesta"],
+                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
+                                    "nota" => $value["nota"],
+                                    "version" => $value["version"],
+                                    "prefijo" => $value["prefijo"]
+                                ]);
+                            }else{
+                                $res = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->where('version','<',$value["version"])->update([
+                                    "documento" => $value["documento"],
+                                    "nombre" => $value["nombre"],
+                                    "num_polizas" => $value["num_polizas"],
+                                    "meses" => $value["meses"],
+                                    "id_cobertura" => $value["id_cobertura"],
+                                    "id_barrio" => $value["id_barrio"],
+                                    "nueva_poliza" => $value["nueva_poliza"],
+                                    "premio" => $value["premio"],
+                                    "premio_total" => $value["premio_total"],
+                                    "fechaDesde" => $value["fechaDesde"],
+                                    "fechaHasta" => $value["fechaHasta"],
+                                    "clausula" => $value["clausula"],
+                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
+                                    "ultmod" => $value["ultmod"],
+                                    "useredit" => $value["user_edit"],
+                                    "codestado" => $value["codestado"],
+                                    "cobertura_suma" => $value["cobertura_suma"],
+                                    "cobertura_deducible" => $value["cobertura_deducible"],
+                                    "cobertura_gastos" => $value["cobertura_gastos"],
+                                    "promocion" => $value["promocion"],
+                                    "paga" => $value["paga"],
+                                    "referencia" => $value["referencia"],
+                                    "prima" => $value["prima"],
+                                    "master" => $value["master"],
+                                    "organizador" => $value["organizador"],
+                                    "productor" => $value["productor"],
+                                    "reg" => $value["idpropuesta"],
+                                    "formadepago" => $value["formadepago"],
+                                    "codempresa" => $value["codempresa"],
+                                    "idpropuesta" => $value["idpropuesta"],
+                                    "nota" => $value["nota"],
+                                    "version" => $value["version"],
+                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
+                                    "prefijo" => $value["prefijo"]
+                                ]);
+                            }
+    
+                            
+    
+                            if(isset($value["codempresa"]) && $res){
+                                DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
+                                /*DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");*/
+                            }
+                        }else{
+                            if($value["tipopago"] != "" && $value["usuariopaga"] != "" && $value["paga"] = 1 &&  $value["formadepago"] = 'CREDITO'){
+                                $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
+                                    "documento" => $value["documento"],
+                                    "nombre" => $value["nombre"],
+                                    "num_polizas" => $value["num_polizas"],
+                                    "meses" => $value["meses"],
+                                    "id_cobertura" => $value["id_cobertura"],
+                                    "id_barrio" => $value["id_barrio"],
+                                    "nueva_poliza" => $value["nueva_poliza"],
+                                    "premio" => $value["premio"],
+                                    "premio_total" => $value["premio_total"],
+                                    "fechaDesde" => $value["fechaDesde"],
+                                    "fechaHasta" => $value["fechaHasta"],
+                                    "clausula" => $value["clausula"],
+                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
+                                    "ultmod" => $value["ultmod"],
+                                    "useredit" => $value["user_edit"],
+                                    "codestado" => $value["codestado"],
+                                    "cobertura_suma" => $value["cobertura_suma"],
+                                    "cobertura_deducible" => $value["cobertura_deducible"],
+                                    "cobertura_gastos" => $value["cobertura_gastos"],
+                                    "promocion" => $value["promocion"],
+                                    "paga" => $value["paga"],
+                                    "fecha_paga" => $value["fecha_paga"],
+                                    "referencia" => $value["referencia"],
+                                    "prima" => $value["prima"],
+                                    "master" => $value["master"],
+                                    "organizador" => $value["organizador"],
+                                    "productor" => $value["productor"],
+                                    "reg" => $value["idpropuesta"],
+                                    "formadepago" => $value["formadepago"],
+                                    "usuariopaga" => $value["usuariopaga"],
+                                    "tipopago" => $value["tipopago"],
+                                    "compformadepago" => $value["compformapago"],
+                                    "codempresa" => $value["codempresa"],
+                                    "idpropuesta" => $value["idpropuesta"],
+                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
+                                    "nota" => $value["nota"],
+                                    "prefijo" => $value["prefijo"]
+                                ]);
+                            }else{
+                                $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
+                                    "documento" => $value["documento"],
+                                    "nombre" => $value["nombre"],
+                                    "num_polizas" => $value["num_polizas"],
+                                    "meses" => $value["meses"],
+                                    "id_cobertura" => $value["id_cobertura"],
+                                    "id_barrio" => $value["id_barrio"],
+                                    "nueva_poliza" => $value["nueva_poliza"],
+                                    "premio" => $value["premio"],
+                                    "premio_total" => $value["premio_total"],
+                                    "fechaDesde" => $value["fechaDesde"],
+                                    "fechaHasta" => $value["fechaHasta"],
+                                    "clausula" => $value["clausula"],
+                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
+                                    "ultmod" => $value["ultmod"],
+                                    "useredit" => $value["user_edit"],
+                                    "codestado" => $value["codestado"],
+                                    "cobertura_suma" => $value["cobertura_suma"],
+                                    "cobertura_deducible" => $value["cobertura_deducible"],
+                                    "cobertura_gastos" => $value["cobertura_gastos"],
+                                    "promocion" => $value["promocion"],
+                                    "paga" => $value["paga"],
+                                    "referencia" => $value["referencia"],
+                                    "prima" => $value["prima"],
+                                    "master" => $value["master"],
+                                    "organizador" => $value["organizador"],
+                                    "productor" => $value["productor"],
+                                    "reg" => $value["idpropuesta"],
+                                    "formadepago" => $value["formadepago"],
+                                    "codempresa" => $value["codempresa"],
+                                    "idpropuesta" => $value["idpropuesta"],
+                                    "nota" => $value["nota"],
+                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
+                                    "prefijo" => $value["prefijo"]
+                                ]);
+                            }
+    
+                            
+    
+                            if(isset($value["codempresa"])){
+                                DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
+                                DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
+                            }
                         }
+                        
                             
 
                     }else{
