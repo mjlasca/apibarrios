@@ -189,8 +189,12 @@ class PropuestasControllerV2 extends Controller
             
             $exclude = json_decode( $propuesta[0]->data_barrios );
             $excludedIdBarrios = collect($exclude->barrios)->pluck('id_barrio')->toArray();
+
             
-            dump($excludedIdBarrios);
+            $arr_group = session('arr_group');
+            if(empty($arr_group))
+                $arr_group = [];
+            //dump($excludedIdBarrios);
             $valorComparacion = $propuesta[0]->cobertura_suma;
             $barrios_ = barrio::select('id') 
                 ->whereNotNull('suma_muerte')
@@ -204,11 +208,12 @@ class PropuestasControllerV2 extends Controller
                 $barr[] = $value->id;
             }
             
-            dump( implode(",", $barr ));
-            $grupos = GruposBarrio::where('id','54')
-            ->whereIn('idbarrio', $barr)
+            //dump( implode(",", $barr ));
+            $grupos = GruposBarrio::
+            whereIn('idbarrio', $barr)
             ->groupBy('id')
             ->orderBy('nombre','asc')
+            ->whereNotIn('id',$arr_group)
             ->get();
             
             $barrios = barrio::where('nombre', 'LIKE', "%$request->search%")->orWhere('id',$request->search)->where('suma_muerte', '>=', $valorComparacion)->whereNotIn('id', $excludedIdBarrios)->orderBy('nombre','asc')->latest()->paginate();
@@ -258,6 +263,10 @@ class PropuestasControllerV2 extends Controller
                                 
                                 $savetrue = true;
                             }
+                            
+                            $arr_group = session('arr_group');
+                            $arr_group[] = $request->grupo;
+                            session(['arr_group' => $arr_group ]);
                             
                         }
                     }

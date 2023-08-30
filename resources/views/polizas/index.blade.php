@@ -49,14 +49,14 @@
       <div class="cuadro col-sm-6">
         
         <div class="formpoliza">
-          <h4>Hola! Querido asegurad@! <br>Hemos creado esta página para que tu puedas consultar tus pólizas</h4>
-          <p><b>¡IMPORTANTE! AQUÍ SOLO PODRAS VISUALIZAR TUS PÓLIZAS PARA BARRIOS PRIVADOS QUE ESTÉN PAGAS.</b></p>
+          <h4>Hola! Querid@ asegurad@! <br>Aquí puedes consultar tus pólizas con Bróker del Puerto!</h4>
           <p>
-           1. Tener siempre a mano uma copia de Tú poliza y recibo de pago.</li>
-           <br>2. Bajar um certificado de Libre de Deuda.</li>
-           <br>3. Agregar clausulas de no repetición. (Solo hasta la suma asegurada contratada).</li>
+          1. Ten siempre a mano una copia de tu póliza y recibo de pago.
+          <br>2. Obtén certificado de Libre de Deuda.
+          <br>3. Agrega cláusulas de no repetición. (Solo hasta la suma asegurada contratada).
+
           </p>
-        
+          <p><b>¡IMPORTANTE! SOLO PODRAS VISUALIZAR TUS PÓLIZAS PARA BARRIOS PRIVADOS ABONADAS.</b></p>
           <form id="formpoliza" method="POST" action="{{ url('/consultapoliza') }}">
             @csrf
             <div class="mb-3">
@@ -109,13 +109,13 @@
                 </div>
                 <div class="d-flex justify-content-center">
                   <a class="btn btn-success" href="{{ url('/descargapdfpoliza') }}?id={{$value->id_propuesta}}&prefijo={{$value->prefijo}}" target="_blank">
-                    Haz click aquí y descarga póliza y recibo pagó
+                    Descarga póliza y recibo pago <b>AQUÍ</b>
                   </a>
                   <a class="btn btn-primary" href="{{ url('/libre-deuda') }}/{{$value->id_propuesta}}/{{$value->prefijo}}" target="_blank">
-                    Haz click aquí y descarga certificado de libre de deuda
+                    Descarga certificado libre de deuda <b>AQUÍ</b>
                   </a>
                   <a class="btn btn-warning" href="{{ route('agregar_barrios', ['prefijo' => $value->prefijo, 'idpropuesta' => $value->id_propuesta]) }}" target="_blank">
-                    Haz click aquí y adiciona claúsulas de no repeticion que te eixjan en el barrio
+                    Adiciona Cláusulas de No Repetición <b>AQUÍ</b>
                   </a>
                 </div>     
               </div>   
@@ -167,7 +167,7 @@
       Con ese número de Documento no encontramos ninguna Póliza vigente o puede estar en proceso el pago.</h4>
       
 
-      <h5 class='text-center'> Pero no te preocupes, si tu poliza esta vigente o deseas emitir una nueva, te sugerimos que entres en contacto con nosotros al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>  (haz click y escribenos) y verificaremos a la mayor brevedad posible. Tambien puedes contactarnos al e-mail comercial@brokerdelpuerto.com y escribenos que deseas hacer y te respondemos a la mayor brevedad. <br> ¡Tu tranquilidad Vale!</h5>
+      <h5 class='text-center'> Pero no te preocupes, si tu póliza está vigente o deseas emitir una nueva, te sugerimos que entres en contacto con nosotros al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>  (haz clic y escríbenos) y verificaremos a la mayor brevedad posible. Tambien puedes contactarnos al e-mail comercial@brokerdelpuerto.com y escríbenos que deseas hacer y te respondemos a la mayor brevedad. <br> ¡Tu tranquilidad Vale!</h5>
       `;
       
     function contentfeedback(content,title = "Mensaje", barra = "bg-primary text-white"){

@@ -10,11 +10,11 @@
         <div>
             
             <h3 class="mt-5">
-            Hola {{ $propuesta->nombre }}, aqui pódras incluir inmediatamente  una o varias claúsulas  a tu póliza <b>{{$propuesta->prefijo}}-{{$propuesta->idpropuesta}}</b> que te hayan pedido en el barrio(s) a ingresar y deberas considerar:
+            Hola {{ $propuesta->nombre }}, aquí podrás incluir inmediatamente  una o varias cláusulas  a tu póliza <b>{{$propuesta->prefijo}}-{{$propuesta->idpropuesta}}</b> que te hayan pedido en el/los barrio(s) a ingresar y deberás considerar:
             </h3>
             <hr class="mb-5">
             <div class="alert alert-primary" role="alert">
-                No pódras elegir clausulas de barrios que exijan mas suma asegurada a la que tienes en tu actual póliza <b>(${{ number_format($propuesta->cobertura_suma,2) }})</b>. 
+                No pódras elegir cláusulas de barrios que exijan mas suma asegurada a la que tienes en tu actual póliza <b>(${{ number_format($propuesta->cobertura_suma,2) }})</b>. 
             </div>
             <h4>Selecciona el grupo que deseas agregar</h4>
             
@@ -54,7 +54,7 @@
             <h4>Agregar por barrio</h4>
             <label for="">
                 <small>
-                Si conoces el cuit del barrio a ingresar, asegurate que sea por la suma asegurada que el barrio te pide para que puedas incluirla. Caso la suma asegurada sea mayor, por favor entra en contacto con nosotros al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>  (haz click y escribenos) y te aumentamos la suma asegurada y/o caso no aparezca la clausula que necesitas para poder incluirtela.
+                Si conoces el CUIT del barrio a ingresar, asegúrate que sea por la suma asegurada que el barrio te pide para que puedas incluirla. Caso la suma asegurada sea mayor, por favor contáctanos al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>  (haz clic y escríbenos) y te aumentamos la suma asegurada y/o caso no aparezca la clausula que necesitas para poder incluírtela.
                 </small>
             </label>
             <form action="{{ route('agregar_barrios_barrio') }}" method="post">

@@ -189,8 +189,8 @@
       @foreach($lineasdata as $val)
       <tr>
         <td class="text-center">{{$val->apellidos}} {{$val->nombres}} </td>
-        <td class="text-center">{{$val->tipo_documento}}|{{$val->documento}} </td>
-        <td class="text-center">{{$val->fecha_nacimiento}} </td>
+        <td class="text-center">{{$val->tipo_documento}} : {{$val->documento}} </td>
+        <td class="text-center">{{ \Carbon\Carbon::parse($val->fecha_nacimiento)->format('d/m/Y')}} </td>
         <td class="text-left">{{$val->actividad}} </td>
       </tr>
       @endforeach
@@ -200,9 +200,9 @@
   <div>
     <p class="text-center"> <b> VIGENCIA : DEL 
       @if($data[0]->codempresa)
-        {{ $data[0]->fechaDesde }} A {{ $data[0]->fechaHasta }}
+        {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y h:i:s') }} A {{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y h:i:s') }}
       @else
-        {{ $data[0]->fechaDesde }} A {{  substr($data[0]->fechaHasta, 0,10) . " 00:00:00" }}
+        {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y') }} A {{ substr( \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y'), 0,10) . " 00:00:00" }}
       @endif
     </b></p>
     <p>
@@ -270,8 +270,8 @@
       
         
       
-      <p><b>PROPUESTA EN EMISIÓN : {{$data[0]->prefijo}}-{{$data[0]->reg}}</b></p>
-      <p class="text-justify">Se deja expresa constancia por el presente que las personas que se detallan en la Propuesta No. {{$data[0]->prefijo}}{{$data[0]->reg}} se encuentran
+      <p><b>PROPUESTA EN EMISIÓN : {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</b></p>
+      <p class="text-justify">Se deja expresa constancia por el presente que las personas que se detallan en la Propuesta No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}} se encuentran
         cubiertas en esta aseguradora, amparadas por los riesgos de MUERTE e INVALIDEZ (total o parcial permanente) por
         ACCIDENTE y Asistencia Médica Farmacéutica según las condiciones contratadas
       </p>
@@ -297,7 +297,7 @@
             </td>
       
             <td class="text-right" colspan="3">
-              No. {{$data[0]->prefijo}}{{$data[0]->reg}}<br>
+              No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}<br>
               Accidentes Personales
             </td>
           </tr>
@@ -313,9 +313,9 @@
             <td class="text-center" >600</td>
             <td class="text-center" >13</td>
             <td class="text-center" >en trámite</td>
-            <td class="text-center" >en trámite</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
-            <td class="text-center" >{{$data[0]->prefijo}}{{$data[0]->reg}}</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->reg}}</td>
           </tr>
           <tr style="background-color: rgb(173, 173, 173)">
             <td class="text-center" colspan="2" >Organización</td>
@@ -378,7 +378,7 @@
             </td>
       
             <td class="text-right" colspan="3">
-              No. {{$data[0]->prefijo}}{{$data[0]->reg}}<br>
+              No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}<br>
               Accidentes Personales
             </td>
           </tr>
@@ -394,9 +394,9 @@
             <td class="text-center" >600</td>
             <td class="text-center" >13</td>
             <td class="text-center" >en trámite</td>
-            <td class="text-center" >en trámite</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
-            <td class="text-center" >{{$data[0]->prefijo}}{{$data[0]->reg}}</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
           </tr>
           <tr style="background-color: rgb(173, 173, 173)">
             <td class="text-center" colspan="2" >Organización</td>
@@ -475,7 +475,7 @@
               </small>
             </td>
             <td class="text-right" colspan="2">
-              No. {{$data[0]->prefijo}}{{$data[0]->reg}}<br>
+              No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}<br>
               Accidentes Personales
             </td>
           </tr>
@@ -495,9 +495,9 @@
             <td class="text-center" >600</td>
             <td class="text-center" >13</td>
             <td class="text-center" >en trámite</td>
-            <td class="text-center" >en trámite</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
-            <td class="text-center" >{{$data[0]->prefijo}}{{$data[0]->reg}}</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" colspan="2" >150430</td>
             <td class="text-center" >{{ $data[0]->productor  }}</td>
             <td class="text-center" colspan="2" >DNI {{ $data[0]->documento  }}</td>
