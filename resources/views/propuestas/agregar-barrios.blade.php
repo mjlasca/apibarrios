@@ -37,7 +37,7 @@
                 <input type="submit" value="Agregar Grupo" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">
                 @if(request('error_grupo'))
                     <div class="alert alert-danger" role="alert">
-                        {{request('error_grupo')}}
+                        {{ request('error_grupo') }}
                     </div>
                 @endif
                 @if(request('success_grupo'))
@@ -69,7 +69,11 @@
 
                 @if(request('error_cuit'))
                     <div class="alert alert-danger" role="alert">
-                        {{request('error_cuit')}}
+                        @if(request('error_cuit') == 2)
+                            El CUIT {{request('cuit')}} pertenece a un barrio con una suma asegurada mayor a la de tu póliza actual, <br>sugerimos contactarnos al Whatsapp : <a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038 (clic y escríbenos)</a>
+                        @else
+                            {{ request('error_cuit') }}
+                        @endif
                     </div>
                 @endif
                 @if(request('success_barrio'))

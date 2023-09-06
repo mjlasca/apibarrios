@@ -289,7 +289,7 @@ class PropuestasControllerV2 extends Controller
                             $data_barrios->barrios[] = (object)$nuevobarrio;    
                             $savetrue = true;
                         }else if($nuevobarrio == 2){
-                            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => "El CUIT $request->cuit pertenece a un barrio con una suma asegurada mayor a la de tu póliza actual, sugerimos que entres en contacto con nosotros al Whatsapp : ".'<a href="https://wa.me/+5491155841038" target="_blank"> +54 9 11 5584 1038</a>', 'cuit' => $request->cuit]);            
+                            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => 2, 'cuit' => $request->cuit]);            
                         }else{
                             return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_cuit' => "El CUIT $request->cuit no existe", 'cuit' => $request->cuit]);            
                         }

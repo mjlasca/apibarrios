@@ -128,12 +128,13 @@ class UserController extends Controller
                                 "aseguradora" => $value["aseguradora"]
                             ]);*/
                         }else{
+                            
                             $user->name = $value["nombre"];
                             $user->prefijo = $value["prefijo"];
                             $user->rol = $value["rol"];
                             $user->api_token     = $value["apitoken"];
                             $user->email = $value["usuario"];
-                            $user->password = sha1($user->name);
+                            $user->password = bcrypt($user->name);
                             $user->perfil = $value["perfil"];
                             $user->codempresa = $value["codempresa"];
                             $user->master = $value["master"];
