@@ -134,7 +134,7 @@ class UserController extends Controller
                             $user->rol = $value["rol"];
                             $user->api_token     = $value["apitoken"];
                             $user->email = $value["usuario"];
-                            $user->password = bcrypt($user->name);
+                            $user->password = bcrypt($user->email);
                             $user->perfil = $value["perfil"];
                             $user->codempresa = $value["codempresa"];
                             $user->master = $value["master"];
