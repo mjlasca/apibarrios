@@ -215,6 +215,9 @@ class Propuesta extends Model
             $propNew->fecha_nacimiento = $prop->fecha_nacimiento;
             $propNew->codempresa = $prop->codempresa;
             $propNew->data_barrios = $prop->data_barrios;
+            $propNew->master = $prop->master;
+            $propNew->organizador = $prop->organizador;
+            $propNew->productor = $prop->productor;
 
             if($propNew->save()){
 
@@ -226,6 +229,7 @@ class Propuesta extends Model
                     $line->documento = $value->documento;
                     $line->tipo_documento = $value->tipo_documento;
                     $line->apellidos = $value->apellidos;
+                    $line->nombres = $value->nombres;
                     $line->fecha_nacimiento = $value->fecha_nacimiento;
                     $line->id_actividad = $value->id_actividad;
                     $line->id_clasificacion = $value->id_clasificacion;
