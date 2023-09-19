@@ -25,37 +25,43 @@ class Propuesta extends Model
 
         try{
             $propuesta = new Propuesta();
+            $pay_ = payregistry::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
 
-            if($fecha_paga == "")   
+            if(empty($pay_)){
+                if($fecha_paga == "")   
                 $fecha_paga = date("Y-m-d H:i:s");
 
-            $propuesta->where('reg',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
-                "codestado" => 1,
-                "paga" => 1,
-                "csrf" => null,
-                "usuariopaga" => $userpay,
-                "fecha_paga" => $fecha_paga,
-                "tipopago" => $formadepago,
-                "compformadepago" => $idpago,
-                "version" => $version,
-            ]);
+                $propuesta->where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
+                    "codestado" => 1,
+                    "paga" => 1,
+                    "csrf" => null,
+                    "usuariopaga" => $userpay,
+                    "fecha_paga" => $fecha_paga,
+                    "tipopago" => $formadepago,
+                    "compformadepago" => $idpago,
+                    "version" => $version,
+                ]);
 
-            $lineapropuesta = new LineasPropuesta();
+                $lineapropuesta = new LineasPropuesta();
 
-            $lineapropuesta->where('id_propuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
-                "codestado" => 1
-            ]);
+                $lineapropuesta->where('id_propuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
+                    "codestado" => 1
+                ]);
 
-            $pay = new payregistry();
-            $pay->idpropuesta = $idpropuesta;
-            $pay->prefijo = $prefijo;
-            $pay->usuariopaga = $userpay;
-            $pay->fecha_paga = $fecha_paga;
-            $pay->tipopago = $formadepago;
-            $pay->compformadepago = $idpago;
-            $pay->save();
+                $pay = new payregistry();
+                $pay->idpropuesta = $idpropuesta;
+                $pay->prefijo = $prefijo;
+                $pay->usuariopaga = $userpay;
+                $pay->fecha_paga = $fecha_paga;
+                $pay->tipopago = $formadepago;
+                $pay->compformadepago = $idpago;
+                $pay->save();
 
-            return true;
+                return true;
+            }else{
+
+                return false;
+            }
 
         }catch(Exception $ex){
             $logs = new Logs();

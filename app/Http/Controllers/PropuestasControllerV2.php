@@ -51,6 +51,7 @@ class PropuestasControllerV2 extends Controller
                                 'referencia' => $registro['referencia'],
                                 'nota' => $registro['nota'],
                                 'prima' => $registro['prima'],
+                                'version' => DB::raw('version + 1'),
                             ]);
             }
     
