@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\logs;
 
 class Propuesta extends Model
 {
@@ -64,7 +65,7 @@ class Propuesta extends Model
             }
 
         }catch(Exception $ex){
-            $logs = new Logs();
+            $logs = new logs();
             $logs->saveerror($ex->getMessage(), "", "", "150");
             
             return false;
