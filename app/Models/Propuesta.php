@@ -196,6 +196,7 @@ class Propuesta extends Model
             $propNew->premio_total = isset($data['premio_total']) ? $data['premio_total'] : $prop->premio_total;
 
             $fecha = new DateTime(now('America/Argentina/Buenos_Aires'));
+            
             $fecha_hasta_a = new DateTime( $prop->fechaHasta );
             
             if($fecha < $fecha_hasta_a){
@@ -206,7 +207,17 @@ class Propuesta extends Model
             $propNew->fechaHasta =  isset($data['meses']) ? $fecha->modify("+".$data['meses']." months")->format('Y-m-d H:i:s') : $fecha->modify("+1 months")->format('Y-m-d H:i:s');
             $propNew->clausula = $prop->clausula;
             $propNew->barrio_beneficiario = $prop->barrio_beneficiario;
-            $propNew->ultmod = now('America/Argentina/Buenos_Aires')->format('Y-m-d H:i:s');
+            $fecha_1 = new DateTime(now('America/Argentina/Buenos_Aires'));
+            $dayName = $fecha_1->format('1');
+
+            if($dayName == 'Saturday')
+                $fecha_1 = $fecha_1->modify("+2 day")->format('Y-m-d 08:00:00');
+            if($dayName == 'Sunday')
+                $fecha_1 = $fecha_1->modify("+1 day")->format('Y-m-d 08:00:00');
+            if ($fecha_1->format('H:i') >= '16:00') 
+                $fecha_1 = $fecha_1->modify("+1 day")->format('Y-m-d 08:00:00');
+                                
+            $propNew->ultmod = $fecha_1;
             $propNew->useredit = 'online';
             $propNew->codestado = '1';
             $propNew->cobertura_suma = $prop->cobertura_suma;
@@ -214,7 +225,7 @@ class Propuesta extends Model
             $propNew->cobertura_gastos = $prop->cobertura_gastos;
             $propNew->promocion = $prop->promocion;
             $propNew->paga = 1;
-            $propNew->fecha_paga = $propNew->fechaDesde;
+            $propNew->fecha_paga = $propNew->ultmod;
             $propNew->formadepago = 'CREDITO';
             $propNew->usuariopaga = 'online';
             $propNew->tipopago = $data['forma_pago'] ;
