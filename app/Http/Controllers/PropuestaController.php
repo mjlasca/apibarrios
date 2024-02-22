@@ -567,13 +567,13 @@ class PropuestaController extends Controller
                                 $fechamigracion = new DateTime();
                                 $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
                             }
-                                
+                            ini_set('memory_limit', '1024M');
 
                             /*$sql = "SELECT t1.* FROM propuestas t1 LEFT JOIN payregistries t2 
                             ON t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta
                             WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.idpropuesta AND t2.idpropuesta) );";*/
                             $sql = "SELECT t1.* FROM propuestas t1 
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' ) OR (t1.codestado = '0' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC;";
+                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' ) OR (t1.codestado = '0' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC limit 2000;";
 
                             if(isset($req["get_prefix_own"])){
                                 if($req["get_prefix_own"] == 1){
