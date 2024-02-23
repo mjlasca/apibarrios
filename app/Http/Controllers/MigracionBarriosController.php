@@ -99,7 +99,9 @@ class MigracionBarriosController extends Controller
                                     "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
                                     "nota" => $value["nota"],
                                     "version" => $value["version"],
-                                    "prefijo" => $value["prefijo"]
+                                    "prefijo" => $value["prefijo"],
+                                    "imputacion" => isset($value["imputacion"]) ? $value["imputacion"] : 0,
+                                    
                                 ]);
                             }else{
                                 $res = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->where('version','<',$value["version"])->update([
@@ -136,7 +138,8 @@ class MigracionBarriosController extends Controller
                                     "nota" => $value["nota"],
                                     "version" => $value["version"],
                                     "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
-                                    "prefijo" => $value["prefijo"]
+                                    "prefijo" => $value["prefijo"],
+                                    "imputacion" => isset($value["imputacion"]) ? $value["imputacion"] : 0,
                                 ]);
                             }
     
@@ -283,6 +286,12 @@ class MigracionBarriosController extends Controller
                             $propuesta->nota = $value["nota"];
                         if (isset($value["data_barrios"]))
                             $propuesta->data_barrios = $value["data_barrios"];
+                        if(isset($value["valor_pagado"]))
+                            $propuesta->valor_pagado = $value["valor_pagado"];
+                        if( isset($value["imputacion"]) )
+                            $propuesta->imputacion = $value["imputacion"];
+                        if( isset($value["fecha_comprobante"]))
+                            $propuesta->fecha_comprobante = $value["fecha_comprobante"];
                         $propuesta->save();
                     }
 

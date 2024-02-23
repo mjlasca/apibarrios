@@ -22,7 +22,7 @@ class Propuesta extends Model
             return 1;
     }
 
-    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default", $version = 0){
+    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default", $version = 0, $fecha_comprobante = null, $valor_pagado = 0){
 
         try{
             $propuesta = new Propuesta();
@@ -41,6 +41,8 @@ class Propuesta extends Model
                     "tipopago" => $formadepago,
                     "compformadepago" => $idpago,
                     "version" => $version,
+                    "fecha_comprobante" => $fecha_comprobante,
+                    "valor_pagado" => $valor_pagado,
                 ]);
 
                 $lineapropuesta = new LineasPropuesta();
@@ -56,6 +58,8 @@ class Propuesta extends Model
                 $pay->fecha_paga = $fecha_paga;
                 $pay->tipopago = $formadepago;
                 $pay->compformadepago = $idpago;
+                $pay->fecha_comprobante = $fecha_comprobante;
+                $pay->valor_pagado = $valor_pagado;
                 $pay->save();
 
                 return true;

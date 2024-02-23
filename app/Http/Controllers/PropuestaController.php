@@ -326,7 +326,7 @@ class PropuestaController extends Controller
 
         $req = request()->all();
 
-        if($req){
+        if(!empty($req)){
             $prop = new Propuesta();
             if($prop->pagarpropuesta(
                 $req["idpropuesta"],
@@ -336,7 +336,9 @@ class PropuestaController extends Controller
                 $req["usuariopaga"],
                 $req["fecha_paga"],
                 $req["codempresa"],
-                $req["version"]
+                $req["version"],
+                $req["fecha_comprobante"],
+                $req["valor_pagado"]
             )){
                 return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
             }else{
