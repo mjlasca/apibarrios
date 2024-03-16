@@ -31,6 +31,7 @@
       border: solid 0px;
       padding: 0px;
       margin: 0;
+      border-collapse: collapse;
     }
 
     .table-line {
@@ -89,6 +90,15 @@
 
     .p1 {
       padding: 10px;
+    }
+
+    .tr-b td{
+      border: solid 1px;
+      padding: 0px;
+    }
+
+    .td-b{
+      border: solid 1px;
     }
 
     #recibo{
@@ -193,7 +203,7 @@
         <td class="text-center">{{ \Carbon\Carbon::parse($val->fecha_nacimiento)->format('d/m/Y')}} </td>
         <td class="text-left">{{$val->actividad}} </td>
       </tr>
-      @endforeach
+      @endforeach 
     </tbody>
   </table>
 
@@ -204,9 +214,14 @@
       @else
         {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y') }} A {{ substr( \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y'), 0,10) . " 00:00:00" }}
       @endif
+      <br>
+      
     </b></p>
     <p>
-      (*) Se aclara que son asegurables personas de 17 a 65 años inclusive.
+      <b>Nota: Verificar la exigencia del barrio y la cobertura ya que se dará cobertura a los barrios conforme Suma asegurada mencionada en el presente certificado. Si no adquieres la suma asegurada correcta el barrio puede no dejarte ingresar y tendrás que volver a aumentar la suma asegurada</b>
+    </p>
+    <p>
+      (*) Se aclara que son asegurables personas de 14 a 70 años inclusive.
       <br>(**) Se deja constancia que se dará cobertura a la actividad declarada hasta 15 metros de altura.se deberá cumplir además con el resto de condiciones de asegurabilidad de Sancor Coop.de Seguros Ltda.
       <br>Coberturas y Capitales Asegurados
       <br>Hechos ocurridos a causa de las actividades y/o tareas declaradas en la correspondiente solicitud, exclusivamente cuando las mismas sean desempeñadas por el asegurado o los asegurados en los Barrios Privados declarados, incluido los trayectos para trasladarse de un barrio Privado a otro y/o in itinere.
@@ -214,6 +229,13 @@
       <br>- INVALIDEZ TOTAL Y PARCIAL PERMANENTE POR ACCIDENTE ${{ number_format($data[0]->cobertura_suma,2) }}
       <br>- ASISTENCIA MEDICO FARMACÉUTICA POR REINTEGRO ${{ number_format($data[0]->cobertura_gastos,2) }}(con deducible de ${{ number_format($data[0]->cobertura_deducible,2) }})
       <br>Cobertura in itinere incluyendo casos en que el vehículo de traslado sea motocicletas y/o bicicletas y/o vehículos similares
+      <br>
+      @if (strlen($concatbarrios) < 236)
+      <p><b>NO REPETICIÓN</b></p>
+      <p>Se deja expresa constancia por medio de este endoso, que formará parte integrante de la póliza / certificado, que Sancor Cooperativas de Seguros Limitada renuncia forma expresa a iniciar toda acción de repetición contra  {{substr($concatbarrios,0,236)}}  ya sea con fundamentos en la Ley 24.557 o en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a otorgar o abonar al Asegurado declarado en la presente Póliza / Certificado, comprendido en la cobertura de la presente Póliza/ Certificado de Accidentes Personales con motivo de la profesión o actividad declarada e In Itinere. Se extiende el presente en Benavidez, {{date('d/m/Y')}}. Esta constancia tendrá validez si se presenta con el correspondiente recibo de pago.    </p>
+      @endif
+      
+
     </p>
   </div>
 
@@ -285,7 +307,7 @@
       </p>
   @endif
 
-  <section id="recibo">
+  <section class="recibo-tables" id="recibo">
     <div class="page-break"></div>
 
     <div style="z-index:9999;">
@@ -301,7 +323,7 @@
               Accidentes Personales
             </td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
+          <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" >Ramo</td>
             <td class="text-center" >Prod</td>
             <td class="text-center" >Referencia</td>
@@ -309,28 +331,28 @@
             <td class="text-center" >Certif.</td>
             <td class="text-center" >Propuesta</td>
           </tr>
-          <tr>
+          <tr class="tr-b">
             <td class="text-center" >600</td>
-            <td class="text-center" >13</td>
+            <td class="text-center" >27</td>
             <td class="text-center" >en trámite</td>
             <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
             <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->reg}}</td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
+          <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" colspan="2" >Organización</td>
             <td class="text-center" >Productor</td>
             <td class="text-center" colspan="2" >Cliente</td>
             <td class="text-center" >Asociado</td>
           </tr>
-          <tr>
-            <td class="text-center" colspan="2" >150430</td>
+          <tr class="tr-b">
+            <td class="text-center" colspan="2" >{{ $data[0]->organizador }}</td>
             <td class="text-center" >{{ $data[0]->productor  }}</td>
             <td class="text-center" colspan="2" >DNI {{ $data[0]->documento  }}</td>
             <td class="text-center" >0</td>
           </tr>
-          <tr>
-            <td colspan="6">
+          <tr class="tr-b">
+            <td style="padding-left: 10px;" colspan="6">
               <br>
               Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
@@ -338,17 +360,17 @@
               <br>
             </td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
-            <td class="text-center" colspan="2" >Vencimiento</td>
-            <td class="text-center" >Cuota</td>
+          <tr  style="background-color: rgb(173, 173, 173)">
+            <td class="text-center td-b" colspan="2" >Vencimiento</td>
+            <td class="text-center td-b" >Cuota</td>
             <td class="text-center" colspan="2" style="background-color: #fff" ></td>
-            <td class="text-center" >Importe</td>
+            <td class="text-center td-b" >Importe</td>
           </tr>
           <tr>
-            <td class="text-center" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
-            <td class="text-center" >1/1</td>
+            <td class="text-center td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center td-b" >1/1</td>
             <td class="text-center" colspan="2"></td>
-            <td class="text-center" >{{$data[0]->premio_total}}</td>
+            <td class="text-center td-b" >{{$data[0]->premio_total}}</td>
           </tr>
           <tr>
             
@@ -382,7 +404,7 @@
               Accidentes Personales
             </td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
+          <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" >Ramo</td>
             <td class="text-center" >Prod</td>
             <td class="text-center" >Referencia</td>
@@ -390,28 +412,28 @@
             <td class="text-center" >Certif.</td>
             <td class="text-center" >Propuesta</td>
           </tr>
-          <tr>
+          <tr class="tr-b">
             <td class="text-center" >600</td>
-            <td class="text-center" >13</td>
+            <td class="text-center" >27</td>
             <td class="text-center" >en trámite</td>
             <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
             <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
+          <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" colspan="2" >Organización</td>
             <td class="text-center" >Productor</td>
             <td class="text-center" colspan="2" >Cliente</td>
             <td class="text-center" >Asociado</td>
           </tr>
-          <tr>
-            <td class="text-center" colspan="2" >150430</td>
+          <tr class="tr-b">
+            <td class="text-center" colspan="2" >{{ $data[0]->organizador }}</td>
             <td class="text-center" >{{ $data[0]->productor  }}</td>
             <td class="text-center" colspan="2" >DNI {{ $data[0]->documento  }}</td>
             <td class="text-center" >0</td>
           </tr>
-          <tr>
-            <td colspan="6">
+          <tr class="tr-b">
+            <td colspan="6" style="padding-left: 10px;">
               <br>
               Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
@@ -420,16 +442,16 @@
             </td>
           </tr>
           <tr style="background-color: rgb(173, 173, 173)">
-            <td class="text-center" colspan="2" >Vencimiento</td>
-            <td class="text-center" >Cuota</td>
+            <td class="text-center td-b" colspan="2" >Vencimiento</td>
+            <td class="text-center td-b" >Cuota</td>
             <td class="text-center" colspan="2" style="background-color: #fff" ></td>
-            <td class="text-center" >Importe</td>
+            <td class="text-center td-b" >Importe</td>
           </tr>
           <tr>
-            <td class="text-center" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
-            <td class="text-center" >1/1</td>
+            <td class="text-center  td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center td-b" >1/1</td>
             <td class="text-center" colspan="2"></td>
-            <td class="text-center" >{{$data[0]->premio_total}}</td>
+            <td class="text-center td-b" >{{$data[0]->premio_total}}</td>
           </tr>
           <tr>
             @if($data[0]->paga == 1)
@@ -479,32 +501,32 @@
               Accidentes Personales
             </td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
+          <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" >Ramo</td>
             <td class="text-center" >Prod</td>
             <td class="text-center" >Referencia</td>
             <td class="text-center" >No. Póliza</td>
             <td class="text-center" >Certif.</td>
             <td class="text-center" >Propuesta</td>
-            <td class="text-center" colspan="2" >Organi-zación</td>
+            <td class="text-center" colspan="2" >Organización</td>
             <td class="text-center" >Productor</td>
             <td class="text-center" colspan="2" >Cliente</td>
             <td class="text-center" >Asociado</td>
           </tr>
-          <tr>
-            <td class="text-center" >600</td>
-            <td class="text-center" >13</td>
-            <td class="text-center" >en trámite</td>
-            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
-            <td class="text-center" >0</td>
-            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
-            <td class="text-center" colspan="2" >150430</td>
-            <td class="text-center" >{{ $data[0]->productor  }}</td>
-            <td class="text-center" colspan="2" >DNI {{ $data[0]->documento  }}</td>
-            <td class="text-center" >0</td>
+          <tr >
+            <td class="text-center td-b" >600</td>
+            <td class="text-center td-b" >27</td>
+            <td class="text-center td-b" >en trámite</td>
+            <td class="text-center td-b" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
+            <td class="text-center td-b" >0</td>
+            <td class="text-center td-b" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
+            <td class="text-center td-b" colspan="2" >{{ $data[0]->organizador }}</td>
+            <td class="text-center td-b" >{{ $data[0]->productor  }}</td>
+            <td class="text-center td-b" colspan="2" >DNI {{ $data[0]->documento  }}</td>
+            <td class="text-center td-b" >0</td>
           </tr>
-          <tr>
-            <td colspan="6">
+          <tr class="tr-b">
+            <td style="padding-left: 10px;" colspan="12">
               <br>
               Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
@@ -513,19 +535,19 @@
               <br>
             </td>
           </tr>
-          <tr style="background-color: rgb(173, 173, 173)">
-            <td class="text-center" >No. Cuota</td>
-            <td class="text-center" >Cant. Cuota</td>
-            <td class="text-center" colspan="2" >Vencimiento</td>
-            <td class="text-center" colspan="7" style="background-color: #fff" ></td>
-            <td class="text-center" >Importe</td>
+          <tr  style="background-color: rgb(173, 173, 173)">
+            <td class="text-center td-b" >No. Cuota</td>
+            <td class="text-center td-b" >Cant. Cuota</td>
+            <td class="text-center td-b" colspan="2" >Vencimiento</td>
+            <td class="text-center" colspan="6" style="background-color: #fff" ></td>
+            <td class="text-center td-b"  colspan="2">Importe</td>
           </tr>
           <tr>
-            <td class="text-center" >1</td>
-            <td class="text-center" >1</td>
-            <td class="text-center" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
-            <td class="text-center" colspan="7"></td>
-            <td class="text-center" >{{$data[0]->premio_total}}</td>
+            <td class="text-center td-b" >1</td>
+            <td class="text-center td-b" >1</td>
+            <td class="text-center td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center" colspan="6"></td>
+            <td class="text-center td-b"  colspan="2">{{$data[0]->premio_total}}</td>
           </tr>
           <tr>
             @if($data[0]->paga == 1)

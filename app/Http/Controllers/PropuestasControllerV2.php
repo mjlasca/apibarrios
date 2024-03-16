@@ -301,15 +301,23 @@ class PropuestasControllerV2 extends Controller
                 }
                 
                 if($savetrue){
-                    Propuesta::where('prefijo', $request->prefijo)
-                    ->where('idpropuesta', $request->id)
-                    ->update(['data_barrios' => json_encode($data_barrios)]);
+                    
 
                     if(isset($request->grupo)){
+                        Propuesta::where('prefijo', $request->prefijo)
+                                    ->where('idpropuesta', $request->id)
+                                    ->update(['data_barrios' => json_encode($data_barrios)]);
                         return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_grupo' => $request->grupo]);        
                     }
-                    if(isset($request->cuit))
-                        return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_barrio' => $request->cuit]);        
+                    if(isset($request->cuit)){
+                        if(!empty($nuevobarrio)){
+                            Propuesta::where('prefijo', $request->prefijo)
+                            ->where('idpropuesta', $request->id)
+                            ->where('cobertura_suma', '>=',$nuevobarrio['sumamuerte'])
+                            ->update(['data_barrios' => json_encode($data_barrios)]);
+                            return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_barrio' => $request->cuit]);        
+                        }
+                    }
 
                 }else{
                     return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'error_grupo' => 'No se ha agregado ningún barrio con el grupo seleccionado']);        

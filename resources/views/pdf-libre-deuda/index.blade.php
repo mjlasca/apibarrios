@@ -1,3 +1,20 @@
+@php
+    $month = array(
+    'january' => 'Enero',
+    'february' => 'Febrero',
+    'march' => 'Marzo',
+    'april' => 'Abril',
+    'may' => 'Mayo',
+    'june' => 'Junio',
+    'july' => 'Julio',
+    'august' => 'Agosto',
+    'september' => 'Septiembre',
+    'october' => 'Octubre',
+    'november' => 'Noviembre',
+    'december' => 'Diciembre'
+  );
+@endphp
+
 <!doctype html>
 <html lang="es">
 
@@ -102,6 +119,9 @@
       float: right;
       width: 250px;
     }
+    .detail-right{
+      margin-top: -70px;
+    }
   </style>
 
 </head>
@@ -118,7 +138,7 @@
       <h2>CERTIFICADO DE LIBRE DEUDA</h2>
     </div>
     <div class="text-right">
-        Buenos Aires, {{date('d')}} / {{date('m')}} / {{date('Y')}} 
+        Buenos Aires, {{date('d')}}  {{ strtoupper($month[strtolower(date('F'))]) }} de {{date('Y')}} 
     </div>
     <br>
     <div>
@@ -127,18 +147,36 @@
         @foreach($lineasdata as $val)
           {{$val->nombres}}  {{$val->apellidos}}  {{$val->tipo_documento}}:{{$val->documento}},
         @endforeach
-         vigente entre el 27/07/2023 y el 27/10/2023, de facturación n 1 Cuota, conforme a nuestro registros se abona mediante efectivo, encontrándose abonada en su totalidad.
+         vigente entre el {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}, de facturación n 1 Cuota, conforme a nuestro registros se abona mediante efectivo, encontrándose abonada en su totalidad.
         Se extiende el presente certificado para ser presentado ante quien corresponda. 
         
     </div>
     
     <div class="footer-certificated">
-      <p>
-        Organizador : {{ $data[0]->organizador }}
-        <br>
-        Productor : {{ $data[0]->productor }}
-      </p>
-      <img  src="img/firmaCeLibre.png" alt="">
+      
+        
+      <div>
+        <div >
+          <p>
+            Organizador : {{ $data[0]->organizador }}
+            <br>
+            Productor : {{ $data[0]->productor }}
+          </p>
+          <img  src="img/firmaCeLibre.png" alt="">
+          <p class="text-right detail-right">
+            Broker del puerto<br>
+            Cobranzas<br>
+            Nayibe El Mailki
+          </p>
+        </div>
+        
+          
+        
+        
+
+      </div>
+      
+      
     </div>
     
 
