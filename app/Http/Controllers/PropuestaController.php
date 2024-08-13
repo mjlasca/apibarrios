@@ -280,7 +280,6 @@ class PropuestaController extends Controller
         if (count($data) > 0) {
 
             $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
-            
             if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
                 $barriospropuesta = json_decode( $data[0]->data_barrios);
                 $barriospropuesta = $barriospropuesta->barrios;
@@ -289,7 +288,7 @@ class PropuestaController extends Controller
                 $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
 
             $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
-            
+        
             $pdf = PDF::loadView('pdf-propuesta.index', compact('cliente','data','lineasdata','barriospropuesta'));
 
             return $pdf->stream();
@@ -576,7 +575,7 @@ class PropuestaController extends Controller
                             ON t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta
                             WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.idpropuesta AND t2.idpropuesta) );";*/
                             $sql = "SELECT t1.* FROM propuestas t1 
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' ) OR (t1.codestado = '0' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC limit 2000;";
+                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( t1.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' ) OR (t1.codestado = '0' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC LIMIT 200;";
 
                             if(isset($req["get_prefix_own"])){
                                 if($req["get_prefix_own"] == 1){
@@ -615,8 +614,8 @@ class PropuestaController extends Controller
                             ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
                             WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.id_propuesta AND t2.idpropuesta) )  GROUP BY t1.prefijo,t1.id_propuesta,t1.documento;";*/
 
-                            $sql = "SELECT t1.* FROM lineas_propuestas t1 
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' ))  ;";
+                            $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
+                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t2.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' )) LIMIT 400 ;";
 
                             if(isset($req["get_prefix_own"])){
                                 if($req["get_prefix_own"] == 1){
@@ -947,20 +946,23 @@ class PropuestaController extends Controller
         $sql = "SELECT MAX(updated_at) as fecha FROM migracionespuntos WHERE codempresa = '".$codempresa."' AND puntodeventa = '".$prefijositio."' AND ( tipo = '".$tipo."' OR tipo = 'GENERAL' OR tipo = 'SOLOPROPUESTAS')  LIMIT 1";
         $migpunto = DB::select($sql);
 
-        $fechamigracion = '2020-01-01 00:00:00';
+        $fechamigracion = new DateTime();
+                $fechamigracion = $fechamigracion->modify('-360 minute')->format('Y-m-d h:i:s');
 
         
         
-        if(count($migpunto) > 0)  {
+        /*if(count($migpunto) > 0)  {
             if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
                 $fechamigracion = new DateTime($migpunto[0]->fecha);
                 $fechamigracion = $fechamigracion->modify('-360 minute')->format('Y-m-d'.' 00:00:00');
             }
                 
         }
-
-        if($reset == "1" )
-                $fechamigracion = '2020-01-01 00:00:00';
+*/
+        if($reset == "1" ){
+            $fechamigracion = $fechamigracion->modify('-43200 minute')->format('Y-m-d h:i:s');          
+        }
+  
 
         return $fechamigracion;
     }
