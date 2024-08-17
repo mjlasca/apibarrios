@@ -615,7 +615,7 @@ class PropuestaController extends Controller
                             WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.id_propuesta AND t2.idpropuesta) )  GROUP BY t1.prefijo,t1.id_propuesta,t1.documento;";*/
 
                             $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t2.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' )) LIMIT 400 ;";
+                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t2.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' )) ;";
 
                             if(isset($req["get_prefix_own"])){
                                 if($req["get_prefix_own"] == 1){
@@ -623,7 +623,6 @@ class PropuestaController extends Controller
                                     $sql = "SELECT t1.* FROM lineas_propuestas t1 
                                     WHERE (SELECT MIN(t0.idpropuesta) FROM propuestas t0 
                                     WHERE  t0.codempresa = '".$req["codempresa"]."' AND (t0.prefijo = '".$req["prefijositio"]."')  LIMIT 200) <= t1.id_propuesta  AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo = '".$req["prefijositio"]."' )  ;";
-
                                 }
                             }
                             
