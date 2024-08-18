@@ -8,6 +8,7 @@ ini_set('memory_limit', '512M');
 
 use App\Models\BarriosPropuesta;
 use App\Models\cliente;
+use App\Models\Cola;
 use App\Models\LineasPropuesta;
 use App\Models\logs;
 use App\Models\migracionespunto;
@@ -402,530 +403,126 @@ class PropuestaController extends Controller
         try{
             $req = request()->all();
             $datos = [];
-    
-    
-            $sql = "SELECT reg,fecha FROM exportaciones WHERE fecha > '".$req["fecha_actualizacion_hasta"]."' ORDER BY reg DESC  LIMIT 1";
-            $fechaexporta = DB::select($sql);
-    
-            if(count($fechaexporta) > 0)        
-                $req["fecha_actualizacion_hasta"] = $fechaexporta[0]->fecha;
-    
-            //$datos["fechaimportacion"] = $req["fecha_actualizacion_hasta"];
-    
-    
-            if(isset($req["apiversion"])){
 
+            if(isset($req['cola']) && $req['cola'] != ''){
+                if(isset($req["apiversion"])){
+                    if($req["apiversion"] == "3"){
+                        if(isset($req["solicitud"])){
 
-                if($req["apiversion"] == "2"){
-                    $sql = "SELECT MAX(updated_at) as fecha FROM migracionespuntos WHERE codempresa = '".$req["codempresa"]."' AND puntodeventa = '".$req["prefijositio"]."' AND tipo = 'SOLOPROPUESTAS' LIMIT 1";
-                    $migpunto = DB::select($sql);
-        
-                    $fechamigracion = '2020-01-01 00:00:00';
-        
-                    
-        
-                    if(count($migpunto) > 0)  {
-                        if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
-                            $fechamigracion = new DateTime($migpunto[0]->fecha);
-                            $fechamigracion = $fechamigracion->modify('-30 minute')->format('Y-m-d H:i:s');
-                        }
-                            
-                    }
-        
-                    if(isset($req["reset"])){
-                        if($req["reset"] == "1" )
-                            $fechamigracion = '2020-01-01 00:00:00';
-                    }
-        
-                    
-                        /*$datos["fechamigra"] = "SELECT MAX(updated_at) as fecha FROM migracionespuntos WHERE codempresa = '".$req["codempresa"]."' AND puntodeventa = '".$req["prefijositio"]."'  LIMIT 1"." <br>". $fechamigracion . " -- ".date('Y-m-d H:i:s');*/
-              
-        
-                        $sql = "SELECT t1.* FROM propuestas t1 LEFT JOIN payregistries t2 
-                        ON t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta
-                        WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.idpropuesta AND t2.idpropuesta) );";
-                        //$datos["propuestas"] = DB::select($sql);
-                        $datos["propuestas"] = [];
-    
-                        $sql = "SELECT t1.* FROM lineas_propuestas t1 LEFT JOIN payregistries t2 
-                        ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                        WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.id_propuesta AND t2.idpropuesta) )  GROUP BY t1.prefijo,t1.id_propuesta,t1.documento;";
-                        //$datos["lineas_propuestas"] = DB::select($sql);
-                        $datos["lineas_propuestas"] = [];
-            
-                        $sql = "SELECT t1.* FROM barrios_propuestas t1 LEFT JOIN payregistries t2 
-                        ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                        WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.id_propuesta AND t2.idpropuesta) )  ;";
-                        //$datos["barrios_propuestas"] = DB::select($sql);
-                        $datos["barrios_propuestas"] = [];
-    
-                        
-                        $datos["clientes"] = DB::table('clientes')->where('fecha_nacimiento','!=','0000-00-00')->where('codempresa','=',$req["codempresa"])->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('puntodeventa','!=',$req["prefijositio"])->get();
-    
-                        if(isset($req["reset"])){
-                            if($req["reset"] == "1" )
-                                {
-                                    $datos["clientes"] = DB::table('clientes')->where('fecha_nacimiento','!=','0000-00-00')->where('codempresa','=',$req["codempresa"])->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                                }
-                        }
-                        $datos["clientes"] = [];
-    
-                    
-                    
-                    if($req["solopropuestas"] != "1"){
-    
-                        $sql = "SELECT MAX(updated_at) as fecha FROM migracionespuntos WHERE codempresa = '".$req["codempresa"]."' AND puntodeventa = '".$req["prefijositio"]."' AND tipo = 'GENERAL'  LIMIT 1";
-                        $migpunto = DB::select($sql);
-            
-                        $fechamigracion = '2020-01-01 00:00:00';
-            
-                        
-            
-                        if(count($migpunto) > 0)  {
-                            if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
-                                $fechamigracion = new DateTime($migpunto[0]->fecha);
-                                $fechamigracion = $fechamigracion->modify('-30 minute')->format('Y-m-d H:i:s');
-                            }
-                                
-                        }
-            
-                        if(isset($req["reset"])){
-                            if($req["reset"] == "1" )
-                                $fechamigracion = '2020-01-01 00:00:00';
-                        }
-        
-                        //$datos["usuarios"] = DB::table('usuarios')->where('codempresa','=',$req["codempresa"])->get();
-                        $datos["usuarios"] = [];
-                        //$datos["perfiles"] = DB::table('perfiles')->where('codempresa','=',$req["codempresa"])->get();
-                        $datos["perfiles"] = [];
-    
-                        //$datos["arqueos"] = DB::table('arqueos')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-                        $datos["arqueos"] = [];
-    
-                        //$datos["rendiciones"] = DB::table('rendiciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-                        $datos["rendiciones"] = [];
-    
-                        //$datos["lineas_rendiciones"] = DB::table('lineas_rendiciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-                        $datos["lineas_rendiciones"] = [];
-    
-                        if($req["rolpuntodeventa"] == "COLABORADOR" AND $req["apiversion"] == 2){
-        
-                            
-    
-                            //$datos["actividades"] = DB::table('actividades')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["actividades"] = [];
-                            
-                            //$datos["coberturas"] = DB::table('coberturas')->where('ultmod','>=',$req["fecha_actualizacion_desde"])->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-                            //$datos["coberturas"] = DB::table('coberturas')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["coberturas"] = [];
-                            //$datos["clasificaciones"] = DB::table('clasificaciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["clasificaciones"] = [];
-                
-                            //$datos["barrios"] = DB::table('barrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["barrios"] = [];
+                            $colas = Cola::where('id', '>', $req['cola'])
+                                    ->where(function($query) use ($req) {
+                                        if($req['solicitud'] == 'solicitud_propuestas'){
+                                            $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                        }else{
+                                            $query->where('codempresa', $req['codempresa'])
+                                            ->orWhere('codempresa', 'all');
+                                        }
+                                    })
+                                    ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                    ->groupBy('entity', 'entity_id')
+                                    ->limit(10)
+                                    ->get(['entity', 'entity_id']) 
+                                    ->groupBy('entity')
+                                    ->map(function ($group) {
+                                        return $group->pluck('entity_id')->toArray();
+                                    })
+                                    ->toArray();
 
-                            //$datos["gruposbarrios"] = DB::table('gruposbarrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["gruposbarrios"] = [];
-        
-                            //$datos["provincias"] = DB::table('provincias')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                            $datos["provincias"] = [];
-                            
-                        }
-        
-                    }
-    
-                    /*if($req["solopropuestas"] != "1"){
-                        $migpunto = new migracionespunto();
-                        $migpunto->puntodeventa = $req["prefijositio"];
-                        $migpunto->codempresa = $req["codempresa"];
-                        $migpunto->tipo = "GENERAL";
-                        $migpunto->save();
-                    }else{
-                        $migpunto = new migracionespunto();
-                        $migpunto->puntodeventa = $req["prefijositio"];
-                        $migpunto->codempresa = $req["codempresa"];
-                        $migpunto->tipo = "SOLOPROPUESTAS";
-                        $migpunto->save();
-                    }*/
-
-                }
-
-                if($req["apiversion"] == "3"){
-
-                    
-                    
-                    
-                    
-
-                    if(isset($req["solicitud"])){
-
-                        
-
-                        if($req["solicitud"] == "solicitud_propuestas"){
-
-                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "propuestas");
-                            
-                            if($req["reset"] == "1" ){
-                                $fechamigracion = new DateTime();
-                                $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
-                            }
-                            ini_set('memory_limit', '1024M');
-
-                            /*$sql = "SELECT t1.* FROM propuestas t1 LEFT JOIN payregistries t2 
-                            ON t1.prefijo = t2.prefijo AND t1.idpropuesta = t2.idpropuesta
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.idpropuesta AND t2.idpropuesta) );";*/
-                            $sql = "SELECT t1.* FROM propuestas t1 
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( t1.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' ) OR (t1.codestado = '0' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC LIMIT 200;";
-
-                            if(isset($req["get_prefix_own"])){
-                                if($req["get_prefix_own"] == 1){
+                            if(!empty($colas)){
+                                if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
                                     $sql = "SELECT t1.* FROM propuestas t1 
-                                    WHERE  codempresa = '".$req["codempresa"]."' AND (t1.prefijo = '".$req["prefijositio"]."')  LIMIT 200;";
+                                    WHERE t1.codempresa = '".$req["codempresa"]."' AND t1.id IN (".implode(',',$colas['propuestas']).") AND ( t1.prefijo != '".$req["prefijositio"]."' OR (t1.usuariopaga != '' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC;";
+                                    $datos["propuestas"] = DB::select($sql);
+                                    //líneas propuestas
+                                    $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
+                                    WHERE t2.id IN (".implode(',',$colas['propuestas']).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
+    
+                                    $datos["lineas_propuestas"] = DB::select($sql);
                                 }
-                            }
-                            
-
-                            $datos["propuestas"] = DB::select($sql);
-
-                            $migpunto = new migracionespunto();
-                            $migpunto->puntodeventa = $req["prefijositio"];
-                            $migpunto->codempresa = $req["codempresa"];
-                            $migpunto->tipo = "propuestas";
-                            $migpunto->save();
-                        }
-
-                        
-
-                    }
-
-                    if(isset($req["solicitud"])){
-
-                        
-
-                        if($req["solicitud"] == "solicitud_lineas_propuestas"){
-
-                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "lineas_propuestas");
-                            if($req["reset"] == "1" ){
-                                $fechamigracion = new DateTime();
-                                $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
-                            }
-
-                            /*$sql = "SELECT t1.* FROM lineas_propuestas t1 LEFT JOIN payregistries t2 
-                            ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t1.prefijo = '".$req["prefijositio"]."' AND t1.prefijo = t2.prefijo AND t1.id_propuesta AND t2.idpropuesta) )  GROUP BY t1.prefijo,t1.id_propuesta,t1.documento;";*/
-
-                            $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                            WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR (t2.tipopago IS NOT null AND t1.prefijo = '".$req["prefijositio"]."' )) ;";
-
-                            if(isset($req["get_prefix_own"])){
-                                if($req["get_prefix_own"] == 1){
-
-                                    $sql = "SELECT t1.* FROM lineas_propuestas t1 
-                                    WHERE (SELECT MIN(t0.idpropuesta) FROM propuestas t0 
-                                    WHERE  t0.codempresa = '".$req["codempresa"]."' AND (t0.prefijo = '".$req["prefijositio"]."')  LIMIT 200) <= t1.id_propuesta  AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo = '".$req["prefijositio"]."' )  ;";
+    
+                                
+                                if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
+                                    $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
                                 }
-                            }
-                            
-
-                            $datos["lineas_propuestas"] = DB::select($sql);
-
-                            $migpunto = new migracionespunto();
-                            $migpunto->puntodeventa = $req["prefijositio"];
-                            $migpunto->codempresa = $req["codempresa"];
-                            $migpunto->tipo = "lineas_propuestas";
-                            $migpunto->save();
-                        }
-
-                        
-                    }
-
-                    if(isset($req["solicitud"])){
-
-                        if($req["solicitud"] == "solicitud_barrios"){
-
-                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "barrios");
-
-                            $datos["barrios"] = DB::table('barrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                            $migpunto = new migracionespunto();
-                            $migpunto->puntodeventa = $req["prefijositio"];
-                            $migpunto->codempresa = $req["codempresa"];                                    
-                            $migpunto->tipo = "barrios";
-                            $migpunto->save();
-                        }
-                    }
-
-                    if(isset($req["solicitud"])){
-
-                        if($req["solicitud"] == "solicitud_barrios_propuestas"){
-
-                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "barrios_propuestas");
-                            $fechamigracion = new DateTime();
-                            $fechamigracion = $fechamigracion->modify('-1 hour')->format('Y-m-d'.' 00:00:00');
-                            if($req["reset"] == "1" ){
-                                $fechamigracion = new DateTime();
-                                $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' HH:mm:ss');
-                            }
-
-
-                            
-                            /*SELECT t1.* FROM barrios_propuestas t1 WHERE t1.updated_at >= '2022-03-22 00:00:00' AND t1.updated_at <= '2022-04-21 00:00:00' AND codempresa = 'BDPAPRAPIDO' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' )) ;*/
-
-                            $sql = "SELECT t1.* FROM barrios_propuestas t1 WHERE t1.updated_at >= '".$fechamigracion."' AND t1.updated_at <= '".date('Y-m-d H:i:s')."' AND codempresa = '".$req["codempresa"]."' AND (t1.prefijo != '".$req["prefijositio"]."' OR ( (SELECT COUNT(1) FROM payregistries t2 WHERE t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta ) > 0 AND t1.prefijo = '".$req["prefijositio"]."' ))  ;";
-
-                            if(isset($req["get_prefix_own"])){
-                                if($req["get_prefix_own"] == 1){
-
-                                    $sql = "SELECT t1.* FROM barrios_propuestas t1 
-                                    WHERE (SELECT MIN(t0.idpropuesta) FROM propuestas t0 
-                                    WHERE  t0.codempresa = '".$req["codempresa"]."' AND (t0.prefijo = '".$req["prefijositio"]."')  LIMIT 200) <= t1.id_propuesta  AND t1.codempresa = '".$req["codempresa"]."' AND (t1.prefijo = '".$req["prefijositio"]."' )  ;";
-
+                                
+                                if($req["solicitud"] == "solicitud_clientes" && !empty($colas['clientes']) ){
+                                    $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->get();
                                 }
-                            }
-
-
-                            $datos["barrios_propuestas"] = DB::select($sql);
-
-                            $migpunto = new migracionespunto();
-                            $migpunto->puntodeventa = $req["prefijositio"];
-                            $migpunto->codempresa = $req["codempresa"];
-                            $migpunto->tipo = "barrios_propuestas";
-                            $migpunto->save();
-                        }
-                        
-                    }
-
-                    if(isset($req["solicitud"])){
-                        if($req["solicitud"] == "solicitud_clientes"){
-
-                            $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "clientes");
-
-                            if(isset($req["reset"])){
-                                if($req["reset"] == "1" )
-                                {
-                                    $datos["clientes"] = DB::table('clientes')->where('fecha_nacimiento','!=','0000-00-00')->where('codempresa','=',$req["codempresa"])->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                                }else{
-                                    $datos["clientes"] = DB::table('clientes')->where('fecha_nacimiento','!=','0000-00-00')->where('codempresa','=',$req["codempresa"])->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('puntodeventa','!=',$req["prefijositio"])->get();    
-                                }
-                            }else{
-                                $datos["clientes"] = DB::table('clientes')->where('fecha_nacimiento','!=','0000-00-00')->where('codempresa','=',$req["codempresa"])->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('puntodeventa','!=',$req["prefijositio"])->get();
-                            }
-                            $migpunto = new migracionespunto();
-                            $migpunto->puntodeventa = $req["prefijositio"];
-                            $migpunto->codempresa = $req["codempresa"];
-                            $migpunto->tipo = "clientes";
-                            $migpunto->save();
-                            
-                        }
-                    }
-
-                    if(isset($req["solicitud"])){
-
-                        if($req["solicitud"] == "solicitud_usuarios"){
-                            $datos["usuarios"] = DB::table('usuarios')->where('codempresa','=',$req["codempresa"])->get();
-                        }
-
-                    }
-
-                    if(isset($req["solicitud"])){
-                        if($req["solicitud"] == "solicitud_perfiles"){
-                            $datos["perfiles"] = DB::table('perfiles')->where('codempresa','=',$req["codempresa"])->get();
-                        }
-                    }
-
-                    if($req["solopropuestas"] != "1"){
-
-                        if(isset($req["solicitud"])){
-
-                            if($req["solicitud"] == "solicitud_arqueos"){
-
-                                $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "arqueos");
-                                if($req["reset"] == "1" ){
-                                    $fechamigracion = new DateTime();
-                                    $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
-                                }
-
-                                $datos["arqueos"] = DB::table('arqueos')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-
-
-                                $migpunto = new migracionespunto();
-                                $migpunto->puntodeventa = $req["prefijositio"];
-                                $migpunto->codempresa = $req["codempresa"];
-                                $migpunto->tipo = "arqueos";
-                                $migpunto->save();
-                            }
-                            
-                        }
-
-
-                        if(isset($req["solicitud"])){
-
-                            if($req["solicitud"] == "solicitud_rendiciones"){
-
-                                $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "rendiciones");
-                                if($req["reset"] == "1" ){
-                                    $fechamigracion = new DateTime();
-                                    $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
-                                }
-
-                                $datos["rendiciones"] = DB::table('rendiciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-
-                                $migpunto = new migracionespunto();
-                                $migpunto->puntodeventa = $req["prefijositio"];
-                                $migpunto->codempresa = $req["codempresa"];
-                                $migpunto->tipo = "rendiciones";
-                                $migpunto->save();
-                            }
-
-                        }
-
-                        if(isset($req["solicitud"])){
-                            if($req["solicitud"] == "solicitud_lineas_rendiciones"){
-
-                                $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "lineas_rendiciones");
-                                if($req["reset"] == "1" ){
-                                    $fechamigracion = new DateTime();
-                                    $fechamigracion = $fechamigracion->modify('-30 day')->format('Y-m-d'.' 00:00:00');
-                                }
-
-                                $datos["lineas_rendiciones"] = DB::table('lineas_rendiciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->where('codempresa','=',$req["codempresa"])->where('puntodeventa','!=',$req["prefijositio"])->get();
-
-                                $migpunto = new migracionespunto();
-                                $migpunto->puntodeventa = $req["prefijositio"];
-                                $migpunto->codempresa = $req["codempresa"];
-                                $migpunto->tipo = "lineas_rendiciones";
-                                $migpunto->save();
-                            }
-                        }
-                        
-
-
-                        if($req["rolpuntodeventa"] == "COLABORADOR" ){
         
-                            if(isset($req["solicitud"])){
-
-                                
-
-                                if($req["solicitud"] == "solicitud_actividades"){
-
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "actividades");
-
-                                    $datos["actividades"] = DB::table('actividades')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "actividades";
-                                    $migpunto->save();
+                                if($req["solicitud"] == "solicitud_usuarios"  && !empty($colas['usuarios']) ){
+                                    $datos["usuarios"] = DB::table('usuarios')->whereIn('reg',$colas['usuarios'])->get();
                                 }
-
-                                
-                            }
-
-
-                            if(isset($req["solicitud"])){
-
-                                
-
-                                if($req["solicitud"] == "solicitud_coberturas"){
-
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "coberturas");
-
-                                    $datos["coberturas"] = DB::table('coberturas')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "coberturas";
-                                    $migpunto->save();
+        
+                                if($req["solicitud"] == "solicitud_perfiles"  && !empty($colas['perfiles']) ){
+                                    $datos["perfiles"] = DB::table('perfiles')->whereIn('reg',$colas['perfiles'])->get();
                                 }
-
                                 
-                            }
-
-                            if(isset($req["solicitud"])){
-                                if($req["solicitud"] == "solicitud_clasificaciones"){
-
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "clasificaciones");
-
-                                    $datos["clasificaciones"] = DB::table('clasificaciones')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "clasificaciones";
-                                    $migpunto->save();
+                                if($req["solicitud"] == "solicitud_arqueos" && !empty($colas['arqueos']) ){
+                                    $datos["arqueos"] = DB::table('arqueos')->whereIn('reg',$colas['arqueos'])->where('puntodeventa','!=',$req["prefijositio"])->get();
                                 }
-                            }
+                                
+    
+                                if($req["solicitud"] == "solicitud_rendiciones" && !empty($colas['rendiciones']) ){
+                                    $datos["rendiciones"] = DB::table('rendiciones')->whereIn('reg',$colas['rendiciones'])->where('puntodeventa','!=',$req["prefijositio"])->get();
+                                    
+                                    $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                    WHERE t2.id IN (".implode(',',$colas['propuestas']).") ";
+    
+                                    $datos["lineas_rendiciones"] = DB::select($sql);
+                                }
+        
                             
-
-                            
-
-                            if(isset($req["solicitud"])){
-                                if($req["solicitud"] == "solicitud_gruposbarrios"){
-
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "gruposbarrios");
-
-                                    $datos["gruposbarrios"] = DB::table('gruposbarrios')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "gruposbarrios";
-                                    $migpunto->save();
+                                if($req["solicitud"] == "solicitud_actividades" && !empty($colas['actividades']) ){
+                                    $datos["actividades"] = DB::table('actividades')->whereIn('reg',$colas['actividades'])->get();
                                 }
-                            }
+    
+                                
+                                if($req["solicitud"] == "solicitud_coberturas" && !empty($colas['coberturas']) ){
+                                    $datos["coberturas"] = DB::table('coberturas')->whereIn('reg',$colas['coberturas'])->get();
+                                }
+    
+                                if($req["solicitud"] == "solicitud_clasificaciones" && !empty($colas['clasificaciones']) ){
+                                    $datos["clasificaciones"] = DB::table('clasificaciones')->whereIn('reg',$colas['clasificaciones'])->get();
+                                }
+    
+                                if($req["solicitud"] == "solicitud_gruposbarrios" && !empty($colas['gruposbarrios']) ){
+                                    $datos["gruposbarrios"] = DB::table('gruposbarrios')->whereIn('reg',$colas['gruposbarrios'])->get();
+                                }
                             
-                
-                            if(isset($req["solicitud"])){
-                                if($req["solicitud"] == "solicitud_provincias"){
-
+                                /*if($req["solicitud"] == "solicitud_provincias"){
+    
                                     $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "provincias");
-
+    
                                     $datos["provincias"] = DB::table('provincias')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();  
-
+    
                                     $migpunto = new migracionespunto();
                                     $migpunto->puntodeventa = $req["prefijositio"];
                                     $migpunto->codempresa = $req["codempresa"];                                    
                                     $migpunto->tipo = "provincias";
                                     $migpunto->save();
-                                }
+                                }*/
+                                $colas = Cola::where('id', '>', $req['cola'])
+                                ->where(function($query) use ($req) {
+                                    if($req['solicitud'] == 'solicitud_propuestas'){
+                                        $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                    }else{
+                                        $query->where('codempresa', $req['codempresa'])
+                                        ->orWhere('codempresa', 'all');
+                                    }
+                                })
+                                ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                ->groupBy('entity', 'id')
+                                ->limit(10)
+                                ->select('entity', 'entity_id','id') 
+                                ->groupBy('entity')
+                                ->get();
+                                $datos['colas'] = $colas;
                             }
                         }
                     }
-
-                    
-                        
-                    
-
-                }
-                
-                
-            }else{
-
-                $datos["fechaimportacion"] = $req["fecha_actualizacion_hasta"];
-
-                if($req["rolpuntodeventa"] == "COLABORADOR" ){
-
-                    
-    
-                    //$datos["actividades"] = DB::table('actividades')->where('ultmod','>=',$req["fecha_actualizacion_desde"])->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-                    $datos["actividades"] = DB::table('actividades')->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-                    
-                    //$datos["coberturas"] = DB::table('coberturas')->where('ultmod','>=',$req["fecha_actualizacion_desde"])->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-                    //$datos["coberturas"] = DB::table('coberturas')->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-                    $datos["coberturas"] = DB::table('coberturas')->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-
-                    //$datos["clasificaciones"] = DB::table('clasificaciones')->where('ultmod','>=',$req["fecha_actualizacion_desde"])->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-                    $datos["clasificaciones"] = DB::table('clasificaciones')->where('updated_at','<=',date('Y-m-d H:i:s'))->get();
-        
-                    //$datos["barrios"] = DB::table('barrios')->where('ultmod','>=',$req["fecha_actualizacion_desde"])->where('ultmod','<=',$req["fecha_actualizacion_hasta"])->get();
-        
-                    //$datos["gruposbarrios"] = DB::table('gruposbarrios')->where('updated_at','<=',$req["fecha_actualizacion_hasta"])->get();
-        
                 }
             }
-    
+            
             return response()->json($datos, 200);
 
             
@@ -939,32 +536,5 @@ class PropuestaController extends Controller
         
         
     }
-
-    public function fechamigra($codempresa , $prefijositio, $reset ,$tipo){
-
-        $sql = "SELECT MAX(updated_at) as fecha FROM migracionespuntos WHERE codempresa = '".$codempresa."' AND puntodeventa = '".$prefijositio."' AND ( tipo = '".$tipo."' OR tipo = 'GENERAL' OR tipo = 'SOLOPROPUESTAS')  LIMIT 1";
-        $migpunto = DB::select($sql);
-
-        $fechamigracion = new DateTime();
-                $fechamigracion = $fechamigracion->modify('-360 minute')->format('Y-m-d h:i:s');
-
-        
-        
-        /*if(count($migpunto) > 0)  {
-            if($migpunto[0]->fecha != null && $migpunto[0]->fecha != "" ){
-                $fechamigracion = new DateTime($migpunto[0]->fecha);
-                $fechamigracion = $fechamigracion->modify('-360 minute')->format('Y-m-d'.' 00:00:00');
-            }
-                
-        }
-*/
-        if($reset == "1" ){
-            $fechamigracion = $fechamigracion->modify('-43200 minute')->format('Y-m-d h:i:s');          
-        }
-  
-
-        return $fechamigracion;
-    }
-
 
 }

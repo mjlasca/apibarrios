@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Models\logs;
+use App\Observers\ProposalObserver;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class Propuesta extends Model
 {
@@ -27,24 +29,24 @@ class Propuesta extends Model
         try{
             $propuesta = new Propuesta();
             $pay_ = payregistry::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
-
             if(empty($pay_)){
                 if($fecha_paga == "")   
                 $fecha_paga = date("Y-m-d H:i:s");
-
-                $propuesta->where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
-                    "codestado" => 1,
-                    "paga" => 1,
-                    "csrf" => null,
-                    "usuariopaga" => $userpay,
-                    "fecha_paga" => $fecha_paga,
-                    "tipopago" => $formadepago,
-                    "compformadepago" => $idpago,
-                    "version" => $version,
-                    "fecha_comprobante" => $fecha_comprobante,
-                    "valor_pagado" => $valor_pagado,
-                ]);
-
+                
+                $propuesta = $propuesta->where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
+                        "codestado" => 1,
+                        "paga" => 1,
+                        "csrf" => null,
+                        "usuariopaga" => $userpay,
+                        "fecha_paga" => $fecha_paga,
+                        "tipopago" => $formadepago,
+                        "compformadepago" => $idpago,
+                        "version" => $version,
+                        "fecha_comprobante" => $fecha_comprobante,
+                        "valor_pagado" => $valor_pagado,
+                    ]);
+                $propuesta = Propuesta::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
+                    
                 $lineapropuesta = new LineasPropuesta();
 
                 $lineapropuesta->where('id_propuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
@@ -61,6 +63,12 @@ class Propuesta extends Model
                 $pay->fecha_comprobante = $fecha_comprobante;
                 $pay->valor_pagado = $valor_pagado;
                 $pay->save();
+                
+                Cola::create([
+                    'entity' => 'propuestas',
+                    'entity_id' => $propuesta->id,
+                    'codempresa' => $propuesta->codempresa,
+                ]);
 
                 return true;
             }else{
@@ -164,7 +172,7 @@ class Propuesta extends Model
                         $data['vrunit'] = $cobertura[0]->vrMensual;
                         $data['total'] = $total;
                         $data['info'] = $concatInfo;
-                        $data['url'] = 'http://apibarrios.3enterprise.online/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        $data['url'] = '/propuesta-duplicate/pay/'.$pref.'/'.$id;
                         
 
                         return $data;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cola;
 use App\Models\logs;
 use App\Models\User;
 use Exception;
@@ -145,6 +146,12 @@ class UserController extends Controller
                             try{
                                 if (!$user->save()) {
                                     $errores .= "No se pudo guardar el registro con usuario " . $user->email;
+                                }else{
+                                    Cola::create([
+                                        'entity' => 'users',
+                                        'entity_id' => $user->id,
+                                        'codempresa' => $user->codempresa,
+                                    ]);
                                 }
                             }catch (Exception $e){
                                 $logs = new logs();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\barrio;
+use App\Models\Cola;
 use App\Models\gruposbarrio;
 use App\Models\logs;
 use App\Models\PendingDuplicate;
@@ -43,7 +44,7 @@ class PropuestasControllerV2 extends Controller
     
         try{
             foreach ($req["registros"] as $registro) {
-                Propuesta::where('idpropuesta', $registro['idpropuesta'])
+                $res = Propuesta::where('idpropuesta', $registro['idpropuesta'])
                             ->where('prefijo', $registro['prefijo'])
                             ->where('codempresa', $codempresa)
                             ->whereNull('referencia')
@@ -53,6 +54,14 @@ class PropuestasControllerV2 extends Controller
                                 'prima' => $registro['prima'],
                                 'version' => DB::raw('version + 1'),
                             ]);
+                if($res > 0){
+                    $propuesta = Propuesta::where('idpropuesta',$registro['idpropuesta'])->where('prefijo',$registro['prefijo'])->first();
+                    Cola::create([
+                        'entity' => 'propuestas',
+                        'entity_id' => $propuesta->id,
+                        'codempresa' => $propuesta->codempresa,
+                    ]);
+                }
             }
     
             return response()->json(["success" => TRUE]);
@@ -304,17 +313,33 @@ class PropuestasControllerV2 extends Controller
                     
 
                     if(isset($request->grupo)){
-                        Propuesta::where('prefijo', $request->prefijo)
+                        $res = Propuesta::where('prefijo', $request->prefijo)
                                     ->where('idpropuesta', $request->id)
                                     ->update(['data_barrios' => json_encode($data_barrios)]);
+                        if($res > 0){
+                            $propuesta = Propuesta::where('idpropuesta', $request->id)->where('prefijo',$request->prefijo)->first();
+                            Cola::create([
+                                'entity' => 'propuestas',
+                                'entity_id' => $propuesta->id,
+                                'codempresa' => $propuesta->codempresa,
+                            ]);
+                        }
                         return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_grupo' => $request->grupo]);        
                     }
                     if(isset($request->cuit)){
                         if(!empty($nuevobarrio)){
-                            Propuesta::where('prefijo', $request->prefijo)
+                            $res = Propuesta::where('prefijo', $request->prefijo)
                             ->where('idpropuesta', $request->id)
                             ->where('cobertura_suma', '>=',$nuevobarrio['sumamuerte'])
                             ->update(['data_barrios' => json_encode($data_barrios)]);
+                            if($res > 0){
+                                $propuesta = Propuesta::where('idpropuesta', $request->id)->where('prefijo',$request->prefijo)->first();
+                                Cola::create([
+                                    'entity' => 'propuestas',
+                                    'entity_id' => $propuesta->id,
+                                    'codempresa' => $propuesta->codempresa,
+                                ]);
+                            }
                             return redirect()->route("agregar_barrios", ['prefijo' => $request->prefijo , 'idpropuesta' => $request->id, 'success_barrio' => $request->cuit]);        
                         }
                     }

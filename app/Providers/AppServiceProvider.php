@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\barrio;
+use App\Models\Propuesta;
+use App\Observers\BarrioObserver;
+use App\Observers\ProposalObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        
     }
 }

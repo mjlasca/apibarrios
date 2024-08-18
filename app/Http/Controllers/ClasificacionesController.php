@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clasificacione;
+use App\Models\Cola;
 use App\Models\logs;
 use Exception;
 use Illuminate\Http\Request;
@@ -37,8 +38,16 @@ class ClasificacionesController extends Controller
                         "version" => $value["version"],
                         "codestado" => $value["codestado"]
                     ]);
-                    if($rest)
+                    if($rest){
                         $typeQuery = 'UPDATE';
+                        $cl = Clasificacione::where('reg', '=',$value['id'])->first();
+                        Cola::create([
+                            'entity' => 'clasificaciones',
+                            'entity_id' => $cl->id,
+                            'codempresa' => 'all',
+                        ]);
+                    }
+                        
                 }else{
                     
                     $clas = new Clasificacione();
@@ -50,8 +59,15 @@ class ClasificacionesController extends Controller
                     $clas->user_edit = $value["user_edit"];
                     $clas->version = $value["version"];
                     $clas->codestado = $value["codestado"];
-                    if($clas->save())
+                    if($clas->save()){
                         $typeQuery = 'INSERT';
+                        Cola::create([
+                            'entity' => 'clasificaciones',
+                            'entity_id' => $clas->id,
+                            'codempresa' => 'all',
+                        ]);
+                    }
+                        
                 }
                 
                 if(!empty($typeQuery)){

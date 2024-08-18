@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Actividade;
+use App\Models\Cola;
 use App\Models\logs;
 use Exception;
 use Illuminate\Http\Request;
@@ -36,8 +37,15 @@ class ActividadesController extends Controller
                         "codestado" => $value["codestado"],
                         "version" => $value["version"]
                     ]);
-                    if($rest)
+                    if($rest){
                         $typeQuery = 'UPDATE';
+                        $ac = Actividade::where('cod', '=',$value['cod'])->first();
+                        Cola::create([
+                            'entity' => 'actividades',
+                            'entity_id' => $ac->id,
+                            'codempresa' => 'all',
+                        ]);
+                    }
                 }else{
                     
                     $act = new Actividade();
@@ -48,8 +56,15 @@ class ActividadesController extends Controller
                     $act->user_edit = $value["user_edit"];
                     $act->codestado = $value["codestado"];
                     $act->version = $value["version"];
-                    if($act->save())
+                    if($act->save()){
                         $typeQuery = 'INSERT';
+                        Cola::create([
+                            'entity' => 'actividades',
+                            'entity_id' => $act->id,
+                            'codempresa' => 'all',
+                        ]);
+                    }
+                        
                 }
                 
                 if(!empty($typeQuery)){

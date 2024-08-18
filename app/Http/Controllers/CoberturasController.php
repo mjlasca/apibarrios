@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cobertura;
+use App\Models\Cola;
 use App\Models\logs;
 use Exception;
 use Illuminate\Http\Request;
@@ -45,8 +46,16 @@ class CoberturasController extends Controller
                         "version" => $value["version"],
                         "codestado" => $value["codestado"]
                     ]);
-                    if($rest)
+                    if($rest){
                         $typeQuery = 'UPDATE';
+                        $cob = Cobertura::where('nombre', '=',$value['nombre'])->first();
+                        Cola::create([
+                            'entity' => 'coberturas',
+                            'entity_id' => $cob->reg,
+                            'codempresa' => 'all',
+                        ]);
+                    }
+                        
                 }else{
                     
                     $cober = new Cobertura();
@@ -65,8 +74,15 @@ class CoberturasController extends Controller
                     $cober->user_edit = $value["user_edit"];
                     $cober->version = $value["version"];
                     $cober->codestado = $value["codestado"];
-                    if($cober->save())
+                    if($cober->save()){
                         $typeQuery = 'INSERT';
+                        Cola::create([
+                            'entity' => 'coberturas',
+                            'entity_id' => $cober->reg,
+                            'codempresa' => 'all',
+                        ]);
+                    }
+                        
                 }
                 
                 if(!empty($typeQuery)){

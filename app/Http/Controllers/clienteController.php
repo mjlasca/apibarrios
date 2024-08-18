@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\cliente;
+use App\Models\Cola;
 use Illuminate\Http\Request;
 
 class clienteController extends Controller
@@ -35,6 +36,11 @@ class clienteController extends Controller
             $cliente->codestado = 1;
             
             if ($cliente->save()) {
+                Cola::create([
+                    'entity' => 'clientes',
+                    'entity_id' => $cliente->reg,
+                    'codempresa' => $cliente->codempresa,
+                ]);
                 return response()->json("Se ha creado el cliente con éxito", 202);
             } else {
                 return response()->json("Hubo un error al crear el cliente", 404);

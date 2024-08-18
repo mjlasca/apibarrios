@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cola;
 use App\Models\usuario;
 use Illuminate\Http\Request;
 
@@ -40,6 +41,11 @@ class UsuariosController extends Controller
                     "codorganizador" => $rq[$key]['codorganizador'],
                     "version" => $rq[$key]['version'],
                 ]);
+                Cola::create([
+                    'entity' => 'usuarios',
+                    'entity_id' => $user[0]->reg,
+                    'codempresa' => $user[0]->codempresa,
+                ]);
             }else{
                 
                 $user_ = new usuario();
@@ -58,7 +64,13 @@ class UsuariosController extends Controller
                 $user_->codorganizador  = $rq[$key]['codorganizador'];
                 $user_->codempresa  = $rq[$key]['codempresa'];
                 $user_->version  = $rq[$key]['version'];
-                $user_->save();
+                if($user_->save()){
+                    Cola::create([
+                        'entity' => 'usuarios',
+                        'entity_id' => $user_->reg,
+                        'codempresa' => $user_->codempresa,
+                    ]);
+                }
             }
 
         }

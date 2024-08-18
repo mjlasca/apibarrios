@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
 use App\Http\Controllers\webhookcontroller;
+use App\Models\Propuesta;
 use Illuminate\Support\Facades\Auth;
 
 Auth::routes([
@@ -12,7 +13,12 @@ Auth::routes([
     'reset' => false, // Reset Password Routes...
     'verify' => false, // Email Verification Routes...
 ]);
-Route::get('/', function () {});
+Route::get('/', function () {
+    $propuesta = new Propuesta();
+    //$propuesta = $propuesta->find(70014);
+    $propuesta->codempresa = 'MDOIFHJ';
+    $propuesta->save();
+});
 Route::get('/resp', function () {});
 
 Route::get('/propuestas', [ PropuestaController::class, 'callpropuesta' ]);

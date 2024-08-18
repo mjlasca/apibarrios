@@ -9,6 +9,7 @@ use App\Models\BarriosPropuesta;
 use App\Models\Clasificacione;
 use App\Models\cliente;
 use App\Models\Cobertura;
+use App\Models\Cola;
 use App\Models\exportacione;
 use App\Models\gruposbarrio;
 use App\Models\lineas_rendicione;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use App\Models\Propuesta;
 use App\Models\rendicione;
 use App\Models\usuario;
+use App\Observers\ProposalObserver;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -56,6 +58,7 @@ class MigracionBarriosController extends Controller
                 foreach ($req["listpropuestas"] as $value) {
                     $propuesta = new Propuesta();
                     $cons = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->get();
+                    
                     if(count($cons) > 0){
                         
                         if(isset($value["version"])){
@@ -104,6 +107,7 @@ class MigracionBarriosController extends Controller
                                     
                                 ]);
                             }else{
+                                
                                 $res = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->where('version','<',$value["version"])->update([
                                     "documento" => $value["documento"],
                                     "nombre" => $value["nombre"],
@@ -143,101 +147,15 @@ class MigracionBarriosController extends Controller
                                 ]);
                             }
     
-                            
-    
                             if(isset($value["codempresa"]) && $res){
                                 DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
-                                /*DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");*/
-                            }
-                        }else{
-                            if($value["tipopago"] != "" && $value["usuariopaga"] != "" && $value["paga"] = 1 &&  $value["formadepago"] = 'CREDITO'){
-                                $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
-                                    "documento" => $value["documento"],
-                                    "nombre" => $value["nombre"],
-                                    "num_polizas" => $value["num_polizas"],
-                                    "meses" => $value["meses"],
-                                    "id_cobertura" => $value["id_cobertura"],
-                                    "id_barrio" => $value["id_barrio"],
-                                    "nueva_poliza" => $value["nueva_poliza"],
-                                    "premio" => $value["premio"],
-                                    "premio_total" => $value["premio_total"],
-                                    "fechaDesde" => $value["fechaDesde"],
-                                    "fechaHasta" => $value["fechaHasta"],
-                                    "clausula" => $value["clausula"],
-                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
-                                    "ultmod" => $value["ultmod"],
-                                    "useredit" => $value["user_edit"],
-                                    "codestado" => $value["codestado"],
-                                    "cobertura_suma" => $value["cobertura_suma"],
-                                    "cobertura_deducible" => $value["cobertura_deducible"],
-                                    "cobertura_gastos" => $value["cobertura_gastos"],
-                                    "promocion" => $value["promocion"],
-                                    "paga" => $value["paga"],
-                                    "fecha_paga" => $value["fecha_paga"],
-                                    "referencia" => $value["referencia"],
-                                    "prima" => $value["prima"],
-                                    "master" => $value["master"],
-                                    "organizador" => $value["organizador"],
-                                    "productor" => $value["productor"],
-                                    "reg" => $value["idpropuesta"],
-                                    "formadepago" => $value["formadepago"],
-                                    "usuariopaga" => $value["usuariopaga"],
-                                    "tipopago" => $value["tipopago"],
-                                    "compformadepago" => $value["compformapago"],
-                                    "codempresa" => $value["codempresa"],
-                                    "idpropuesta" => $value["idpropuesta"],
-                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
-                                    "nota" => $value["nota"],
-                                    "prefijo" => $value["prefijo"]
+                                Cola::create([
+                                    'entity' => 'propuestas',
+                                    'entity_id' => $cons[0]->id,
+                                    'codempresa' => $cons[0]->codempresa,
                                 ]);
-                            }else{
-                                $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->update([
-                                    "documento" => $value["documento"],
-                                    "nombre" => $value["nombre"],
-                                    "num_polizas" => $value["num_polizas"],
-                                    "meses" => $value["meses"],
-                                    "id_cobertura" => $value["id_cobertura"],
-                                    "id_barrio" => $value["id_barrio"],
-                                    "nueva_poliza" => $value["nueva_poliza"],
-                                    "premio" => $value["premio"],
-                                    "premio_total" => $value["premio_total"],
-                                    "fechaDesde" => $value["fechaDesde"],
-                                    "fechaHasta" => $value["fechaHasta"],
-                                    "clausula" => $value["clausula"],
-                                    "barrio_beneficiario" => $value["barrio_beneficiario"],
-                                    "ultmod" => $value["ultmod"],
-                                    "useredit" => $value["user_edit"],
-                                    "codestado" => $value["codestado"],
-                                    "cobertura_suma" => $value["cobertura_suma"],
-                                    "cobertura_deducible" => $value["cobertura_deducible"],
-                                    "cobertura_gastos" => $value["cobertura_gastos"],
-                                    "promocion" => $value["promocion"],
-                                    "paga" => $value["paga"],
-                                    "referencia" => $value["referencia"],
-                                    "prima" => $value["prima"],
-                                    "master" => $value["master"],
-                                    "organizador" => $value["organizador"],
-                                    "productor" => $value["productor"],
-                                    "reg" => $value["idpropuesta"],
-                                    "formadepago" => $value["formadepago"],
-                                    "codempresa" => $value["codempresa"],
-                                    "idpropuesta" => $value["idpropuesta"],
-                                    "nota" => $value["nota"],
-                                    "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
-                                    "prefijo" => $value["prefijo"]
-                                ]);
-                            }
-    
-                            
-    
-                            if(isset($value["codempresa"])){
-                                DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
-                                DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
                             }
                         }
-                        
-                            
-
                     }else{
                         $propuesta->documento = $value["documento"];
                         if (isset($value["nombre"]))
@@ -292,7 +210,13 @@ class MigracionBarriosController extends Controller
                             $propuesta->imputacion = $value["imputacion"];
                         if( isset($value["fecha_comprobante"]))
                             $propuesta->fecha_comprobante = $value["fecha_comprobante"];
-                        $propuesta->save();
+                        if($propuesta->save()){
+                            Cola::create([
+                                'entity' => 'propuestas',
+                                'entity_id' => $propuesta->id,
+                                'codempresa' => $propuesta->codempresa,
+                            ]);
+                        }
                     }
 
                 }
@@ -300,32 +224,6 @@ class MigracionBarriosController extends Controller
         }catch(Exception $ex){
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "111");
-        }
-
-
-        try{
-            if (isset($req["listgrupobarrios"])){
-                if ($req["listgrupobarrios"] != null) {
-                    $aux = "";
-                    foreach ($req["listgrupobarrios"] as $value) {
-
-                            $gbarrio  = new gruposbarrio();
-                            $gbarrio->id = $value["id"];
-                            $gbarrio->nombre = $value["nombre"];
-                            $gbarrio->idbarrio = $value["idbarrio"];
-                            $gbarrio->nombrebarrio = $value["nombrebarrio"];
-                            $gbarrio->ultmod = $value["ultmod"];
-                            
-                            DB::select("DELETE FROM gruposbarrios WHERE id = '".$gbarrio->id."' AND idbarrio = '".$gbarrio->idbarrio."' ");
-                                if($value['codestado'] != "0"){                                
-                                    $gbarrio->save();
-                            }
-                    }
-                }
-            }
-        }catch(Exception $ex){
-            $logs = new Logs();
-            $logs->saveerror($ex->getMessage(), "", "", "121");
         }
 
         try{
@@ -359,10 +257,13 @@ class MigracionBarriosController extends Controller
                                 $aux = $value["id"];
                             }
 
-                            $arq->save();
-
-                            
-
+                            if($arq->save()){
+                                Cola::create([
+                                    'entity' => 'arqueos',
+                                    'entity_id' => $arq->reg,
+                                    'codempresa' => $arq->codempresa,
+                                ]);
+                            }
                     }
                 }
             }
@@ -376,28 +277,32 @@ class MigracionBarriosController extends Controller
                 if ($req["listrendiciones"] != null) {
                     $aux = "";
                     foreach ($req["listrendiciones"] as $value) {
+                        $rend = new rendicione();
+                        $rend->reg = $value["reg"];
+                        $rend->idarqueos = $value["idarqueos"];
+                        $rend->detalle = $value["detalle"];
+                        $rend->valor = $value["valor"];
+                        $rend->nocomprobante = $value["nocomprobante"];
+                        $rend->entregadopor = $value["entregadopor"];
+                        $rend->entregadoa = $value["entregadoa"];
+                        $rend->ultmod = $value["ultmod"];
+                        $rend->user_edit = $value["user_edit"];
+                        $rend->codestado = $value["codestado"];
+                        $rend->codempresa = $value["codempresa"];
+                        $rend->puntodeventa = $req["prefpuntodeventa"];
 
-                            $rend = new rendicione();
-                            $rend->reg = $value["reg"];
-                            $rend->idarqueos = $value["idarqueos"];
-                            $rend->detalle = $value["detalle"];
-                            $rend->valor = $value["valor"];
-                            $rend->nocomprobante = $value["nocomprobante"];
-                            $rend->entregadopor = $value["entregadopor"];
-                            $rend->entregadoa = $value["entregadoa"];
-                            $rend->ultmod = $value["ultmod"];
-                            $rend->user_edit = $value["user_edit"];
-                            $rend->codestado = $value["codestado"];
-                            $rend->codempresa = $value["codempresa"];
-                            $rend->puntodeventa = $req["prefpuntodeventa"];
+                        if($aux != $value["reg"]){
+                            DB::select("DELETE FROM rendiciones WHERE reg = '".$rend->reg."' ");
+                            $aux = $value["reg"];
+                        }
 
-                            if($aux != $value["reg"]){
-                                DB::select("DELETE FROM rendiciones WHERE reg = '".$rend->reg."' ");
-                                $aux = $value["reg"];
-                            }
-
-                            $rend->save();
-
+                        if($rend->save()){
+                            Cola::create([
+                                'entity' => 'rendiciones',
+                                'entity_id' => $rend->id,
+                                'codempresa' => $rend->codempresa,
+                            ]);
+                        }
                     }
                 }
             }
@@ -429,7 +334,6 @@ class MigracionBarriosController extends Controller
                             }
 
                             $linrend->save();
-
                     }
                 }
             }
@@ -461,6 +365,12 @@ class MigracionBarriosController extends Controller
                                 "codempresa" => $value["codempresa"],
                                 "adminempresa" => $value["adminempresa"]
                             ]);
+                            
+                            Cola::create([
+                                'entity' => 'usuarios',
+                                'entity_id' => $cons[0]->reg,
+                                'codempresa' => $cons[0]->codempresa,
+                            ]);
                         }else{
                             $usuario->id = $value["id"];
                             $usuario->loggin = $value["loggin"];
@@ -476,7 +386,13 @@ class MigracionBarriosController extends Controller
                             $usuario->codestado = $value["codestado"];
                             $usuario->codempresa = $value["codempresa"];
                             $usuario->adminempresa = $value["adminempresa"];
-                            $usuario->save();
+                            if($usuario->save()){
+                                Cola::create([
+                                    'entity' => 'usuarios',
+                                    'entity_id' => $usuario->reg,
+                                    'codempresa' => $usuario->codempresa,
+                                ]);
+                            }
                         }
                     }
                 }
@@ -503,6 +419,11 @@ class MigracionBarriosController extends Controller
                                 "exportar" => $value["exportar"],
                                 "codempresa" => $value["codempresa"]
                             ]);
+                            Cola::create([
+                                'entity' => 'perfiles',
+                                'entity_id' => $cons[0]->reg,
+                                'codempresa' => $cons[0]->codempresa,
+                            ]);
                         }else{
                             $perf->nombre = $value["nombre"];
                             $perf->modulo = $value["modulo"];
@@ -512,7 +433,14 @@ class MigracionBarriosController extends Controller
                             $perf->eliminar = $value["eliminar"];
                             $perf->exportar = $value["exportar"];
                             $perf->codempresa = $value["codempresa"];
-                            $perf->save();
+                            
+                            if($perf->save()){
+                                Cola::create([
+                                    'entity' => 'perfiles',
+                                    'entity_id' => $perf->reg,
+                                    'codempresa' => $perf->codempresa,
+                                ]);
+                            }
                         }
                     }
                 }
@@ -531,13 +459,7 @@ class MigracionBarriosController extends Controller
                 $aux ="";
 
                 foreach ($req["listlineaspropuestas"] as $value) {
-
-                    
-
                     $lineaspropuestas = new LineasPropuesta();
-
-                    
-
                     $lineaspropuestas->reg = $value["id"];
                     $lineaspropuestas->id_propuesta = $value["id_propuesta"];
                     $lineaspropuestas->documento = $value["documento"];
@@ -560,7 +482,6 @@ class MigracionBarriosController extends Controller
                     $lineaspropuestas->actividad = $value["actividad"];
                     $lineaspropuestas->clasificacion = $value["clasificacion"];
                     
-
                     if($aux != $lineaspropuestas->prefijo.$lineaspropuestas->id_propuesta){
                         if(isset($value["codempresa"]))
                             DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
@@ -568,40 +489,10 @@ class MigracionBarriosController extends Controller
                     }
 
                     if (!$lineaspropuestas->save()) {
-                        $errores .= "No se pudo guardar línea propuesta " . $propuesta->reg;
+                        $errores .= "No se pudo guardar línea propuesta " . $lineaspropuestas->prefijo."-".$lineaspropuestas->id_propuesta;
                     }
 
                     
-                }
-            }
-
-            if ($req["listbarriospropuestas"] != null) {
-
-                $aux = "";
-
-                foreach ($req["listbarriospropuestas"] as $value) {
-                    $barriospropuestas = new BarriosPropuesta();
-                    $barriospropuestas->reg = $value["id"];
-                    $barriospropuestas->id_propuesta = $value["id_propuesta"];
-                    $barriospropuestas->id_barrio = $value["id_barrio"];
-                    $barriospropuestas->nombre = $value["nombre"];
-                    $barriospropuestas->ultmod = $value["ultmod"];
-                    $barriospropuestas->user_edit = $value["user_edit"];
-                    $barriospropuestas->codestado = $value["codestado"];
-                    if(isset($value["prefijo"]))
-                        $barriospropuestas->prefijo = $value["prefijo"];
-                    if(isset($value["codempresa"]))
-                        $barriospropuestas->codempresa = $value["codempresa"];
-                    
-                        if($aux != $barriospropuestas->prefijo.$barriospropuestas->id_propuesta){
-                            if(isset($value["codempresa"]))
-                                DB::select("DELETE FROM barrios_propuestas WHERE prefijo = '".$barriospropuestas->prefijo."' AND id_propuesta = '".$barriospropuestas->id_propuesta."' AND codempresa = '".$barriospropuestas->codempresa."'  ");
-                            $aux = $barriospropuestas->prefijo.$barriospropuestas->id_propuesta;
-                        }
-
-                    if (!$barriospropuestas->save()) {
-                        $errores .= "No se pudo guardar línea propuesta " . $propuesta->reg;
-                    }
                 }
             }
 
@@ -638,26 +529,12 @@ class MigracionBarriosController extends Controller
                                 "puntodeventa" =>  $req["prefpuntodeventa"],
                                 "categoria" => $value["categoria"]
                             ]);
-                        }else{
-                            $cliente->where('id',$value["id"])->update([
-                                "nombres" => $value["nombres"],
-                                "apellidos" => $value["apellidos"],
-                                "telefono" => $value["telefono"],
-                                "direccion" => $value["direccion"],
-                                "email" => $value["email"],
-                                "ciudad" => $value["ciudad"],
-                                "codpostal" => $value["codpostal"],
-                                "localidad" => $value["localidad"],
-                                "fecha_nacimiento" => $value["fecha_nacimiento"],
-                                "tipo_id" => $value["tipo_id"],
-                                "sexo" => $value["sexo"],
-                                "situacion" => $value["situacion"],
-                                "ultmod" => $value["ultmod"],
-                                "user_edit" =>  $value["user_edit"],
-                                "categoria" => $value["categoria"]
+                            Cola::create([
+                                'entity' => 'clientes',
+                                'entity_id' => $cons[0]->reg,
+                                'codempresa' => $cons[0]->codempresa,
                             ]);
                         }
-                        
                     }else{
                         $cliente->id = $value["id"];
                         $cliente->nombres = $value["nombres"];
@@ -680,7 +557,14 @@ class MigracionBarriosController extends Controller
                         }
                             
                         $cliente->categoria = $value["categoria"];
-                        $cliente->save();
+                        
+                        if($cliente->save()){
+                            Cola::create([
+                                'entity' => 'clientes',
+                                'entity_id' => $cliente->reg,
+                                'codempresa' => $cliente->codempresa,
+                            ]);
+                        }
                     }
                 }
             }
@@ -713,6 +597,11 @@ class MigracionBarriosController extends Controller
                             "user_edit" => $value["user_edit"],
                             "codestado" => $value["codestado"]
                         ]);
+                        Cola::create([
+                            'entity' => 'barrios',
+                            'entity_id' => $cons[0]->reg,
+                            'codempresa' => 'all',
+                        ]);
                     }else{
                         $barrio->id = $value["id"];
                         $barrio->nombre = $value["nombre"];
@@ -733,6 +622,12 @@ class MigracionBarriosController extends Controller
                 
                         if (!$barrio->save()) {
                             $errores .= "No se pudo guardar el barrio " . $barrio->id;
+                        }else{
+                            Cola::create([
+                                'entity' => 'barrios',
+                                'entity_id' => $barrio->reg,
+                                'codempresa' => 'all',
+                            ]);
                         }
                     
                         
@@ -767,7 +662,7 @@ class MigracionBarriosController extends Controller
         if ($req["listactividades"] != null) {
             foreach ($req["listactividades"] as $value) {
                 $actividad = new Actividade();
-                $cons = $data = DB::table('actividades')->where('cod',$value['cod'])->get();
+                $cons = DB::table('actividades')->where('cod',$value['cod'])->get();
                 if(count($cons) > 0){
                     $actividad->where('cod',$value['cod'])->update([
                         "reg" => $value["id"],
@@ -776,6 +671,11 @@ class MigracionBarriosController extends Controller
                         "ultmod" => $value["ultmod"],
                         "user_edit" => $value["user_edit"],
                         "codestado" => $value["codestado"]
+                    ]);
+                    Cola::create([
+                        'entity' => 'actividades',
+                        'entity_id' => $cons[0]->id,
+                        'codempresa' => 'all',
                     ]);
                 }else{
                     $actividad->reg = $value["id"];
@@ -786,6 +686,12 @@ class MigracionBarriosController extends Controller
                     $actividad->codestado = $value["codestado"];
                     if (!$actividad->save()) {
                         $errores .= "No se pudo guardar la actividad " . $actividad->id;
+                    }else{
+                        Cola::create([
+                            'entity' => 'actividades',
+                            'entity_id' => $actividad->id,
+                            'codempresa' => 'all',
+                        ]);
                     }
                 }
             }
@@ -806,6 +712,11 @@ class MigracionBarriosController extends Controller
                         "user_edit" => $value["user_edit"],
                         "codestado" => $value["codestado"]
                     ]);
+                    Cola::create([
+                        'entity' => 'clasificaciones',
+                        'entity_id' => $cons[0]->id,
+                        'codempresa' => 'all',
+                    ]);
                 }else{
                     $clasificacion->reg = $value["id"];
                     $clasificacion->cod = $value["cod"];
@@ -816,6 +727,12 @@ class MigracionBarriosController extends Controller
                     $clasificacion->codestado = $value["codestado"];
                     if (!$clasificacion->save()) {
                         $errores .= "No se pudo guardar línea clasificación " . $clasificacion->id;
+                    }else{
+                        Cola::create([
+                            'entity' => 'clasificaciones',
+                            'entity_id' => $clasificacion->id,
+                            'codempresa' => 'all',
+                        ]);
                     }
                 }
             }
@@ -824,7 +741,7 @@ class MigracionBarriosController extends Controller
         if ($req["listcoberturas"] != null) {
             foreach ($req["listcoberturas"] as $value) {
                 $cobertura = new Cobertura();
-                $cons = $data = DB::table('coberturas')->where('nombre',$value['nombre'])->get();
+                $cons = DB::table('coberturas')->where('nombre',$value['nombre'])->get();
                 if(count($cons) > 0){
                     $cobertura->where('nombre',$value['nombre'])->update([
                         "suma" => $value["suma"],
@@ -839,6 +756,11 @@ class MigracionBarriosController extends Controller
                         "ultmod" => $value["ultmod"],
                         "user_edit" => $value["user_edit"],
                         "codestado" => $value["codestado"]
+                    ]);
+                    Cola::create([
+                        'entity' => 'coberturas',
+                        'entity_id' => $cons[0]->reg,
+                        'codempresa' => 'all',
                     ]);
                 }else{
                     $cobertura->id = $value["reg"];
@@ -857,6 +779,12 @@ class MigracionBarriosController extends Controller
                     $cobertura->codestado = $value["codestado"];
                     if (!$cobertura->save()) {
                         $errores .= "No se pudo guardar línea cobertura " . $cobertura->reg;
+                    }else{
+                        Cola::create([
+                            'entity' => 'coberturas',
+                            'entity_id' => $cobertura->reg,
+                            'codempresa' => 'all',
+                        ]);
                     }
                 }
             }
