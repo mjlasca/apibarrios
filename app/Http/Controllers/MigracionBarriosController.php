@@ -153,6 +153,7 @@ class MigracionBarriosController extends Controller
                                     'entity' => 'propuestas',
                                     'entity_id' => $cons[0]->id,
                                     'codempresa' => $cons[0]->codempresa,
+                                    'ptoventa' => $req["prefpuntodeventa"]
                                 ]);
                             }
                         }
@@ -215,6 +216,7 @@ class MigracionBarriosController extends Controller
                                 'entity' => 'propuestas',
                                 'entity_id' => $propuesta->id,
                                 'codempresa' => $propuesta->codempresa,
+                                'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
                     }

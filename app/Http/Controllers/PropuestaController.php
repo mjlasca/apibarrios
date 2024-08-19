@@ -412,7 +412,7 @@ class PropuestaController extends Controller
                             $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
-                                            $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                            $query->where('ptoventa','!=',$req["prefijositio"])->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                         }else{
                                             $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                             ->orWhere('codempresa', 'all');
@@ -517,7 +517,7 @@ class PropuestaController extends Controller
                                 $colas = Cola::where('id', '>', $req['cola'])
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                        $query->where('ptoventa','!=',$req["prefijositio"])->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                     }else{
                                         $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                         ->orWhere('codempresa', 'all');
