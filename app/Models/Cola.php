@@ -11,7 +11,8 @@ class Cola extends Model
     protected $fillable = [
         'entity',
         'entity_id',
-        'codempresa'
+        'codempresa',
+        'ptoventa'
     ];
 
 }

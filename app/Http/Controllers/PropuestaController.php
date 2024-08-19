@@ -414,7 +414,7 @@ class PropuestaController extends Controller
                                         if($req['solicitud'] == 'solicitud_propuestas'){
                                             $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                         }else{
-                                            $query->where('codempresa', $req['codempresa'])
+                                            $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                             ->orWhere('codempresa', 'all');
                                         }
                                     })
@@ -427,26 +427,39 @@ class PropuestaController extends Controller
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
-
+                                    
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
                                     $sql = "SELECT t1.* FROM propuestas t1 
                                     WHERE t1.codempresa = '".$req["codempresa"]."' AND t1.id IN (".implode(',',$colas['propuestas']).") AND ( t1.prefijo != '".$req["prefijositio"]."' OR (t1.usuariopaga != '' AND t1.prefijo = '".$req["prefijositio"]."'))  ORDER BY t1.ultmod DESC;";
                                     $datos["propuestas"] = DB::select($sql);
+
+                                    $idsPropuesta = array_map(function($pro) {
+                                        return $pro->id;
+                                    }, $datos["propuestas"]);
+
+                                    $idsClientes = array_map(function($pro) {
+                                        return $pro->documento;
+                                    }, $datos["propuestas"]);
                                     //líneas propuestas
                                     $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                                    WHERE t2.id IN (".implode(',',$colas['propuestas']).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
-    
+                                    WHERE t2.id IN (".implode(',',$idsPropuesta).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
+                                    
                                     $datos["lineas_propuestas"] = DB::select($sql);
+
+                                    $idsClientes_ = array_map(function($lin) {
+                                        return $lin->documento;
+                                    }, $datos["lineas_propuestas"]);
+                                    
+                                    $datos["clientes"] = DB::table('clientes')->whereIn('id',array_unique(array_merge($idsClientes,$idsClientes_)))->groupBy('id')->get();
                                 }
-    
                                 
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
                                     $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
                                 }
                                 
                                 if($req["solicitud"] == "solicitud_clientes" && !empty($colas['clientes']) ){
-                                    $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->get();
+                                    $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->groupBy('id')->get();
                                 }
         
                                 if($req["solicitud"] == "solicitud_usuarios"  && !empty($colas['usuarios']) ){
@@ -506,7 +519,7 @@ class PropuestaController extends Controller
                                     if($req['solicitud'] == 'solicitud_propuestas'){
                                         $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                     }else{
-                                        $query->where('codempresa', $req['codempresa'])
+                                        $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                         ->orWhere('codempresa', 'all');
                                     }
                                 })
@@ -514,7 +527,7 @@ class PropuestaController extends Controller
                                 ->groupBy('entity', 'id')
                                 ->limit(10)
                                 ->select('entity', 'entity_id','id') 
-                                ->groupBy('entity')
+                                ->groupBy('entity','id')
                                 ->get();
                                 $datos['colas'] = $colas;
                             }

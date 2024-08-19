@@ -262,6 +262,7 @@ class MigracionBarriosController extends Controller
                                     'entity' => 'arqueos',
                                     'entity_id' => $arq->reg,
                                     'codempresa' => $arq->codempresa,
+                                    'ptoventa' => $req["prefpuntodeventa"]
                                 ]);
                             }
                     }
@@ -301,6 +302,7 @@ class MigracionBarriosController extends Controller
                                 'entity' => 'rendiciones',
                                 'entity_id' => $rend->id,
                                 'codempresa' => $rend->codempresa,
+                                'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
                     }
@@ -533,6 +535,7 @@ class MigracionBarriosController extends Controller
                                 'entity' => 'clientes',
                                 'entity_id' => $cons[0]->reg,
                                 'codempresa' => $cons[0]->codempresa,
+                                'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
                     }else{
@@ -563,6 +566,7 @@ class MigracionBarriosController extends Controller
                                 'entity' => 'clientes',
                                 'entity_id' => $cliente->reg,
                                 'codempresa' => $cliente->codempresa,
+                                'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
                     }
@@ -578,7 +582,7 @@ class MigracionBarriosController extends Controller
             if ($req["listbarrios"] != null) {
                 foreach ($req["listbarrios"] as $value) {
                     $barrio = new barrio();
-                    $cons = $data = DB::table('barrios')->where('id',$value['id'])->get();
+                    $cons = DB::table('barrios')->where('id',$value['id'])->get();
                     if(count($cons) > 0){
                         $barrio->where('id',$value['id'])->update([
                             "id" => $value["id"],
@@ -601,6 +605,7 @@ class MigracionBarriosController extends Controller
                             'entity' => 'barrios',
                             'entity_id' => $cons[0]->reg,
                             'codempresa' => 'all',
+                            'ptoventa' => $req["prefpuntodeventa"]
                         ]);
                     }else{
                         $barrio->id = $value["id"];
@@ -627,6 +632,7 @@ class MigracionBarriosController extends Controller
                                 'entity' => 'barrios',
                                 'entity_id' => $barrio->reg,
                                 'codempresa' => 'all',
+                                'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
                     
