@@ -412,7 +412,8 @@ class PropuestaController extends Controller
                             $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
-                                            $query->where('ptoventa','!=',$req["prefijositio"])->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                            $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                            $query->where('ptoventa','!=',$req["prefijositio"])->orWhere('ptoventa','IS','NULL');
                                         }else{
                                             $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                             ->orWhere('codempresa', 'all');
@@ -420,13 +421,15 @@ class PropuestaController extends Controller
                                     })
                                     ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                     ->groupBy('entity', 'entity_id')
-                                    ->limit(10)
+                                    ->orderBy('id','ASC')
+                                    ->limit(30)
                                     ->get(['entity', 'entity_id']) 
                                     ->groupBy('entity')
                                     ->map(function ($group) {
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
+                                    
                                     
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
@@ -517,7 +520,8 @@ class PropuestaController extends Controller
                                 $colas = Cola::where('id', '>', $req['cola'])
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('ptoventa','!=',$req["prefijositio"])->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                        $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
+                                        $query->where('ptoventa','!=',$req["prefijositio"])->orWhere('ptoventa','IS','NULL');
                                     }else{
                                         $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                         ->orWhere('codempresa', 'all');
@@ -525,7 +529,8 @@ class PropuestaController extends Controller
                                 })
                                 ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                 ->groupBy('entity', 'id')
-                                ->limit(10)
+                                ->orderBy('id','ASC')
+                                ->limit(30)
                                 ->select('entity', 'entity_id','id') 
                                 ->groupBy('entity','id')
                                 ->get();
