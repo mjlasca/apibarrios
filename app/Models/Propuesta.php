@@ -68,7 +68,6 @@ class Propuesta extends Model
                     'entity' => 'propuestas',
                     'entity_id' => $propuesta->id,
                     'codempresa' => $propuesta->codempresa,
-                    'ptoventa' => $prefijo
                 ]);
 
                 return true;
