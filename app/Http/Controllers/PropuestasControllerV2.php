@@ -41,13 +41,12 @@ class PropuestasControllerV2 extends Controller
     public function setReference($codempresa){
 
         $req = request()->all();
-    
+        
         try{
             foreach ($req["registros"] as $registro) {
                 $res = Propuesta::where('idpropuesta', $registro['idpropuesta'])
                             ->where('prefijo', $registro['prefijo'])
                             ->where('codempresa', $codempresa)
-                            ->whereNull('referencia')
                             ->update([
                                 'referencia' => $registro['referencia'],
                                 'nota' => $registro['nota'],
