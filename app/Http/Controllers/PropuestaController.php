@@ -413,7 +413,7 @@ class PropuestaController extends Controller
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
                                             $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
-                                            $query->where('ptoventa','!=',$req["prefijositio"])->orWhere('ptoventa','IS','NULL');
+                                            $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                         }else{
                                             $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                             ->orWhere('codempresa', 'all');
@@ -429,7 +429,7 @@ class PropuestaController extends Controller
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
-                                    
+                                    dump($colas);
                                     
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
@@ -521,7 +521,7 @@ class PropuestaController extends Controller
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
                                         $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
-                                        $query->where('ptoventa','!=',$req["prefijositio"])->orWhere('ptoventa','IS','NULL');
+                                        $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                     }else{
                                         $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
                                         ->orWhere('codempresa', 'all');
