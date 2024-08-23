@@ -41,7 +41,7 @@ class Propuesta extends Model
                         "fecha_paga" => $fecha_paga,
                         "tipopago" => $formadepago,
                         "compformadepago" => $idpago,
-                        "version" => $version,
+                        "version" => $version + 1,
                         "fecha_comprobante" => $fecha_comprobante,
                         "valor_pagado" => $valor_pagado,
                     ]);
