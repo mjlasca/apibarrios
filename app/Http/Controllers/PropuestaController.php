@@ -429,7 +429,6 @@ class PropuestaController extends Controller
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
-                                    dump($colas);
                                     
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
