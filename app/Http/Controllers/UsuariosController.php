@@ -8,8 +8,35 @@ use Illuminate\Http\Request;
 
 class UsuariosController extends Controller
 {
-    public function getEmpresa($codempresa){
-        $usuarios = usuario::where('codempresa', '=',$codempresa)->get();
+    public function getEmpresa($codempresa, Request $req){
+        $usuarios = [];
+        if($req->input('reg') != ''){
+            $colas = Cola::where('entity','usuarios')->where('id','>',$req->input('reg'))
+                            ->groupBy('entity', 'entity_id')
+                            ->orderBy('id','ASC')
+                            ->limit(30)
+                            ->get(['entity', 'entity_id']) 
+                            ->groupBy('entity')
+                            ->map(function ($group) {
+                                return $group->pluck('entity_id')->toArray();
+                            })
+                            ->toArray();
+            if(!empty($colas)){
+                $usuarios = usuario::whereIn('reg', $colas['usuarios'])->get();
+                $colas = Cola::where('entity','usuarios')->where('id','>',$req->input('reg'))
+                                ->groupBy('entity', 'entity_id')
+                                ->orderBy('id','ASC')
+                                ->limit(30)
+                                ->get();
+                                
+                $usuarios = [
+                    "usuarios" => $usuarios,
+                    "colas" => $colas
+                ];
+            }
+            
+        }
+        
         return response()->json($usuarios);
     }
 
@@ -67,7 +94,7 @@ class UsuariosController extends Controller
                 if($user_->save()){
                     Cola::create([
                         'entity' => 'usuarios',
-                        'entity_id' => $user_->reg,
+                        'entity_id' => $user_->id,
                         'codempresa' => $user_->codempresa,
                     ]);
                 }
