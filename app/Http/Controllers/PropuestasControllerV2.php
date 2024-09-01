@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\barrio;
+use App\Models\cliente;
 use App\Models\Cola;
 use App\Models\gruposbarrio;
+use App\Models\LineasPropuesta;
 use App\Models\logs;
+use App\Models\payregistry;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
 use Barryvdh\DomPDF\Facade as PDF;
@@ -389,6 +392,115 @@ class PropuestasControllerV2 extends Controller
         }
 
         return FALSE;
+    }
+
+    public function getConsolidated($date,$codempresa){
+        $registerPay = payregistry::leftJoin('propuestas', function($join){
+                $join->on('payregistries.idpropuesta', '=', 'propuestas.idpropuesta')
+                ->on('payregistries.prefijo', '=', 'propuestas.prefijo');
+        })
+        ->select('payregistries.*','propuestas.id as idprop')
+        ->where('payregistries.fecha_paga','>',$date.' 00:00:01')->where('payregistries.fecha_paga','<',$date.' 23:59:59')
+        ->where('propuestas.codempresa',$codempresa)
+        ->where('codestado','>',0)
+        ->orderBy('propuestas.id','ASC')
+        ->get();
+        $proposalPays = Propuesta::where('codestado','>',0)
+        ->where('codempresa',$codempresa)
+        ->where('formadepago','CREDITO')
+        ->where('paga',1)
+        ->where('fecha_paga','>',$date.' 00:00:01')
+        ->where('fecha_paga','<',$date.' 23:59:59')
+        ->orderBy('propuestas.id','ASC')
+        ->get();
+
+        $datPay = [];
+        foreach ($registerPay as $key => $value) {
+            $datPay[] = $value->idprop;
+        }
+        
+        $datPro = [];
+        foreach ($proposalPays as $key => $value) {
+            $datPro[] = $value->id;
+        }
+        $valuesDiff = [];
+        try {
+            $valuesDiff = array_values( array_diff($datPay,$datPro));
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+
+        $restUpdate = 0;
+        if(!empty( $valuesDiff) ){
+            $restUpdate = DB::table('propuestas')
+            ->join('payregistries', function ($join){
+                $join->on( 'propuestas.idpropuesta', 'payregistries.idpropuesta')
+                     ->on( 'propuestas.prefijo', 'payregistries.prefijo');
+            })
+            ->whereIn('propuestas.id', $valuesDiff )
+            ->update([
+                'propuestas.paga' => 1,
+                'propuestas.fecha_paga' => DB::raw('payregistries.fecha_paga'),
+                'propuestas.tipopago' => DB::raw('payregistries.tipopago'),
+                'propuestas.compformadepago' => DB::raw('payregistries.compformadepago'),
+                'propuestas.valor_pagado' => DB::raw('payregistries.valor_pagado'),
+                'propuestas.fecha_comprobante' => DB::raw('payregistries.fecha_comprobante'),
+                'propuestas.version' => DB::raw('(propuestas.version + 1)'),
+            ]);
+            foreach ($valuesDiff as $key => $value) {
+                Cola::create([
+                    'entity' => 'propuestas',
+                    'entity_id' => $value,
+                    'codempresa' => $codempresa,
+                ]);
+            }
+        }
+
+        $reportRest = Propuesta::where('fecha_paga','>',$date.' 00:00:01')
+                                ->where('fecha_paga','<',$date.' 23:59:59')
+                                ->where('codempresa',$codempresa)
+                                ->get();
+        
+        $idsPropuesta =  $reportRest->map(function($pro) {
+            return $pro->id;
+        })->toArray();
+
+        $idsClientes =  $reportRest->map(function($pro) {
+            return $pro->documento;
+        })->toArray();
+
+        $lineas = LineasPropuesta::join('propuestas', function ($join){
+                                        $join->on( 'propuestas.idpropuesta', 'lineas_propuestas.id_propuesta')
+                                            ->on( 'propuestas.prefijo', 'lineas_propuestas.prefijo');
+                                    })
+                                    ->whereIn('propuestas.id',$idsPropuesta)
+                                    ->select('lineas_propuestas.*')
+                                    ->orderBy('propuestas.id','ASC')
+                                    ->get();
+
+        $idsClientes_ =  $lineas->map(function($lin) {
+            return $lin->documento;
+        })->toArray();
+        
+        $clientes = cliente::whereIn('id',array_unique(array_merge($idsClientes,$idsClientes_)))->groupBy('id')->get();
+
+        $data = [
+            'cantReg' => $registerPay->count(),
+            'cantProp' => $proposalPays->count(),
+            'diff' => $valuesDiff,
+            'restupd' => $restUpdate,
+            'report' => [
+                'propuestas' => $reportRest,
+                'lineas' => $lineas,
+                'clientes' => $clientes
+            ]
+        ];
+        
+        //revisar que todos los pagos se hayan registrado en las propuestas
+        //sino, entonces voy a registrar los pagos en las propuestas y sumar la version
+            //si existen pagos no registrados, entonces hacer un registro de cola de las propuestas
+        //al final generaré una consulta con todas las propuestas, las líneas propuestas y los clientes
+        return response()->json($data);
     }
 
     
