@@ -31,7 +31,7 @@ Route::middleware('auth:api')->post('/propuestas/refpropuesta/{codempresa}', [ P
 Route::middleware('auth:api')->post('/propuestas/setreference/{codempresa}', [ PropuestasControllerV2::class, 'setReference' ]);
 Route::middleware('auth:api')->post('/propuestas/duplicate-pending', [ PropuestasControllerV2::class, 'duplicatePendingProposal' ]);
 Route::post('/propuestas/duplicate', [ PropuestasControllerV2::class, 'duplicateProposal' ]);
-Route::post('/propuestas/report/{date}/{codempresa}', [ PropuestasControllerV2::class, 'getConsolidated' ]);
+Route::middleware('auth:api')->get('/propuestas/report/{date}/{codempresa}', [ PropuestasControllerV2::class, 'getConsolidated' ]);
 
 
 Route::middleware('auth:api')->get('/grupobarrios/{codempresa}', [ GrupoBarriosController::class, 'getEmpresa' ]);

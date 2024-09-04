@@ -328,23 +328,28 @@ class PropuestaController extends Controller
         $req = request()->all();
 
         if(!empty($req)){
-            $prop = new Propuesta();
-            if($prop->pagarpropuesta(
-                $req["idpropuesta"],
-                $req["prefijopropuesta"],
-                $req["tipopago"],
-                $req["compformapago"],
-                $req["usuariopaga"],
-                $req["fecha_paga"],
-                $req["codempresa"],
-                $req["version"],
-                $req["fecha_comprobante"],
-                $req["valor_pagado"]
-            )){
-                return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
+            $propExist = Propuesta::where('idpropuesta',$req["idpropuesta"])->where('prefijo',$req["prefijopropuesta"])->first();
+            if(!empty($propExist)){
+                $prop = new Propuesta();
+                if($prop->pagarpropuesta(
+                    $req["idpropuesta"],
+                    $req["prefijopropuesta"],
+                    $req["tipopago"],
+                    $req["compformapago"],
+                    $req["usuariopaga"],
+                    $req["fecha_paga"],
+                    $req["codempresa"],
+                    $req["version"],
+                    $req["fecha_comprobante"],
+                    $req["valor_pagado"]
+                ))
+                    return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
             }else{
-                return response()->json(['res' => 'No se pudo hacer el pago de la propuesta'], 400);
+                return response()->json(['res' => 'La propuesta no existe'], 404 );    
             }
+            
+            return response()->json(['res' => 'No se pudo hacer el pago de la propuesta'], 400);
+            
         }
         
     }
