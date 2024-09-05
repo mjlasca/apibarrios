@@ -31,7 +31,6 @@ class MigracionBarriosController extends Controller
     public function callpropuesta()
     {
         $req = request()->all();
-
         $result = $this->savepropuesta($req);
         if ($result != "")
             return response()->json(['res' => 'Hubo errores al subir la información ' . $result], 400);
@@ -233,7 +232,10 @@ class MigracionBarriosController extends Controller
                 if ($req["listarqueos"] != null) {
                     $aux = "";
                     foreach ($req["listarqueos"] as $value) {
-
+                        $arqCons = arqueo::where('id',$value['id'])->where('codempresa',$value['codempresa'])->where('puntodeventa',$req['prefpuntodeventa'])->first();
+                            if(!empty($arqCons)){
+                                $arqCons->delete();
+                            }
                             $arq = new arqueo();
                             $arq->id = $value["id"];
                             $arq->usuario = $value["usuario"];
@@ -253,13 +255,8 @@ class MigracionBarriosController extends Controller
                             $arq->cantpolizas = $value["cantpolizas"];
                             $arq->puntodeventa = $req["prefpuntodeventa"];
                             $arq->codempresa = $value["codempresa"];
-
-                            if($aux != $value["id"]){
-                                DB::select("DELETE FROM arqueos WHERE id = '".$arq->id."' ");
-                                $aux = $value["id"];
-                            }
-
                             if($arq->save()){
+                                $arq = arqueo::where('id',$value['id'])->where('codempresa',$value['codempresa'])->where('puntodeventa',$req['prefpuntodeventa'])->first();
                                 Cola::create([
                                     'entity' => 'arqueos',
                                     'entity_id' => $arq->reg,
@@ -564,6 +561,7 @@ class MigracionBarriosController extends Controller
                         $cliente->categoria = $value["categoria"];
                         
                         if($cliente->save()){
+                            $cliente = cliente::where('id',$value['id'])->where('codempresa',$value['codempresa'])->first();
                             Cola::create([
                                 'entity' => 'clientes',
                                 'entity_id' => $cliente->reg,
@@ -630,6 +628,7 @@ class MigracionBarriosController extends Controller
                         if (!$barrio->save()) {
                             $errores .= "No se pudo guardar el barrio " . $barrio->id;
                         }else{
+                            $barrio = cliente::where('id',$value['id'])->where('codempresa',$value['codempresa'])->first();
                             Cola::create([
                                 'entity' => 'barrios',
                                 'entity_id' => $barrio->reg,
@@ -647,7 +646,41 @@ class MigracionBarriosController extends Controller
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "114");
         }
+        
+        try{
+            
+            if ($req["listgrupobarrios"] != null) {
+                foreach ($req["listgrupobarrios"] as $value) {
+                    
+                    $cons = gruposbarrio::where('id',$value['id'])->where('idbarrio',$value['idbarrio'])->first();
+                    
+                    if(!empty($cons)){
+                        $cons->delete();
+                    };
+                    $gbarrio = gruposbarrio::create([
+                        'id' => $value["id"],
+                        'nombre' => $value["nombre"],
+                        'idbarrio' => $value["idbarrio"],
+                        'nombrebarrio' => $value["nombrebarrio"],
+                        'ultmod' => $value["ultmod"],
+                        'codestado' => $value["codestado"]
+                    ]);
+                    
+                    if($gbarrio){
+                        Cola::create([
+                            'entity' => 'grupobarrios',
+                            'entity_id' => $gbarrio->id,
+                            'codempresa' => 'all',
+                            'ptoventa' => $req["prefpuntodeventa"]
+                        ]);
+                    }
+                }
+            }
 
+        }catch(Exception $ex){
+            $logs = new Logs();
+            $logs->saveerror($ex->getMessage(), "", "", "114");
+        }
         
 
         if($req["rolpuntodeventa"] != "PRINCIPAL"){
@@ -788,6 +821,7 @@ class MigracionBarriosController extends Controller
                     if (!$cobertura->save()) {
                         $errores .= "No se pudo guardar línea cobertura " . $cobertura->reg;
                     }else{
+                        $cobertura = Cobertura::where('id',$value["reg"])->first();
                         Cola::create([
                             'entity' => 'coberturas',
                             'entity_id' => $cobertura->reg,
