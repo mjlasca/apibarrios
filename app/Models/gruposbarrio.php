@@ -9,7 +9,7 @@ use App\Models\barrio;
 class gruposbarrio extends Model
 {
     use HasFactory;
-    protected $fillable = ['reg','id', 'nombre', 'idbarrio', 'nombrebarrio', 'ultmod'];
+    protected $fillable = ['reg','id', 'nombre', 'idbarrio', 'nombrebarrio', 'ultmod','codestado'];
     
     public function barrio(){
         return $this->belongsTo(barrio::class);

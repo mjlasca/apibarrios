@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class GrupoBarriosController extends Controller
 {
     public function getEmpresa($codempresa){
-        $coberturas = gruposbarrio::get();
+        $coberturas = gruposbarrio::groupBy('id','idbarrio')->get();
         return response()->json($coberturas);
     }
 }

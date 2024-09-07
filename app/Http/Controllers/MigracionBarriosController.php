@@ -668,7 +668,7 @@ class MigracionBarriosController extends Controller
                     
                     if($gbarrio){
                         Cola::create([
-                            'entity' => 'grupobarrios',
+                            'entity' => 'gruposbarrios',
                             'entity_id' => $gbarrio->id,
                             'codempresa' => 'all',
                             'ptoventa' => $req["prefpuntodeventa"]
