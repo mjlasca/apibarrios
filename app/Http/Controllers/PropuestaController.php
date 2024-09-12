@@ -417,13 +417,13 @@ class PropuestaController extends Controller
                             $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
-                                            $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                             $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                         }else{
-                                            $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
+                                            $query->where('ptoventa','!=',$req["prefijositio"])
                                             ->orWhere('codempresa', 'all');
                                         }
                                     })
+                                    ->where('codempresa', $req['codempresa'])
                                     ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','ASC')
@@ -449,8 +449,7 @@ class PropuestaController extends Controller
                                         return $pro->documento;
                                     }, $datos["propuestas"]);
                                     //líneas propuestas
-                                    $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta
-                                    WHERE t2.id IN (".implode(',',$idsPropuesta).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
+                                    $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta WHERE t2.id IN (".implode(',',$idsPropuesta).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
                                     
                                     $datos["lineas_propuestas"] = DB::select($sql);
 
@@ -524,13 +523,13 @@ class PropuestaController extends Controller
                                 $colas = Cola::where('id', '>', $req['cola'])
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('entity','propuestas')->where('codempresa', $req['codempresa']);
                                         $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                     }else{
-                                        $query->where('ptoventa','!=',$req["prefijositio"])->where('codempresa', $req['codempresa'])
+                                        $query->where('ptoventa','!=',$req["prefijositio"])
                                         ->orWhere('codempresa', 'all');
                                     }
                                 })
+                                ->where('codempresa', $req['codempresa'])
                                 ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                 ->groupBy('entity', 'id')
                                 ->orderBy('id','ASC')
