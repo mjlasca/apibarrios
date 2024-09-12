@@ -147,7 +147,7 @@ class MigracionBarriosController extends Controller
                             }
     
                             if(isset($value["codempresa"]) && $res){
-                                DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
+                                //DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
                                 Cola::create([
                                     'entity' => 'propuestas',
                                     'entity_id' => $cons[0]->id,
@@ -456,9 +456,6 @@ class MigracionBarriosController extends Controller
         try{
 
             if ($req["listlineaspropuestas"] != null) {
-                
-                $aux ="";
-
                 foreach ($req["listlineaspropuestas"] as $value) {
                     $lineaspropuestas = new LineasPropuesta();
                     $lineaspropuestas->reg = $value["id"];
@@ -483,20 +480,13 @@ class MigracionBarriosController extends Controller
                     $lineaspropuestas->actividad = $value["actividad"];
                     $lineaspropuestas->clasificacion = $value["clasificacion"];
                     
-                    if($aux != $lineaspropuestas->prefijo.$lineaspropuestas->id_propuesta){
-                        if(isset($value["codempresa"]))
-                            DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
-                        $aux = $lineaspropuestas->prefijo.$lineaspropuestas->id_propuesta;
-                    }
-
+                    DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND documento = '".$lineaspropuestas->documento."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
                     if (!$lineaspropuestas->save()) {
                         $errores .= "No se pudo guardar línea propuesta " . $lineaspropuestas->prefijo."-".$lineaspropuestas->id_propuesta;
                     }
-
-                    
                 }
             }
-
+            
         }catch(Exception $ex){
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "113");
