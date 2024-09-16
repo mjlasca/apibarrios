@@ -417,12 +417,13 @@ class PropuestaController extends Controller
                             $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
-                                            $query->where('ptoventa', '!=', $req["prefijositio"])->where('codempresa', $req['codempresa'])->orWhereNull('ptoventa');
+                                            $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                         }else{
                                             $query->where('ptoventa','!=',$req["prefijositio"])
                                             ->orWhere('codempresa', 'all');
                                         }
                                     })
+                                    ->where('codempresa', $req['codempresa'])
                                     ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','ASC')
@@ -520,12 +521,13 @@ class PropuestaController extends Controller
                                 $colas = Cola::where('id', '>', $req['cola'])
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('ptoventa', '!=', $req["prefijositio"])->where('codempresa', $req['codempresa'])->orWhereNull('ptoventa');
+                                        $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                     }else{
                                         $query->where('ptoventa','!=',$req["prefijositio"])
                                         ->orWhere('codempresa', 'all');
                                     }
                                 })
+                                ->where('codempresa', $req['codempresa'])
                                 ->where('entity', str_replace('solicitud_','',$req['solicitud']))
                                 ->groupBy('entity', 'id')
                                 ->orderBy('id','ASC')
