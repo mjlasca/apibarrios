@@ -458,6 +458,14 @@ class MigracionBarriosController extends Controller
             if ($req["listlineaspropuestas"] != null) {
                 foreach ($req["listlineaspropuestas"] as $value) {
                     $lineaspropuestas = new LineasPropuesta();
+                    $lineaspropuestas->id_propuesta = $value["id_propuesta"];
+                    $lineaspropuestas->documento = $value["documento"];
+                    $lineaspropuestas->prefijo = $value["prefijo"];
+                    DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
+                }
+                
+                foreach ($req["listlineaspropuestas"] as $value) {
+                    $lineaspropuestas = new LineasPropuesta();
                     $lineaspropuestas->reg = $value["id"];
                     $lineaspropuestas->id_propuesta = $value["id_propuesta"];
                     $lineaspropuestas->documento = $value["documento"];
