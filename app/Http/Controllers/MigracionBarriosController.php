@@ -626,7 +626,7 @@ class MigracionBarriosController extends Controller
                         if (!$barrio->save()) {
                             $errores .= "No se pudo guardar el barrio " . $barrio->id;
                         }else{
-                            $barrio = cliente::where('id',$value['id'])->where('codempresa',$value['codempresa'])->first();
+                            $barrio = cliente::where('id',$value['id'])->first();
                             Cola::create([
                                 'entity' => 'barrios',
                                 'entity_id' => $barrio->reg,
