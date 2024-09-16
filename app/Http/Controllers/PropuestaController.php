@@ -544,9 +544,9 @@ class PropuestaController extends Controller
 
             
         }catch (Exception $ex){
-
+            $jsonData = json_encode($req);
             $logs = new logs();
-            $logs->saveerror("Error en importarción ".$ex->getMessage(),"", "", "IMP101");
+            $logs->saveerror("Error en importarción ".$ex->getMessage()."/n".$jsonData,"", "", "IMP101");
             return response()->json("Error en importarción ".$ex->getMessage(), 404);
 
         }
