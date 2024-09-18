@@ -461,6 +461,7 @@ class MigracionBarriosController extends Controller
                     $lineaspropuestas->id_propuesta = $value["id_propuesta"];
                     $lineaspropuestas->documento = $value["documento"];
                     $lineaspropuestas->prefijo = $value["prefijo"];
+                    $lineaspropuestas->codempresa = $value["codempresa"];
                     DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
                 }
                 
@@ -487,7 +488,6 @@ class MigracionBarriosController extends Controller
                         $lineaspropuestas->prefijo = $value["prefijo"];
                     $lineaspropuestas->actividad = $value["actividad"];
                     $lineaspropuestas->clasificacion = $value["clasificacion"];
-                    
                     DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND documento = '".$lineaspropuestas->documento."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
                     if (!$lineaspropuestas->save()) {
                         $errores .= "No se pudo guardar línea propuesta " . $lineaspropuestas->prefijo."-".$lineaspropuestas->id_propuesta;
