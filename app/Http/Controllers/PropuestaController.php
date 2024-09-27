@@ -417,14 +417,16 @@ class PropuestaController extends Controller
                             $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
-                                            $query->where('codempresa', $req['codempresa']);
                                             $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                         }else{
-                                            $query->where('ptoventa','!=',$req["prefijositio"])
-                                            ->orWhere('codempresa', 'all');
+                                            $query->where('ptoventa','!=',$req["prefijositio"]);
                                         }
                                     })
                                     ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                    ->where(function ($query) use ($req) {
+                                        $query->where('codempresa', $req['codempresa'])
+                                              ->orWhere('codempresa', 'all');
+                                    })
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','ASC')
                                     ->limit(30)
@@ -521,14 +523,16 @@ class PropuestaController extends Controller
                                 $colas = Cola::where('id', '>', $req['cola'])
                                 ->where(function($query) use ($req) {
                                     if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('codempresa', $req['codempresa']);
                                         $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
                                     }else{
-                                        $query->where('ptoventa','!=',$req["prefijositio"])
-                                        ->orWhere('codempresa', 'all');
+                                        $query->where('ptoventa','!=',$req["prefijositio"]);
                                     }
                                 })
                                 ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                ->where(function ($query) use ($req) {
+                                    $query->where('codempresa', $req['codempresa'])
+                                          ->orWhere('codempresa', 'all');
+                                })
                                 ->groupBy('entity', 'id')
                                 ->orderBy('id','ASC')
                                 ->limit(30)
