@@ -497,7 +497,7 @@ class PropuestaController extends Controller
         
                                 if($req["solicitud"] == "solicitud_usuarios"  && !empty($colas['usuarios']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
-                                        $datos["usuarios"] = DB::table('usuarios')->where('codempresa',$colas['codempresa'])->get();
+                                        $datos["usuarios"] = DB::table('usuarios')->where('codempresa',$req['codempresa'])->get();
                                     else
                                         $datos["usuarios"] = DB::table('usuarios')->whereIn('reg',$colas['usuarios'])->get();
                                 }
