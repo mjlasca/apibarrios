@@ -483,7 +483,7 @@ class PropuestaController extends Controller
                                 
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
-                                        $datos["barrios"] = DB::table('barrios')->where('codempresa',$req['codempresa'])->get();
+                                        $datos["barrios"] = DB::table('barrios')->get();
                                     else
                                         $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
                                 }
@@ -521,9 +521,12 @@ class PropuestaController extends Controller
                                     if( !empty($req['reset']) && $req['reset'] == 1){
                                         $datos["rendiciones"] = rendicione::where('codempresa',$req['codempresa'])->orderBy('id','DESC')->limit(30)->get();
                                         $groupLineas = $datos["rendiciones"]->pluck('id')->toArray();
-                                        $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
-                                        WHERE t2.id IN (".implode(',',$groupLineas).") ";
-                                        $datos["lineas_rendiciones"] = DB::select($sql);
+                                        if(!empty($groupLineas)){
+                                            $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                            WHERE t2.id IN (".implode(',',$groupLineas).") ";
+                                            $datos["lineas_rendiciones"] = DB::select($sql);
+                                        }
+                                        
                                     }
                                     else{
                                         $datos["rendiciones"] = DB::table('rendiciones')->whereIn('reg',$colas['rendiciones'])->where('puntodeventa','!=',$req["prefijositio"])->get();
@@ -559,7 +562,7 @@ class PropuestaController extends Controller
     
                                 if($req["solicitud"] == "solicitud_gruposbarrios" && !empty($colas['gruposbarrios']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
-                                        $datos["gruposbarrios"] = DB::table('gruposbarrios')->where('codempresa',$req['codempresa'])->get();
+                                        $datos["gruposbarrios"] = DB::table('gruposbarrios')->get();
                                     else
                                         $datos["gruposbarrios"] = DB::table('gruposbarrios')->whereIn('reg',$colas['gruposbarrios'])->get();
                                 }
