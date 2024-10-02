@@ -13,12 +13,14 @@ use App\Models\LineasPropuesta;
 use App\Models\logs;
 use App\Models\migracionespunto;
 use App\Models\Propuesta;
+use App\Models\rendicione;
 use Illuminate\Http\Request;
 use PhpParser\Node\Stmt\Foreach_;
 use Barryvdh\DomPDF\Facade as PDF;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 // SDK de Mercado Pago
 use MercadoPago;
@@ -413,8 +415,27 @@ class PropuestaController extends Controller
                 if(isset($req["apiversion"])){
                     if($req["apiversion"] == "3"){
                         if(isset($req["solicitud"])){
-
-                            $colas = Cola::where('id', '>', $req['cola'])
+                            if(!empty($req['reset']) && $req['reset']== 1){
+                                $colas = Cola::where('id', '>', $req['cola'])
+                                    ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                    ->where(function ($query) use ($req) {
+                                        $query->where('codempresa', $req['codempresa'])
+                                              ->orWhere('codempresa', 'all');
+                                    })
+                                    ->where('updated_at', '>=', Carbon::now()->subDays(30))
+                                    ->groupBy('entity', 'entity_id')
+                                    ->orderBy('id','DESC')
+                                    ->get(['entity', 'entity_id'])
+                                    ->groupBy('entity')
+                                    ->map(function ($group) {
+                                        return $group->pluck('entity_id')->toArray();
+                                    })
+                                    ->toArray();
+                                if(empty($colas)){
+                                    $colas = [str_replace('solicitud_','',$req['solicitud']) => $req['solicitud']];
+                                }
+                            }else{
+                                $colas = Cola::where('id', '>', $req['cola'])
                                     ->where(function($query) use ($req) {
                                         if($req['solicitud'] == 'solicitud_propuestas'){
                                             $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
@@ -436,7 +457,7 @@ class PropuestaController extends Controller
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
-                                    
+                            }
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
                                     $sql = "SELECT t1.* FROM propuestas t1 
@@ -461,85 +482,134 @@ class PropuestaController extends Controller
                                 }
                                 
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
-                                    $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["barrios"] = DB::table('barrios')->where('codempresa',$req['codempresa'])->get();
+                                    else
+                                        $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
                                 }
                                 
                                 if($req["solicitud"] == "solicitud_clientes" && !empty($colas['clientes']) ){
-                                    $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->groupBy('id')->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["clientes"] = DB::table('clientes')->where('codempresa',$req['codempresa'])->groupBy('id')->get();
+                                    else
+                                        $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->groupBy('id')->get();
                                 }
         
                                 if($req["solicitud"] == "solicitud_usuarios"  && !empty($colas['usuarios']) ){
-                                    $datos["usuarios"] = DB::table('usuarios')->whereIn('reg',$colas['usuarios'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["usuarios"] = DB::table('usuarios')->where('codempresa',$colas['codempresa'])->get();
+                                    else
+                                        $datos["usuarios"] = DB::table('usuarios')->whereIn('reg',$colas['usuarios'])->get();
                                 }
-        
                                 if($req["solicitud"] == "solicitud_perfiles"  && !empty($colas['perfiles']) ){
-                                    $datos["perfiles"] = DB::table('perfiles')->whereIn('reg',$colas['perfiles'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["perfiles"] = DB::table('perfiles')->where('codempresa',$req['codempresa'])->get();
+                                    else
+                                        $datos["perfiles"] = DB::table('perfiles')->whereIn('reg',$colas['perfiles'])->get();
                                 }
                                 
+                                
                                 if($req["solicitud"] == "solicitud_arqueos" && !empty($colas['arqueos']) ){
-                                    $datos["arqueos"] = DB::table('arqueos')->whereIn('reg',$colas['arqueos'])->where('puntodeventa','!=',$req["prefijositio"])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["arqueos"] = DB::table('arqueos')->where('codempresa',$req['codempresa'])->limit(30)->where('puntodeventa','!=',$req["prefijositio"])->get();
+                                    else
+                                        $datos["arqueos"] = DB::table('arqueos')->whereIn('reg',$colas['arqueos'])->where('puntodeventa','!=',$req["prefijositio"])->get();
                                 }
                                 
     
                                 if($req["solicitud"] == "solicitud_rendiciones" && !empty($colas['rendiciones']) ){
-                                    $datos["rendiciones"] = DB::table('rendiciones')->whereIn('reg',$colas['rendiciones'])->where('puntodeventa','!=',$req["prefijositio"])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1){
+                                        $datos["rendiciones"] = rendicione::where('codempresa',$req['codempresa'])->orderBy('id','DESC')->limit(30)->get();
+                                        $groupLineas = $datos["rendiciones"]->pluck('id')->toArray();
+                                        $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                        WHERE t2.id IN (".implode(',',$groupLineas).") ";
+                                        $datos["lineas_rendiciones"] = DB::select($sql);
+                                    }
+                                    else{
+                                        $datos["rendiciones"] = DB::table('rendiciones')->whereIn('reg',$colas['rendiciones'])->where('puntodeventa','!=',$req["prefijositio"])->get();
+                                        $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                        WHERE t2.id IN (".implode(',',$colas['rendiciones']).") ";
+                                        $datos["lineas_rendiciones"] = DB::select($sql);
+                                    }
                                     
-                                    $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
-                                    WHERE t2.id IN (".implode(',',$colas['propuestas']).") ";
-    
-                                    $datos["lineas_rendiciones"] = DB::select($sql);
                                 }
         
                             
                                 if($req["solicitud"] == "solicitud_actividades" && !empty($colas['actividades']) ){
-                                    $datos["actividades"] = DB::table('actividades')->whereIn('reg',$colas['actividades'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["actividades"] = DB::table('actividades')->limit(2)->get();
+                                    else
+                                        $datos["actividades"] = DB::table('actividades')->whereIn('reg',$colas['actividades'])->get();
                                 }
     
                                 
                                 if($req["solicitud"] == "solicitud_coberturas" && !empty($colas['coberturas']) ){
-                                    $datos["coberturas"] = DB::table('coberturas')->whereIn('reg',$colas['coberturas'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["coberturas"] = DB::table('coberturas')->limit(2)->get();
+                                    else
+                                        $datos["coberturas"] = DB::table('coberturas')->whereIn('reg',$colas['coberturas'])->get();
                                 }
     
                                 if($req["solicitud"] == "solicitud_clasificaciones" && !empty($colas['clasificaciones']) ){
-                                    $datos["clasificaciones"] = DB::table('clasificaciones')->whereIn('reg',$colas['clasificaciones'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["clasificaciones"] = DB::table('clasificaciones')->limit(2)->get();
+                                    else
+                                        $datos["clasificaciones"] = DB::table('clasificaciones')->whereIn('reg',$colas['clasificaciones'])->get();
                                 }
     
                                 if($req["solicitud"] == "solicitud_gruposbarrios" && !empty($colas['gruposbarrios']) ){
-                                    $datos["gruposbarrios"] = DB::table('gruposbarrios')->whereIn('reg',$colas['gruposbarrios'])->get();
+                                    if( !empty($req['reset']) && $req['reset'] == 1)
+                                        $datos["gruposbarrios"] = DB::table('gruposbarrios')->where('codempresa',$req['codempresa'])->get();
+                                    else
+                                        $datos["gruposbarrios"] = DB::table('gruposbarrios')->whereIn('reg',$colas['gruposbarrios'])->get();
                                 }
-                            
-                                /*if($req["solicitud"] == "solicitud_provincias"){
-    
-                                    $fechamigracion = $this->fechamigra($req["codempresa"],$req["prefijositio"], $req["reset"], "provincias");
-    
-                                    $datos["provincias"] = DB::table('provincias')->where('updated_at','>=',$fechamigracion)->where('updated_at','<=',date('Y-m-d H:i:s'))->get();  
-    
-                                    $migpunto = new migracionespunto();
-                                    $migpunto->puntodeventa = $req["prefijositio"];
-                                    $migpunto->codempresa = $req["codempresa"];                                    
-                                    $migpunto->tipo = "provincias";
-                                    $migpunto->save();
-                                }*/
-                                $colas = Cola::where('id', '>', $req['cola'])
-                                ->where(function($query) use ($req) {
-                                    if($req['solicitud'] == 'solicitud_propuestas'){
-                                        $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
-                                    }else{
-                                        $query->where('ptoventa','!=',$req["prefijositio"]);
+                                if($req["solicitud"] == "solicitud_provincias"){
+                                    $datos["provincias"] = DB::table('provincias')->get();  
+                                }
+                                if(!empty($req['reset']) && $req['reset']== 1){
+                                    $colas = Cola::where('id', '>', $req['cola'])
+                                    ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                    ->where(function ($query) use ($req) {
+                                        $query->where('codempresa', $req['codempresa'])
+                                              ->orWhere('codempresa', 'all');
+                                    })
+                                    ->where('updated_at', '>=', Carbon::now()->subDays(30))
+                                    ->groupBy('entity', 'entity_id')
+                                    ->orderBy('id','DESC')
+                                    ->select('entity', 'entity_id','id') 
+                                    ->groupBy('entity')
+                                    ->first();
+                                    if(empty($colas)){
+                                        $colas = [
+                                            "entity" => str_replace('solicitud_','',$req['solicitud']),
+                                            "entity_id" => 0,
+                                            "id" => 0
+                                        ];
                                     }
-                                })
-                                ->where('entity', str_replace('solicitud_','',$req['solicitud']))
-                                ->where(function ($query) use ($req) {
-                                    $query->where('codempresa', $req['codempresa'])
-                                          ->orWhere('codempresa', 'all');
-                                })
-                                ->groupBy('entity', 'id')
-                                ->orderBy('id','ASC')
-                                ->limit(30)
-                                ->select('entity', 'entity_id','id') 
-                                ->groupBy('entity','id')
-                                ->get();
-                                $datos['colas'] = $colas;
+                                    $datos['colas'] = [$colas];
+                                }else{
+                                    $colas = Cola::where('id', '>', $req['cola'])
+                                    ->where(function($query) use ($req) {
+                                        if($req['solicitud'] == 'solicitud_propuestas'){
+                                            $query->where('ptoventa', '!=', $req["prefijositio"])->orWhereNull('ptoventa');
+                                        }else{
+                                            $query->where('ptoventa','!=',$req["prefijositio"]);
+                                        }
+                                    })
+                                    ->where('entity', str_replace('solicitud_','',$req['solicitud']))
+                                    ->where(function ($query) use ($req) {
+                                        $query->where('codempresa', $req['codempresa'])
+                                              ->orWhere('codempresa', 'all');
+                                    })
+                                    ->groupBy('entity', 'id')
+                                    ->orderBy('id','ASC')
+                                    ->limit(30)
+                                    ->select('entity', 'entity_id','id') 
+                                    ->groupBy('entity','id')
+                                    ->get();
+                                    $datos['colas'] = $colas;
+                                }
+                                
                             }
                         }
                     }
