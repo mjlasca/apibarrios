@@ -477,8 +477,8 @@ class PropuestaController extends Controller
                                     $idsClientes_ = array_map(function($lin) {
                                         return $lin->documento;
                                     }, $datos["lineas_propuestas"]);
-                                    
-                                    $datos["clientes"] = DB::table('clientes')->whereIn('id',array_unique(array_merge($idsClientes,$idsClientes_)))->groupBy('id')->get();
+                                    if(empty($req['reset']))
+                                        $datos["clientes"] = DB::table('clientes')->whereIn('id',array_unique(array_merge($idsClientes,$idsClientes_)))->groupBy('id')->get();
                                 }
                                 
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
