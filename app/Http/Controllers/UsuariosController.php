@@ -11,7 +11,9 @@ class UsuariosController extends Controller
     public function getEmpresa($codempresa, Request $req){
         $usuarios = [];
         if($req->input('reg') != ''){
-            $colas = Cola::where('entity','usuarios')->where('id','>',$req->input('reg'))
+            $colas = Cola::where('entity','usuarios')
+                            ->where('codempresa', $codempresa)
+                            ->where('id','>',$req->input('reg'))
                             ->groupBy('entity', 'entity_id')
                             ->orderBy('id','ASC')
                             ->limit(30)
