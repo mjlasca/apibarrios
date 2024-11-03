@@ -527,7 +527,8 @@ class MigracionBarriosController extends Controller
                                 "user_edit" =>  $value["user_edit"],
                                 "codempresa" =>  $value["codempresa"],
                                 "puntodeventa" =>  $req["prefpuntodeventa"],
-                                "categoria" => $value["categoria"]
+                                "categoria" => $value["categoria"],
+                                "codestado" => $value["codestado"] ?? 0
                             ]);
                             Cola::create([
                                 'entity' => 'clientes',
@@ -552,6 +553,7 @@ class MigracionBarriosController extends Controller
                         $cliente->situacion = $value["situacion"];
                         $cliente->ultmod = $value["ultmod"];
                         $cliente->user_edit = $value["user_edit"];
+                        $cliente->codestado = $value["codestado"] ?? 1;
                         if(isset($value["codempresa"])){
                             $cliente->codempresa = $value["codempresa"];
                             $cliente->puntodeventa = $req["prefpuntodeventa"];
