@@ -611,6 +611,22 @@ class PropuestaController extends Controller
                                     ->groupBy('entity','id')
                                     ->get();
                                     $datos['colas'] = $colas;
+                                    if(!empty($datos['colas'])){
+                                        $maxCola = Cola::where('entity', str_replace('solicitud_','', $req['solicitud']))->max('id');
+                                        if($maxCola - $colas->max('id')){
+                                            logs::newMsg(
+                                                "{$req['solicitud']} último dato cola {$colas->max('id')} - {$maxCola}",
+                                                "COLA-{$req['prefijositio']}",
+                                                $req['solicitud'],
+                                                $req['prefijositio']
+                                            );    
+                                            $datos['colas'][] = [
+                                                "entity" => str_replace('solicitud_','', $req['solicitud']),
+                                                "entity_id" => '',
+                                                "id" => ($maxCola - 100)
+                                            ];
+                                        }
+                                    }
                                 }
                                 
                             }

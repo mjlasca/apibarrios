@@ -9,6 +9,11 @@ class logs extends Model
 {
     use HasFactory;
 
+    public static function newMsg($msg,$cod,$idpropuesta = '',$prefijo = '') : void {
+        $logs = new logs();
+        $logs->saveerror($msg, $idpropuesta, $prefijo, $cod);
+    }
+
     public function saveerror($err,$idpropuesta,$prefijo,$coderror){
         $logs = new logs();
         $logs->message = $err;
