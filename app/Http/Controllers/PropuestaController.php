@@ -613,7 +613,7 @@ class PropuestaController extends Controller
                                     $datos['colas'] = $colas;
                                     if(!empty($datos['colas'])){
                                         $maxCola = Cola::where('entity', str_replace('solicitud_','', $req['solicitud']))->max('id');
-                                        if($maxCola - $colas->max('id')){
+                                        if(($maxCola - $colas->max('id')) > 100){
                                             logs::newMsg(
                                                 "{$req['solicitud']} último dato cola {$colas->max('id')} - {$maxCola}",
                                                 "COLA-{$req['prefijositio']}",
