@@ -449,7 +449,7 @@ class PropuestaController extends Controller
                                               ->orWhere('codempresa', 'all');
                                     })
                                     ->groupBy('entity', 'entity_id')
-                                    ->orderBy('id','ASC')
+                                    ->orderBy('id','DESC')
                                     ->limit(30)
                                     ->get(['entity', 'entity_id']) 
                                     ->groupBy('entity')
@@ -605,7 +605,7 @@ class PropuestaController extends Controller
                                               ->orWhere('codempresa', 'all');
                                     })
                                     ->groupBy('entity', 'id')
-                                    ->orderBy('id','ASC')
+                                    ->orderBy('id','DESC')
                                     ->limit(30)
                                     ->select('entity', 'entity_id','id') 
                                     ->groupBy('entity','id')
