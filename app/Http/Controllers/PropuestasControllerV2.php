@@ -519,13 +519,14 @@ class PropuestasControllerV2 extends Controller
                                     $query->where('fecha_paga', '>', $date.' 00:00:01')
                                     ->where('fecha_paga', '<', $date.' 23:59:59');
                                 })
-                                ->where(function($query) use ($date) {
+                                ->orWhere(function($query) use ($date) {
                                     $query->where('ultmod', '>', $date.' 00:00:01')
                                         ->where('ultmod', '<', $date.' 23:59:59');
                                 })
                                 ->where('codempresa', $codempresa)
                                 ->where('prefijo','!=',$prefix)
                                 ->get();
+                                
         $idsPropuesta =  $proposal->map(function($pro) {
             return $pro->id;
         })->toArray();
