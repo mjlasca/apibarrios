@@ -519,11 +519,11 @@ class PropuestasControllerV2 extends Controller
                             ->where('prefijo','!=',$prefix)
                             ->where(function($query) use ($date) {
                                     $query->where('fecha_paga', '>', $date.' 00:00:01')
-                                    ->where('fecha_paga', '<', $date.' 23:59:59');
-                                })
-                            ->orWhere(function($query) use ($date) {
-                                    $query->where('ultmod', '>', $date.' 00:00:01')
-                                        ->where('ultmod', '<', $date.' 23:59:59');
+                                    ->where('fecha_paga', '<', $date.' 23:59:59')
+                                    ->orWhere(function($query0) use ($date) {
+                                        $query0->where('ultmod', '>', $date.' 00:00:01')
+                                            ->where('ultmod', '<', $date.' 23:59:59');
+                                    });
                                 })
                             ->get();
                                 
