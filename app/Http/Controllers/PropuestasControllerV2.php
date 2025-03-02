@@ -513,7 +513,7 @@ class PropuestasControllerV2 extends Controller
      *  Prefix
      * @return json
      */
-    public function getDateProposal($date, $codempresa, $prefix){
+    public function getDateProposal($date, $codempresa, $prefix, $idpropuesta = null){
         
         $proposal = Propuesta::select("id","reg","documento","nombre","num_polizas","meses","id_cobertura","id_barrio","nueva_poliza","premio","premio_total","fechaDesde","fechaHasta","clausula","barrio_beneficiario","ultmod","useredit as user_edit","codestado","cobertura_suma","cobertura_deducible","cobertura_gastos","promocion","paga","fecha_paga","referencia","prima","master","organizador","productor","puntodeventa","prefijo","updated_at","created_at","formadepago","usuariopaga","tipopago","compformadepago","csrf","fecha_nacimiento","codempresa","idpropuesta","nota","data_barrios","version","valor_pagado","imputacion","fecha_comprobante")->where('codempresa', $codempresa)
                             ->where('prefijo','!=',$prefix)
@@ -526,7 +526,16 @@ class PropuestasControllerV2 extends Controller
                                     });
                                 })
                             ->get();
+        if(!empty($idpropuesta)){
+            $proposal = Propuesta::select("id","reg","documento","nombre","num_polizas","meses","id_cobertura","id_barrio","nueva_poliza","premio","premio_total","fechaDesde","fechaHasta","clausula","barrio_beneficiario","ultmod","useredit as user_edit","codestado","cobertura_suma","cobertura_deducible","cobertura_gastos","promocion","paga","fecha_paga","referencia","prima","master","organizador","productor","puntodeventa","prefijo","updated_at","created_at","formadepago","usuariopaga","tipopago","compformadepago","csrf","fecha_nacimiento","codempresa","idpropuesta","nota","data_barrios","version","valor_pagado","imputacion","fecha_comprobante")
+            ->where('prefijo',$prefix)
+            ->where('idpropuesta',$idpropuesta)
+            ->where('codempresa', $codempresa)
+            ->get();
+        }
+        
                                 
+                            
         $idsPropuesta =  $proposal->map(function($pro) {
             return $pro->id;
         })->toArray();

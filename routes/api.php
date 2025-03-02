@@ -32,6 +32,7 @@ Route::middleware('auth:api')->post('/propuestas/setreference/{codempresa}', [ P
 Route::middleware('auth:api')->post('/propuestas/duplicate-pending', [ PropuestasControllerV2::class, 'duplicatePendingProposal' ]);
 Route::post('/propuestas/duplicate', [ PropuestasControllerV2::class, 'duplicateProposal' ]);
 Route::get('/propuestas/missing/{date}/{codempresa}/{prefix}', [ PropuestasControllerV2::class, 'getDateProposal' ]);
+Route::get('/propuestas/missing/{date}/{codempresa}/{prefix}/{idpropuesta}', [ PropuestasControllerV2::class, 'getDateProposal' ]);
 Route::middleware('auth:api')->get('/propuestas/report/{date}/{codempresa}', [ PropuestasControllerV2::class, 'getConsolidated' ]);
 
 
