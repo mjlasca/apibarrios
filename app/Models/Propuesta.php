@@ -172,7 +172,10 @@ class Propuesta extends Model
                         $data['vrunit'] = $cobertura[0]->vrMensual;
                         $data['total'] = $total;
                         $data['info'] = $concatInfo;
-                        $data['url'] = '/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                        $domain = $_SERVER['HTTP_HOST'];
+                        $url = $protocol . $domain;
+                        $data['url'] = $url.'/propuesta-duplicate/pay/'.$pref.'/'.$id;
                         
 
                         return $data;
