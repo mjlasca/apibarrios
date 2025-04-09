@@ -48,4 +48,56 @@ class clienteController extends Controller
 
         }
     }
+
+    /**
+     * function return data client if math
+     */
+    public function getClient(Request $req) {
+        $client = cliente::where('id',$req['document'])->where('codestado',1)->first();
+        $data = ['success' => FALSE];
+        if(!empty($client)){
+            $data = [
+                "nombres" => $client->nombres,
+                "apellidos" => $client->apellidos,
+                "tipo_id" => $client->tipo_id,
+                "fecha_nacimiento" => $client->fecha_nacimiento,
+                "telefono" => $client->telefono,
+                "direccion" => $client->direccion,
+                "codpostal" => $client->codpostal,
+                "success" => TRUE
+            ];
+        }
+
+        return json_encode($data);
+    }
+
+    /**
+     * function validate exist client
+     */
+    public function getInsured(Request $req) {
+        $data = ['success' => FALSE];
+        if(!empty($req['documents'])){
+            $arrayDni = explode(',',$req['documents']);
+            $clients = cliente::whereIn('id',$arrayDni)->get();
+            if(!empty($clients)){
+                $data['success'] = TRUE;
+                foreach ($clients as $key => $client) {
+                    $data['dni'.$client->id] = [
+                        'documento' => $client->id,
+                        'tipo' => $client->tipo_id,
+                        'nombres' => $client->nombres,
+                        'apellidos' => $client->apellidos,
+                        'fecha_nacimiento' => $client->fecha_nacimiento,
+                    ];
+                }
+                foreach ($arrayDni as $key => $arr) {
+                    if(!isset($data['dni'.$arr])){
+                        $data['dni'.$arr] = "No existe el documento ".$arr;
+                        $data['success'] = FALSE;
+                    }
+                }
+            }
+        }   
+        return json_encode($data);
+    }
 }

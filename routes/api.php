@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\ClasificacionesController;
+use App\Http\Controllers\clienteController;
 use App\Http\Controllers\CoberturasController;
 use App\Http\Controllers\GrupoBarriosController;
 use App\Http\Controllers\MigracionBarriosController;
@@ -47,4 +48,7 @@ Route::middleware('auth:api')->post('/clasificaciones/setclasificaciones/{codemp
 
 Route::middleware('auth:api')->get('/actividades/{codempresa}', [ ActividadesController::class, 'getEmpresa' ]);
 Route::middleware('auth:api')->post('/actividades/setactividades/{codempresa}', [ ActividadesController::class, 'setActividades' ]);
+
+Route::middleware('auth:api')->get('/v2/client', [ clienteController::class, 'getClient' ]);
+Route::middleware('auth:api')->get('/v2/insured', [ clienteController::class, 'getInsured' ]);
 
