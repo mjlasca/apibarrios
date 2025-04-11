@@ -177,7 +177,7 @@
     <tbody>
       <tr>
         <td style="width: 32%;" class="text-center">Nombres y Apellidos/Razón Social</td>
-        <td colspan="3">{{ $cliente[0]->nombres ." ".$cliente[0]->apellidos  }}</td>
+        <td colspan="3">{{ $cliente[0]->apellidos." ".$cliente[0]->nombres   }}</td>
       </tr>
       <tr>
         <td class="text-center">Tipo y número de documento</td>
@@ -194,7 +194,7 @@
 
           @foreach($barriospropuesta as $val)
             @php
-              $concatbarrios .= $val->id_barrio ." - ".$val->nombre .", ";
+              $concatbarrios .=$val->nombre." - ". $val->id_barrio  .", ";
             @endphp
 
           @endforeach
@@ -382,7 +382,7 @@
           <tr class="tr-b">
             <td style="padding-left: 10px;" colspan="6">
               <br>
-              Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
+              Sr/es : {{ $cliente[0]->apellidos. " ".$cliente[0]->nombres }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
               Localidad : {{ $cliente[0]->codpostal ." - ".$cliente[0]->localidad }} <br>
               <br>
@@ -395,7 +395,7 @@
             <td class="text-center td-b" >Importe</td>
           </tr>
           <tr>
-            <td class="text-center td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center td-b" colspan="2">{{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y') }}</td>
             <td class="text-center td-b" >1/1</td>
             <td class="text-center" colspan="2"></td>
             <td class="text-center td-b" >{{$data[0]->premio_total}}</td>
@@ -463,7 +463,7 @@
           <tr class="tr-b">
             <td colspan="6" style="padding-left: 10px;">
               <br>
-              Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
+              Sr/es : {{ $cliente[0]->apellidos. " ".$cliente[0]->nombres }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
               Localidad : {{ $cliente[0]->codpostal ." - ".$cliente[0]->localidad }} <br>
               <br>
@@ -476,7 +476,7 @@
             <td class="text-center td-b" >Importe</td>
           </tr>
           <tr>
-            <td class="text-center  td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center  td-b" colspan="2">{{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y') }}</td>
             <td class="text-center td-b" >1/1</td>
             <td class="text-center" colspan="2"></td>
             <td class="text-center td-b" >{{$data[0]->premio_total}}</td>
@@ -556,7 +556,7 @@
           <tr class="tr-b">
             <td style="padding-left: 10px;" colspan="12">
               <br>
-              Sr/es : {{ $cliente[0]->nombres. " ".$cliente[0]->apellidos }}<br>
+              Sr/es : {{ $cliente[0]->apellidos. " ".$cliente[0]->nombres }}<br>
               Domicilio : {{ $cliente[0]->direccion }}<br>
               Localidad : {{ $cliente[0]->codpostal ." - ".$cliente[0]->localidad }} <br>
               Provincia : {{ $cliente[0]->ciudad }} <br>
@@ -573,7 +573,7 @@
           <tr>
             <td class="text-center td-b" >1</td>
             <td class="text-center td-b" >1</td>
-            <td class="text-center td-b" colspan="2">{{ substr( $data[0]->fechaHasta,0,10) }}</td>
+            <td class="text-center td-b" colspan="2">{{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y') }}</td>
             <td class="text-center" colspan="6"></td>
             <td class="text-center td-b"  colspan="2">{{$data[0]->premio_total}}</td>
           </tr>
@@ -618,9 +618,9 @@
         
         Por intermedio de la presente certificamos, que la Póliza del Ramo Accidentes Personales No. {{ $data[0]->prefijo }}-{{ $data[0]->idpropuesta }} contratada por el asegurado 
         @foreach($lineasdata as $val)
-          {{$val->nombres}}  {{$val->apellidos}}  {{$val->tipo_documento}}:{{$val->documento}},
+        {{$val->apellidos}} {{$val->nombres}} {{$val->tipo_documento}}:{{$val->documento}},
         @endforeach
-         vigente entre el {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}, de facturación n 1 Cuota, conforme a nuestro registros se abona mediante efectivo, encontrándose abonada en su totalidad.
+         vigente entre el {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}, de facturación en 1 Cuota, conforme a nuestro registro se abona mediante efectivo, encontrándose abonada en su totalidad.
         Se extiende el presente certificado para ser presentado ante quien corresponda. 
         
     </div>
