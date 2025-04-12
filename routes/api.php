@@ -10,6 +10,7 @@ use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\BarriosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,4 +52,6 @@ Route::middleware('auth:api')->post('/actividades/setactividades/{codempresa}', 
 
 Route::middleware('auth:api')->get('/v2/client', [ clienteController::class, 'getClient' ]);
 Route::middleware('auth:api')->get('/v2/insured', [ clienteController::class, 'getInsured' ]);
+Route::middleware('auth:api')->get('/v2/cuits', [ BarriosController::class, 'validateCuits' ]);
+Route::middleware('auth:api')->post('/v2/proposal/create', [ PropuestasControllerV2::class, 'CreateProposalChat' ]);
 

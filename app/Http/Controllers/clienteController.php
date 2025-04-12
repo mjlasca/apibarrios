@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\cliente;
 use App\Models\Cola;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class clienteController extends Controller
 {
@@ -52,7 +53,7 @@ class clienteController extends Controller
     /**
      * function return data client if math
      */
-    public function getClient(Request $req) {
+    public function getClient(Request $req) : JsonResponse {
         $client = cliente::where('id',$req['document'])->where('codestado',1)->first();
         $data = ['success' => FALSE];
         if(!empty($client)){
@@ -68,13 +69,13 @@ class clienteController extends Controller
             ];
         }
 
-        return json_encode($data);
+        return response()->json($data);
     }
 
     /**
      * function validate exist client
      */
-    public function getInsured(Request $req) {
+    public function getInsured(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
         if(!empty($req['documents'])){
             $arrayDni = explode(',',$req['documents']);
@@ -98,6 +99,6 @@ class clienteController extends Controller
                 }
             }
         }   
-        return json_encode($data);
+        return response()->json($data);
     }
 }

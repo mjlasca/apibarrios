@@ -15,7 +15,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Http\JsonResponse;
 
 
 
@@ -571,5 +571,55 @@ class PropuestasControllerV2 extends Controller
         return response()->json($data);
     }
 
+    public function CreateProposalChat(Request $req) : JsonResponse {
+        $data = ['success' => FALSE];
+        $currentDate = now('America/Argentina/Buenos_Aires')->format('Y-m-d H:i:s');
+        $toDate = $currentDate;
+        $proposal = new Propuesta();
+        $mainClient = cliente::where('id',$req['documento'])->first();
+        $data['idpropuesta'] = $proposal->consecutivo("O");
+        $numPolizas = !empty($req['num_polizas']) ? count( explode(",", $req["asegurados"]) ) : 0;
+
+        if($numPolizas > 0){
+            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->get();
+        }
+
+
+        $proposal = Propuesta::create([
+            'codempresa' => $req['codempresa'],
+            'prefijo' => "O",
+            'idpropuesta' => $data['idpropuesta'],
+            'codestado' => 1,
+            'documento' => $mainClient->id,
+            'nombre' => "$mainClient->nombres $mainClient->apellidos",
+            'num_polizas' => $numPolizas,
+            'meses' => $req['meses'],
+            'id_cobertura' => $req['id_cobertura'],
+            'id_barrio' => $req['idpropuesta'],
+            'nueva_poliza' => $req['nueva_poliza'],
+            'premio' => $req['premio'],
+            'premio_total' => $req['premio_total'],
+            'fechaDesde' => $toDate,
+            'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
+            'ultmod' => $currentDate,
+            'useredit' => "online",
+            'cobertura_suma' => $req['cobertura_suma'],
+            'cobertura_deducible' => $req['cobertura_deducible'],
+            'cobertura_gastos' => $req['cobertura_gastos'],
+            'promocion' => $req['promocion'],
+            'paga' => 0,
+            'fecha_paga' => "1000-01-01 00:00:00",
+            'master' => $req['master'],
+            'organizador' => $req['organizador'],
+            'productor' => $req['productor'],
+            'data_barrios' => $req['data_barrios'],
+            'version' => 1,
+            'fecha_comprobante' => "1000-01-01",
+            'fecha_nacimiento' => $mainClient->fecha_nacimiento,
+            'formadepago' => "CREDITO",
+        ]);
+        
+        return response()->json($data);
+    }
     
 }
