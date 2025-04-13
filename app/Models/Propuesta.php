@@ -15,6 +15,40 @@ class Propuesta extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'codempresa',
+        'prefijo',
+        'idpropuesta',
+        'codestado',
+        'documento',
+        'nombre',
+        'num_polizas',
+        'meses',
+        'id_cobertura',
+        'id_barrio',
+        'nueva_poliza',
+        'premio',
+        'premio_total',
+        'fechaDesde',
+        'fechaHasta',
+        'ultmod',
+        'useredit',
+        'cobertura_suma',
+        'cobertura_deducible',
+        'cobertura_gastos',
+        'promocion',
+        'paga',
+        'fecha_paga',
+        'master',
+        'organizador',
+        'productor',
+        'data_barrios',
+        'version',
+        'fecha_comprobante',
+        'fecha_nacimiento',
+        'formadepago',
+    ];
+
     public function consecutivo(){
         
         $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('reg','DESC')->limit(1)->get();

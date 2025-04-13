@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use App\Models\Cobertura;
 
 
 
@@ -573,16 +574,61 @@ class PropuestasControllerV2 extends Controller
 
     public function CreateProposalChat(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
-        $currentDate = now('America/Argentina/Buenos_Aires')->format('Y-m-d H:i:s');
+        $currentDate = now('America/Argentina/Buenos_Aires');
         $toDate = $currentDate;
         $proposal = new Propuesta();
-        $mainClient = cliente::where('id',$req['documento'])->first();
+        $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
         $data['idpropuesta'] = $proposal->consecutivo("O");
-        $numPolizas = !empty($req['num_polizas']) ? count( explode(",", $req["asegurados"]) ) : 0;
+        $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
+        $numPolizas = count($insureds);
 
-        if($numPolizas > 0){
-            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->get();
+        $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
+        $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
+        $neighbours = barrio::whereIn('id', $neighboursGroup)->where("codestado",1)->where('id','!=',NULL)->where('id','!=','')->groupBy('id')->get();
+        $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                    ->where('codestado', 1)
+                    ->orderBy('suma', 'asc')
+                    ->first();
+        $prize = $coverage->vrMensual;
+        $prize_sum = $coverage->vrMensual * $req['meses'];
+        $prizeTotal = 0;
+        $promo = "";
+        if($req['meses'] == 2 && !empty($coverage->x21)){
+            $prize_sum = $coverage->x21;
+            $promo = "2x1";
         }
+        if($req['meses'] == 3 && !empty($coverage->x32)){
+            $prize_sum = $coverage->x32;
+            $promo = "3x2";
+        }
+        if($req['meses'] == 6 && !empty($coverage->x64)){
+            $prize_sum = $coverage->x64;
+            $promo = "6x4";
+        }
+        if($insureds){
+            foreach ($insureds as $key => $client) {
+                $forEge =  $this->ageCalculate($client->fecha_nacimiento) > 60 ? ($prize_sum * 2) : $prize_sum;
+                $prizeTotal += $forEge;
+            }
+        }
+        $arrayNeighbours['barrios'] = [];
+        $neighbours->map(function($item) use (&$arrayNeighbours) {
+            $arrayNeighbours['barrios'][] = [
+                'id' => null,
+                'id_propuesta' => null,
+                'id_barrio' => $item->id,
+                'nombre' => $item->nombre,
+                'ultmod' => null,
+                'user_edit' => null,
+                'codestado' => null,
+                'prefijo' => null,
+                'idprefijo' => null,
+                'codempresa' => "",
+                'sumamuerte' => $item->suma_muerte,
+                'sumagm' => $item->suma_gm,
+                'email' => null,
+            ];
+        });
 
 
         $proposal = Propuesta::create([
@@ -594,25 +640,25 @@ class PropuestasControllerV2 extends Controller
             'nombre' => "$mainClient->nombres $mainClient->apellidos",
             'num_polizas' => $numPolizas,
             'meses' => $req['meses'],
-            'id_cobertura' => $req['id_cobertura'],
+            'id_cobertura' => $coverage->nombre,
             'id_barrio' => $req['idpropuesta'],
-            'nueva_poliza' => $req['nueva_poliza'],
-            'premio' => $req['premio'],
-            'premio_total' => $req['premio_total'],
+            'nueva_poliza' => 1,
+            'premio' => $prize,
+            'premio_total' => $prizeTotal,
             'fechaDesde' => $toDate,
             'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
-            'ultmod' => $currentDate,
+            'ultmod' => $currentDate->format('Y-m-d H:i:s'),
             'useredit' => "online",
-            'cobertura_suma' => $req['cobertura_suma'],
-            'cobertura_deducible' => $req['cobertura_deducible'],
-            'cobertura_gastos' => $req['cobertura_gastos'],
-            'promocion' => $req['promocion'],
+            'cobertura_suma' => $coverage->suma,
+            'cobertura_deducible' => $coverage->deducible,
+            'cobertura_gastos' => $coverage->gastos,
+            'promocion' => $promo,
             'paga' => 0,
             'fecha_paga' => "1000-01-01 00:00:00",
             'master' => $req['master'],
             'organizador' => $req['organizador'],
             'productor' => $req['productor'],
-            'data_barrios' => $req['data_barrios'],
+            'data_barrios' => json_encode($arrayNeighbours),
             'version' => 1,
             'fecha_comprobante' => "1000-01-01",
             'fecha_nacimiento' => $mainClient->fecha_nacimiento,
@@ -620,6 +666,19 @@ class PropuestasControllerV2 extends Controller
         ]);
         
         return response()->json($data);
+    }
+
+    /**
+     * Return age
+     *
+     * @param [type] $birthDate
+     * @return void
+     */
+    public function ageCalculate($birthDate) {
+        $birthDate = new \DateTime($birthDate);
+        $today = new \DateTime();
+        $age = $birthDate->diff($today)->y;
+        return $age;
     }
     
 }
