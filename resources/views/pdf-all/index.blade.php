@@ -96,7 +96,7 @@
       text-align: center;
       position: fixed;
       align-items: center;
-      left: 5%;
+      left: 30%;
       bottom: 170px;
     }
 
@@ -615,13 +615,12 @@
     </div>
     <br>
     <div>
-        
-        Por intermedio de la presente certificamos, que la Póliza del Ramo Accidentes Personales No. {{ $data[0]->prefijo }}-{{ $data[0]->idpropuesta }} contratada por el asegurado 
+      Por la presente certificamos que la constancia de póliza de Accidentes Personales No. {{ $data[0]->prefijo }}-{{ $data[0]->idpropuesta }} contratada en esta compañía por cuenta del asegurado 
         @foreach($lineasdata as $val)
         {{$val->apellidos}} {{$val->nombres}} {{$val->tipo_documento}}:{{$val->documento}},
         @endforeach
-         vigente entre el {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}, de facturación en 1 Cuota, conforme a nuestro registro se abona mediante efectivo, encontrándose abonada en su totalidad.
-        Se extiende el presente certificado para ser presentado ante quien corresponda. 
+        no presenta deuda exigible durante el período de vigencia comprendido entre el
+         {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}. Conforme a nuestros registros, se encuentra abonada en su totalidad. 
         
     </div>
     
