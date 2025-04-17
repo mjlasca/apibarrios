@@ -632,6 +632,8 @@ class PropuestasControllerV2 extends Controller
             $data['prefijo'] = "O";
             $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
             $numPolizas = count($insureds);
+            if($numPolizas == 0)
+                return response()->json(['success' => FALSE, 'message' => 'O no se envió asegurados o no existen los que se enviaron']);
 
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
             $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
