@@ -77,7 +77,51 @@ class clienteController extends Controller
      */
     public function createClientInsured(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
-        return response()->json($req->all());
+        $insureds = $req['insureds'];
+        $codempresa = $req['codempresa'];
+        $currentDate = now('America/Argentina/Buenos_Aires');
+        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+        try {
+            foreach ($insureds as $key => $insured) {
+                $client = cliente::where('id',$insured['documento'])->first();
+                if($client){
+                    if(empty($client->fecha_nacimiento)) {
+                        $client->nombres = $insured['nombres'];
+                        $client->apellidos = $insured['apellidos'];
+                        $client->tipo_id = $insured['tipo_documento'];
+                        $client->fecha_nacimiento = $insured['fecha_nacimiento'];
+                        $client->codestado = 1;
+                        $client->codempresa = $codempresa;
+                        $client->ultmod = $currentDateStr;
+                        $client->user_edit = "online";
+                        $client->save();
+                    }
+                }else{
+                    $client = cliente::create([
+                        'id' => $insured['documento'],
+                        'nombres' => $insured['nombres'],
+                        'apellidos' => $insured['apellidos'],
+                        'tipo_id' => $insured['tipo_documento'],
+                        'fecha_nacimiento' => $insured['fecha_nacimiento'],
+                        'codestado' => 1,
+                        'codempresa' => $codempresa,
+                        'ultmod' => $currentDateStr,
+                        'user_edit' => "online",
+                    ]);
+                }
+                Cola::create([
+                    'entity' => 'clientes',
+                    'entity_id' => $client->id,
+                    'codempresa' => $codempresa,
+                    'ptoventa' => 'O',
+                ]);
+            }
+            $data['success'] = TRUE;
+        } catch (\Exception $e) {
+            $data['success'] = FALSE;
+            $data['error'] = $e->getMessage();
+        }
+        return response()->json($data);
     }
 
 

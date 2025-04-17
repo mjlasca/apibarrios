@@ -617,128 +617,148 @@ class PropuestasControllerV2 extends Controller
 
     public function CreateProposalChat(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
-        $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
-        $activity = Actividade::where('cod',$req['cod_actividad'])->first();
-        if(empty($clasification) || empty($activity)){
-            return response()->json(['success' => FALSE, 'message' => 'No se encontró la clasificación o actividad']);
-        }
-        $currentDate = now('America/Argentina/Buenos_Aires');
-        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
-        $toDate = $currentDate;
-        $proposal = new Propuesta();
-        $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
-        $data['idpropuesta'] = $proposal->consecutivo("O");
-        $data['prefijo'] = "O";
-        $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
-        $numPolizas = count($insureds);
-
-        $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
-        $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
-        $neighbours = barrio::whereIn('id', $neighboursGroup)->where("codestado",1)->where('suma_muerte','!=',NULL)->where('id','!=',NULL)->where('id','!=','')->groupBy('id')->get();
-        $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
-                    ->where('codestado', 1)
-                    ->orderBy('suma', 'asc')
-                    ->first();
-        $prize = $coverage->vrMensual;
-        $prize_sum = $coverage->vrMensual * $req['meses'];
-        $prizeTotal = 0;
-        $promo = "";
-        if($req['meses'] == 2 && !empty($coverage->x21)){
-            $prize_sum = $coverage->x21;
-            $promo = "2x1";
-        }
-        if($req['meses'] == 3 && !empty($coverage->x32)){
-            $prize_sum = $coverage->x32;
-            $promo = "3x2";
-        }
-        if($req['meses'] == 6 && !empty($coverage->x64)){
-            $prize_sum = $coverage->x64;
-            $promo = "6x4";
-        }
-        if($insureds){
-            foreach ($insureds as $key => $client) {
-                $forEge =  $this->ageCalculate($client->fecha_nacimiento) > 60 ? ($prize_sum * 2) : $prize_sum;
-                $prizeTotal += $forEge;
+        try {
+            $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
+            $activity = Actividade::where('cod',$req['cod_actividad'])->first();
+            if(empty($clasification) || empty($activity)){
+                return response()->json(['success' => FALSE, 'message' => 'No se encontró la clasificación o actividad']);
             }
+            $currentDate = now('America/Argentina/Buenos_Aires');
+            $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+            $toDate = $currentDate;
+            $proposal = new Propuesta();
+            $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
+            $data['idpropuesta'] = $proposal->consecutivo("O");
+            $data['prefijo'] = "O";
+            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
+            $numPolizas = count($insureds);
+
+            $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
+            $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
+            $neighbours = barrio::whereIn('id', $neighboursGroup)
+                ->where("codestado",1)
+                ->whereNotNull('suma_muerte')
+                ->where('suma_muerte','!=','')
+                ->whereNotNull('id')
+                ->where('id','!=','')
+                ->groupBy('id')
+                ->get();
+            $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                        ->where('codestado', 1)
+                        ->orderBy('suma', 'asc')
+                        ->first();
+            $prize = $coverage->vrMensual;
+            $prize_sum = $coverage->vrMensual * $req['meses'];
+            $prizeTotal = 0;
+            $promo = "";
+            if($req['meses'] == 2 && !empty($coverage->x21)){
+                $prize_sum = $coverage->x21;
+                $promo = "2x1";
+            }
+            if($req['meses'] == 3 && !empty($coverage->x32)){
+                $prize_sum = $coverage->x32;
+                $promo = "3x2";
+            }
+            if($req['meses'] == 6 && !empty($coverage->x64)){
+                $prize_sum = $coverage->x64;
+                $promo = "6x4";
+            }
+            if($insureds){
+                foreach ($insureds as $key => $client) {
+                    $forEge =  $this->ageCalculate($client->fecha_nacimiento) > 60 ? ($prize_sum * 2) : $prize_sum;
+                    $prizeTotal += $forEge;
+                }
+            }
+            $arrayNeighbours['barrios'] = [];
+            $neighbours->map(function($item) use (&$arrayNeighbours) {
+                $arrayNeighbours['barrios'][] = [
+                    'id' => null,
+                    'id_propuesta' => null,
+                    'id_barrio' => $item->id,
+                    'nombre' => $item->nombre,
+                    'ultmod' => null,
+                    'user_edit' => null,
+                    'codestado' => null,
+                    'prefijo' => null,
+                    'idprefijo' => null,
+                    'codempresa' => "",
+                    'sumamuerte' => $item->suma_muerte,
+                    'sumagm' => $item->suma_gm,
+                    'email' => null,
+                ];
+            });
+            
+            $proposal = Propuesta::create([
+                'codempresa' => $req['codempresa'],
+                'prefijo' => "O",
+                'idpropuesta' => $data['idpropuesta'],
+                'reg' => $data['idpropuesta'],
+                'codestado' => 1,
+                'documento' => $mainClient->id,
+                'nombre' => "$mainClient->nombres $mainClient->apellidos",
+                'num_polizas' => $numPolizas,
+                'meses' => $req['meses'],
+                'id_cobertura' => $coverage->nombre,
+                'id_barrio' => $req['idpropuesta'],
+                'nueva_poliza' => 1,
+                'premio' => $prize,
+                'premio_total' => $prizeTotal,
+                'fechaDesde' => $currentDateStr,
+                'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
+                'ultmod' => $currentDateStr,
+                'useredit' => "online",
+                'cobertura_suma' => $coverage->suma,
+                'cobertura_deducible' => $coverage->deducible,
+                'cobertura_gastos' => $coverage->gastos,
+                'promocion' => $promo,
+                'paga' => 0,
+                'fecha_paga' => "1000-01-01 00:00:00",
+                'master' => $req['master'],
+                'organizador' => $req['organizador'],
+                'productor' => $req['productor'],
+                'data_barrios' => json_encode($arrayNeighbours),
+                'version' => 1,
+                'fecha_comprobante' => "1000-01-01",
+                'fecha_nacimiento' => $mainClient->fecha_nacimiento,
+                'formadepago' => "CREDITO",
+            ]);
+
+            if($proposal){
+                foreach ($insureds as $key => $client) {
+                    $line = new LineasPropuesta();
+                    $line->id_propuesta = $data['idpropuesta'];
+                    $line->prefijo = "O";
+                    $line->codempresa = $req['codempresa'];
+                    $line->documento = $client->id;
+                    $line->tipo_documento = $client->tipo_documento;
+                    $line->apellidos = $client->apellidos;
+                    $line->nombres = $client->nombres;
+                    $line->fecha_nacimiento = $client->fecha_nacimiento;
+                    $line->id_actividad = $activity->reg;
+                    $line->id_clasificacion = $clasification->reg;
+                    $line->premio = $prize;
+                    $line->ultmod = $proposal->ultmod;
+                    $line->user_edit = "online";
+                    $line->codestado = 1;
+                    $line->fechaDesde = $proposal->fechaDesde;
+                    $line->actividad = $activity->nombre;
+                    $line->clasificacion = $clasification->nombre;
+                    $line->fechaHasta = $proposal->fechaHasta;
+                    $line->save();
+                }
+                Cola::create([
+                    'entity' => 'propuestas',
+                    'entity_id' => $proposal->id,
+                    'codempresa' => $req['codempresa'],
+                    'ptoventa' => 'O',
+                ]);
+                $data['success'] = TRUE;
+            }
+        } catch (\Throwable $th) {
+            $data['success'] = FALSE;
+            $data['error'] = $e->getMessage();
         }
-        $arrayNeighbours['barrios'] = [];
-        $neighbours->map(function($item) use (&$arrayNeighbours) {
-            $arrayNeighbours['barrios'][] = [
-                'id' => null,
-                'id_propuesta' => null,
-                'id_barrio' => $item->id,
-                'nombre' => $item->nombre,
-                'ultmod' => null,
-                'user_edit' => null,
-                'codestado' => null,
-                'prefijo' => null,
-                'idprefijo' => null,
-                'codempresa' => "",
-                'sumamuerte' => $item->suma_muerte,
-                'sumagm' => $item->suma_gm,
-                'email' => null,
-            ];
-        });
         
-        $proposal = Propuesta::create([
-            'codempresa' => $req['codempresa'],
-            'prefijo' => "O",
-            'idpropuesta' => $data['idpropuesta'],
-            'reg' => $data['idpropuesta'],
-            'codestado' => 1,
-            'documento' => $mainClient->id,
-            'nombre' => "$mainClient->nombres $mainClient->apellidos",
-            'num_polizas' => $numPolizas,
-            'meses' => $req['meses'],
-            'id_cobertura' => $coverage->nombre,
-            'id_barrio' => $req['idpropuesta'],
-            'nueva_poliza' => 1,
-            'premio' => $prize,
-            'premio_total' => $prizeTotal,
-            'fechaDesde' => $currentDateStr,
-            'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
-            'ultmod' => $currentDateStr,
-            'useredit' => "online",
-            'cobertura_suma' => $coverage->suma,
-            'cobertura_deducible' => $coverage->deducible,
-            'cobertura_gastos' => $coverage->gastos,
-            'promocion' => $promo,
-            'paga' => 0,
-            'fecha_paga' => "1000-01-01 00:00:00",
-            'master' => $req['master'],
-            'organizador' => $req['organizador'],
-            'productor' => $req['productor'],
-            'data_barrios' => json_encode($arrayNeighbours),
-            'version' => 1,
-            'fecha_comprobante' => "1000-01-01",
-            'fecha_nacimiento' => $mainClient->fecha_nacimiento,
-            'formadepago' => "CREDITO",
-        ]);
-
-        if($proposal){
-            foreach ($insureds as $key => $client) {
-                $line = new LineasPropuesta();
-                $line->id_propuesta = $data['idpropuesta'];
-                $line->prefijo = "O";
-                $line->codempresa = $req['codempresa'];
-                $line->documento = $client->id;
-                $line->tipo_documento = $client->tipo_documento;
-                $line->apellidos = $client->apellidos;
-                $line->nombres = $client->nombres;
-                $line->fecha_nacimiento = $client->fecha_nacimiento;
-                $line->id_actividad = $activity->reg;
-                $line->id_clasificacion = $clasification->reg;
-                $line->premio = $prize;
-                $line->ultmod = $proposal->ultmod;
-                $line->user_edit = "online";
-                $line->codestado = 1;
-                $line->fechaDesde = $proposal->fechaDesde;
-                $line->actividad = $activity->nombre;
-                $line->clasificacion = $clasification->nombre;
-                $line->fechaHasta = $proposal->fechaHasta;
-                $line->save();
-            }
-        }
         
         return response()->json($data);
     }
