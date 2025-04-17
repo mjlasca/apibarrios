@@ -52,6 +52,6 @@ Route::middleware('auth:api')->post('/actividades/setactividades/{codempresa}', 
 
 Route::middleware('auth:api')->get('/v2/client', [ clienteController::class, 'getClient' ]);
 Route::middleware('auth:api')->get('/v2/insured', [ clienteController::class, 'getInsured' ]);
+Route::middleware('auth:api')->post('/v2/client-insureds/create', [ clienteController::class, 'createClientInsured' ]);
 Route::middleware('auth:api')->get('/v2/cuits', [ BarriosController::class, 'validateCuits' ]);
 Route::middleware('auth:api')->post('/v2/proposal/create', [ PropuestasControllerV2::class, 'CreateProposalChat' ]);
-

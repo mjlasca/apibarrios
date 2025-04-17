@@ -11,6 +11,8 @@ use App\Models\logs;
 use App\Models\payregistry;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
+use App\Models\Clasificacione;
+use App\Models\Actividade;
 use Barryvdh\DomPDF\Facade as PDF;
 use Exception;
 use Illuminate\Http\Request;
@@ -574,17 +576,24 @@ class PropuestasControllerV2 extends Controller
 
     public function CreateProposalChat(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
+        $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
+        $activity = Actividade::where('cod',$req['cod_actividad'])->first();
+        if(empty($clasification) || empty($activity)){
+            return response()->json(['success' => FALSE, 'message' => 'No se encontró la clasificación o actividad']);
+        }
         $currentDate = now('America/Argentina/Buenos_Aires');
+        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
         $toDate = $currentDate;
         $proposal = new Propuesta();
         $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
         $data['idpropuesta'] = $proposal->consecutivo("O");
+        $data['prefijo'] = "O";
         $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
         $numPolizas = count($insureds);
 
         $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
         $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
-        $neighbours = barrio::whereIn('id', $neighboursGroup)->where("codestado",1)->where('id','!=',NULL)->where('id','!=','')->groupBy('id')->get();
+        $neighbours = barrio::whereIn('id', $neighboursGroup)->where("codestado",1)->where('suma_muerte','!=',NULL)->where('id','!=',NULL)->where('id','!=','')->groupBy('id')->get();
         $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
                     ->where('codestado', 1)
                     ->orderBy('suma', 'asc')
@@ -629,12 +638,12 @@ class PropuestasControllerV2 extends Controller
                 'email' => null,
             ];
         });
-
-
+        
         $proposal = Propuesta::create([
             'codempresa' => $req['codempresa'],
             'prefijo' => "O",
             'idpropuesta' => $data['idpropuesta'],
+            'reg' => $data['idpropuesta'],
             'codestado' => 1,
             'documento' => $mainClient->id,
             'nombre' => "$mainClient->nombres $mainClient->apellidos",
@@ -645,9 +654,9 @@ class PropuestasControllerV2 extends Controller
             'nueva_poliza' => 1,
             'premio' => $prize,
             'premio_total' => $prizeTotal,
-            'fechaDesde' => $toDate,
+            'fechaDesde' => $currentDateStr,
             'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
-            'ultmod' => $currentDate->format('Y-m-d H:i:s'),
+            'ultmod' => $currentDateStr,
             'useredit' => "online",
             'cobertura_suma' => $coverage->suma,
             'cobertura_deducible' => $coverage->deducible,
@@ -664,6 +673,31 @@ class PropuestasControllerV2 extends Controller
             'fecha_nacimiento' => $mainClient->fecha_nacimiento,
             'formadepago' => "CREDITO",
         ]);
+
+        if($proposal){
+            foreach ($insureds as $key => $client) {
+                $line = new LineasPropuesta();
+                $line->id_propuesta = $data['idpropuesta'];
+                $line->prefijo = "O";
+                $line->codempresa = $req['codempresa'];
+                $line->documento = $client->id;
+                $line->tipo_documento = $client->tipo_documento;
+                $line->apellidos = $client->apellidos;
+                $line->nombres = $client->nombres;
+                $line->fecha_nacimiento = $client->fecha_nacimiento;
+                $line->id_actividad = $activity->reg;
+                $line->id_clasificacion = $clasification->reg;
+                $line->premio = $prize;
+                $line->ultmod = $proposal->ultmod;
+                $line->user_edit = "online";
+                $line->codestado = 1;
+                $line->fechaDesde = $proposal->fechaDesde;
+                $line->actividad = $activity->nombre;
+                $line->clasificacion = $clasification->nombre;
+                $line->fechaHasta = $proposal->fechaHasta;
+                $line->save();
+            }
+        }
         
         return response()->json($data);
     }

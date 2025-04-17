@@ -73,6 +73,15 @@ class clienteController extends Controller
     }
 
     /**
+     * function for create client
+     */
+    public function createClientInsured(Request $req) : JsonResponse {
+        $data = ['success' => FALSE];
+        return response()->json($req->all());
+    }
+
+
+    /**
      * function validate exist client
      */
     public function getInsured(Request $req) : JsonResponse {

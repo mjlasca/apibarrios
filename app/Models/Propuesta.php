@@ -51,9 +51,9 @@ class Propuesta extends Model
 
     public function consecutivo(){
         
-        $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('reg','DESC')->limit(1)->get();
-        if(count($cons) > 0)
-            return $cons[0]->reg + 1;
+        $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('idpropuesta','DESC')->first();
+        if($cons)
+            return $cons->idpropuesta + 1;
         else
             return 1;
     }
