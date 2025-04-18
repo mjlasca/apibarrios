@@ -632,6 +632,7 @@ class PropuestasControllerV2 extends Controller
             $data['prefijo'] = "O";
             $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
             $numPolizas = count($insureds);
+            dd($numPolizas);
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'O no se envió asegurados o no existen los que se enviaron']);
 
