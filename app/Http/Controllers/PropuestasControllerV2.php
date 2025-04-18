@@ -634,10 +634,10 @@ class PropuestasControllerV2 extends Controller
             DB::enableQueryLog(); // Activa el log
             $ids = array_map('intval', explode(",", $req["asegurados"]));
 
-            $insureds = cliente::whereIn('id', $ids)
+            $insureds = cliente::whereIn('reg', $ids)
                 ->where('codestado', 1)
-                ->groupBy('id')
-                ->orderBy('id', 'ASC')
+                ->groupBy('reg')
+                ->orderBy('reg', 'ASC')
                 ->get();
 
             dump(DB::getQueryLog());
