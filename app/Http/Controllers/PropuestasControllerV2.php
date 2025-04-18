@@ -631,9 +631,14 @@ class PropuestasControllerV2 extends Controller
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             dump(explode(",", $req["asegurados"]));
-            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC');
-            dump($insureds);
-            dump($insureds->toSql());
+            DB::enableQueryLog(); // Activa el log
+            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))
+                ->where('codestado',1)
+                ->groupBy('id')
+                ->orderBy('id','ASC')
+                ->get();
+
+            dump(DB::getQueryLog());
             $numPolizas = count($insureds);
             dd($numPolizas);
             if($numPolizas == 0)
