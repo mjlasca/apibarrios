@@ -22,7 +22,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Póliza {{ $data[0]->documento  }} - {{ $data[0]->prefijo  }}{{ $data[0]->reg  }}</title>
+  <title>Póliza {{ $data[0]->documento  }} - {{ $data[0]->prefijo  }}{{ $data[0]->idpropuesta  }}</title>
 
   <style>
     body {
@@ -157,7 +157,7 @@
 
   <div>
     <p class="text-center">
-      Constancia de Póliza - P N°: {{$data[0]->prefijo}} - {{ $data[0]->reg }}
+      Constancia de Póliza - P N°: {{$data[0]->prefijo}} - {{ $data[0]->idpropuesta }}
     </p>
     <p>Por medio del presente, damos constancia que se otorga cobertura en el seguro de Accidentes Personales (con motivo y ocasión del trabajo) de Sancor
       Cooperativa de Seguros Ltda. las personas que se detallan a continuación y en las condiciones descriptas seguidamente, encontrándose la correspondiente
@@ -365,7 +365,7 @@
             <td class="text-center" >en trámite</td>
             <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
             <td class="text-center" >0</td>
-            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->reg}}</td>
+            <td class="text-center" >{{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</td>
           </tr>
           <tr class="tr-b" style="background-color: rgb(173, 173, 173)">
             <td class="text-center" colspan="2" >Organización</td>

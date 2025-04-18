@@ -737,7 +737,7 @@ class PropuestasControllerV2 extends Controller
                     $line->prefijo = "O";
                     $line->codempresa = $req['codempresa'];
                     $line->documento = $client->id;
-                    $line->tipo_documento = $client->tipo_documento;
+                    $line->tipo_documento = $client->tipo_id;
                     $line->apellidos = $client->apellidos;
                     $line->nombres = $client->nombres;
                     $line->fecha_nacimiento = $client->fecha_nacimiento;
