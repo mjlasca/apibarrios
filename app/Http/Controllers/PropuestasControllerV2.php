@@ -631,7 +631,7 @@ class PropuestasControllerV2 extends Controller
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             dump(explode(",", $req["asegurados"]));
-            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
+            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC');
             dump($insureds);
             dump($insureds->toSql());
             $numPolizas = count($insureds);
@@ -760,7 +760,7 @@ class PropuestasControllerV2 extends Controller
                 ]);
                 $data['success'] = TRUE;
             }
-        } catch (\Throwable $th) {
+        } catch (\Throwable $e) {
             $data['success'] = FALSE;
             $data['error'] = $e->getMessage();
         }
