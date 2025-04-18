@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class cliente extends Model
 {
-    protected $fillable = ['reg','id','nombres','apellidos','tipo_id','fecha_nacimiento','codempresa','codestado'];
+    protected $fillable = ['reg','id','nombres','apellidos','tipo_id','fecha_nacimiento','codempresa','codestado','ultmod'];
     use HasFactory;
 
     public function propuestas(){
