@@ -630,20 +630,13 @@ class PropuestasControllerV2 extends Controller
             $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
-            dump(explode(",", $req["asegurados"]));
-            DB::enableQueryLog(); // Activa el log
             $ids = array_map('intval', explode(",", $req["asegurados"]));
-
             $insureds = cliente::whereIn('id', $ids)
                 ->where('codestado', 1)
                 ->groupBy('id')
                 ->orderBy('id', 'ASC')
                 ->get();
-
-            dump(DB::getQueryLog());
-            dump($insureds);
             $numPolizas = count($insureds);
-            dd($numPolizas);
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'O no se envió asegurados o no existen los que se enviaron']);
 
