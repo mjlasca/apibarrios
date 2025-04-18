@@ -633,6 +633,7 @@ class PropuestasControllerV2 extends Controller
             dump(explode(",", $req["asegurados"]));
             $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))->where('codestado',1)->groupBy('id')->orderBy('id','ASC')->get();
             dump($insureds);
+            dump($insureds->toSql());
             $numPolizas = count($insureds);
             dd($numPolizas);
             if($numPolizas == 0)
