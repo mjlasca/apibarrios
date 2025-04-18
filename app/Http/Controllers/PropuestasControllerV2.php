@@ -632,13 +632,16 @@ class PropuestasControllerV2 extends Controller
             $data['prefijo'] = "O";
             dump(explode(",", $req["asegurados"]));
             DB::enableQueryLog(); // Activa el log
-            $insureds = cliente::whereIn('id', explode(",", $req["asegurados"]))
-                ->where('codestado',1)
+            $ids = array_map('intval', explode(",", $req["asegurados"]));
+
+            $insureds = cliente::whereIn('id', $ids)
+                ->where('codestado', 1)
                 ->groupBy('id')
-                ->orderBy('id','ASC')
+                ->orderBy('id', 'ASC')
                 ->get();
 
             dump(DB::getQueryLog());
+            dump($insureds);
             $numPolizas = count($insureds);
             dd($numPolizas);
             if($numPolizas == 0)
