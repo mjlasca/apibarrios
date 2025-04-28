@@ -81,15 +81,19 @@ class clienteController extends Controller
         $codempresa = $req['codempresa'];
         $currentDate = now('America/Argentina/Buenos_Aires');
         $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+        $insureds_gen = explode(';',$insureds);
         try {
-            foreach ($insureds as $key => $insured) {
-                $client = cliente::where('id',$insured['documento'])->first();
+            foreach ($insureds_gen as $key => $insured) {
+                $insured_expl = explode(',',$insured);
+                if(count($insured_expl) < 5)
+                    return response()->json(['success' => FALSE, 'message' => "Los datos $insured no están completos, deberían ser 5 datos"]);
+                $client = cliente::where('id',$insured_expl[2])->first();
                 if($client){
                     if(empty($client->fecha_nacimiento)) {
-                        $client->nombres = $insured['nombres'];
-                        $client->apellidos = $insured['apellidos'];
-                        $client->tipo_id = $insured['tipo_documento'];
-                        $client->fecha_nacimiento = $insured['fecha_nacimiento'];
+                        $client->nombres = $insured_expl[0];
+                        $client->apellidos = $insured_expl[1];
+                        $client->tipo_id = $insured_expl[3];
+                        $client->fecha_nacimiento = $insured_expl[4];
                         $client->codestado = 1;
                         $client->codempresa = $codempresa;
                         $client->ultmod = $currentDateStr;
@@ -98,11 +102,11 @@ class clienteController extends Controller
                     }
                 }else{
                     $client = cliente::create([
-                        'id' => $insured['documento'],
-                        'nombres' => $insured['nombres'],
-                        'apellidos' => $insured['apellidos'],
-                        'tipo_id' => $insured['tipo_documento'],
-                        'fecha_nacimiento' => $insured['fecha_nacimiento'],
+                        'id' => $insured_expl[2],
+                        'nombres' => $insured_expl[0],
+                        'apellidos' => $insured_expl[1],
+                        'tipo_id' => $insured_expl[3],
+                        'fecha_nacimiento' => $insured_expl[4],
                         'codestado' => 1,
                         'codempresa' => $codempresa,
                         'ultmod' => $currentDateStr,
