@@ -87,6 +87,10 @@ class clienteController extends Controller
                 $insured_expl = explode(',',$insured);
                 if(count($insured_expl) < 5)
                     return response()->json(['success' => FALSE, 'message' => "Los datos $insured no están completos, deberían ser 5 datos"]);
+                foreach ($insured_expl as $k => $val) {
+                    if(empty($val))
+                        return response()->json(['success' => FALSE, 'message' => "Los datos de $insured tienen campos vacíos"]);
+                }
                 $client = cliente::where('id',$insured_expl[2])->first();
                 if($client){
                     if(empty($client->fecha_nacimiento)) {
