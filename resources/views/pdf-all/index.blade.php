@@ -238,7 +238,7 @@
   <div>
     <p class="text-center"> <b> VIGENCIA : DEL 
       @if($data[0]->codempresa)
-        {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y h:i:s') }} A {{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y h:i:s') }}
+        {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y h:i A') }} A {{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y h:i A') }}
       @else
         {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y') }} A {{ substr( \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y'), 0,10) . " 00:00:00" }}
       @endif
