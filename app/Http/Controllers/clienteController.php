@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\cliente;
 use App\Models\Cola;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -88,31 +89,33 @@ class clienteController extends Controller
                 if(count($insured_expl) < 5)
                     return response()->json(['success' => FALSE, 'message' => "Los datos $insured no están completos, deberían ser 5 datos"]);
                 foreach ($insured_expl as $k => $val) {
-                    if(empty($val))
+                    if(empty(trim($val)))
                         return response()->json(['success' => FALSE, 'message' => "Los datos de $insured tienen campos vacíos"]);
                 }
+                if($this->validateDate($insured_expl[4]) == FALSE)
+                    return response()->json(['success' => FALSE, 'message' => "La fecha $insured_expl[4] es incorrecta, el formato correcto es yyyy-mm-dd"]);
                 $client = cliente::where('id',$insured_expl[2])->first();
                 if($client){
                     if(empty($client->fecha_nacimiento)) {
-                        $client->nombres = $insured_expl[0];
-                        $client->apellidos = $insured_expl[1];
-                        $client->tipo_id = $insured_expl[3];
-                        $client->fecha_nacimiento = $insured_expl[4];
+                        $client->nombres = trim($insured_expl[0]);
+                        $client->apellidos = trim($insured_expl[1]);
+                        $client->tipo_id = trim($insured_expl[3]);
+                        $client->fecha_nacimiento = trim($insured_expl[4]);
                         $client->codestado = 1;
-                        $client->codempresa = $codempresa;
+                        $client->codempresa = trim($codempresa);
                         $client->ultmod = $currentDateStr;
                         $client->user_edit = "online";
                         $client->save();
                     }
                 }else{
                     $client = cliente::create([
-                        'id' => $insured_expl[2],
-                        'nombres' => $insured_expl[0],
-                        'apellidos' => $insured_expl[1],
-                        'tipo_id' => $insured_expl[3],
-                        'fecha_nacimiento' => $insured_expl[4],
+                        'id' => trim($insured_expl[2]),
+                        'nombres' => trim($insured_expl[0]),
+                        'apellidos' => trim($insured_expl[1]),
+                        'tipo_id' => trim($insured_expl[3]),
+                        'fecha_nacimiento' => trim($insured_expl[4]),
                         'codestado' => 1,
-                        'codempresa' => $codempresa,
+                        'codempresa' => trim($codempresa),
                         'ultmod' => $currentDateStr,
                         'user_edit' => "online",
                     ]);
@@ -130,6 +133,11 @@ class clienteController extends Controller
             $data['error'] = $e->getMessage();
         }
         return response()->json($data);
+    }
+
+    public function validateDate($date, $format = 'Y-m-d') {
+        $d = DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) === $date;
     }
 
 

@@ -630,11 +630,11 @@ class PropuestasControllerV2 extends Controller
             $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
             if($mainClient == FALSE)
                 return response()->json(['success' => FALSE, 'message' => 'El tomador no existe']);
+            if(empty($mainClient->codpostal))
+                return response()->json(['success' => FALSE, 'message' => 'El tomador debe tener datos completos']);
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             $ids = array_map('intval', explode(",", $req["asegurados"]));
-            if($req['agregar_tomador'] == true)
-                $ids[] = $mainClient->id;
             $insureds = cliente::whereIn('id', $ids)
                 ->where('codestado', 1)
                 ->groupBy('id')
@@ -642,7 +642,9 @@ class PropuestasControllerV2 extends Controller
                 ->get();
             $numPolizas = count($insureds);
             if($numPolizas == 0)
-                return response()->json(['success' => FALSE, 'message' => 'O no se envió asegurados o no existen los que se enviaron']);
+                return response()->json(['success' => FALSE, 'message' => 'No existen los asegurados que se enviaron']);
+            if($req['agregar_tomador'] == true)
+                $ids[] = $mainClient->id;
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
             $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
             $neighbours = barrio::whereIn('id', $neighboursGroup)
@@ -660,7 +662,7 @@ class PropuestasControllerV2 extends Controller
                         ->orderBy('suma', 'asc')
                         ->first();
             if($req['meses'] < 1 || $req['meses'] > 6)
-                return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto']);                        
+                return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto']);
             $prize = $coverage->vrMensual;
             $prize_sum = $coverage->vrMensual * $req['meses'];
             $prizeTotal = 0;
