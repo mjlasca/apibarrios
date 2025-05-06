@@ -57,6 +57,7 @@ class clienteController extends Controller
     public function getClient(Request $req) : JsonResponse {
         $client = cliente::where('id',$req['document'])->where('codestado',1)->first();
         $data = ['success' => FALSE];
+        dd($client);
         if(!empty($client)){
             $data = [
                 "nombres" => $client->nombres,
