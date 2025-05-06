@@ -55,7 +55,7 @@ class clienteController extends Controller
      * function return data client if math
      */
     public function getClient(Request $req) : JsonResponse {
-        dump($req);
+        dump($req['body']);
         $client = cliente::where('id',$req['document'])->where('codestado',1)->first();
         $data = ['success' => FALSE];
         dd($client);
