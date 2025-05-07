@@ -11,14 +11,34 @@ class BarriosController extends Controller
     public function validateCuits(Request $req) : JsonResponse {
         $data = ['success' => FALSE];
         if(!empty($req['cuits'])){
-            $arrayCuits = explode(',',$req['cuits']);
-            $barrios = barrio::whereIn('id',$arrayCuits)->pluck('id')->toArray();
-            $arrayCuits = array_diff($arrayCuits, $barrios);
-            if(empty($arrayCuits)){
-                $data['success'] = TRUE;
-            }else{
-                $data['cuits_faltantes'] = implode(',',array_unique($arrayCuits));
+            $terminos = explode(',', $req['cuits']);
+            $terminos = array_map('trim', $terminos); // Limpiar espacios
+            $terminos = array_filter($terminos); // Eliminar vacíos
+            
+            $noEncontrados = []; // Para acumular los que no se encuentran
+            $resultado = [];     // Para almacenar el detalle de cada término
+            
+            foreach ($terminos as $termino) {
+                if (is_numeric($termino)) {
+                    $barrio = barrio::where('id', $termino)->first();
+                } else {
+                    $barrio = barrio::where('nombre', 'LIKE', '%' . $termino . '%')->first();
+                }
+            
+                if (!$barrio) {
+                    $noEncontrados[] = $termino;
+                }
+            
+                $resultado[] = [
+                    'valor' => $termino,
+                    'encontrado' => $barrio ? true : false,
+                    'barrio' => $barrio
+                ];
             }
+            
+            // Concatenar los no encontrados en una cadena
+            $cadenaNoEncontrados = implode(', ', $noEncontrados);
+            $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
         }
         return response()->json($data);
     }

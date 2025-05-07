@@ -148,21 +148,20 @@ class clienteController extends Controller
         $data = ['success' => FALSE];
         if(!empty($req['documents'])){
             $arrayDni = explode(',',$req['documents']);
-            $clients = cliente::whereIn('id',$arrayDni)->get();
+            if(!empty( $arrayDni ))
+                $arrayDni = array_unique($arrayDni);
+            $clients = cliente::whereIn('id',$arrayDni)->groupBy('id')->get();
+            $arrFound = [];
             if(!empty($clients)){
                 $data['success'] = TRUE;
                 foreach ($clients as $key => $client) {
-                    $data['dni'.$client->id] = [
-                        'documento' => $client->id,
-                        'tipo' => $client->tipo_id,
-                        'nombres' => $client->nombres,
-                        'apellidos' => $client->apellidos,
-                        'fecha_nacimiento' => $client->fecha_nacimiento,
-                    ];
+                    $data['documentsFound'] = !empty($data['documentsFound']) ? $data['documentsFound'].','.$client->id : $client->id;
+                    $data['namesFound'] = !empty($data['namesFound']) ? $data['namesFound'].','."$client->id $client->nombres $client->apellidos" : "$client->id $client->nombres $client->apellidos";
+                    $arrFound[] = $client->id;
                 }
                 foreach ($arrayDni as $key => $arr) {
-                    if(!isset($data['dni'.$arr])){
-                        $data['dni'.$arr] = "No existe el documento ".$arr;
+                    if(!in_array($arr,$arrFound)){
+                        $data['documentsNotFound'] = !empty($data['documentsNotFound']) ? $data['documentsNotFound'].','.$arr : $arr;
                         $data['success'] = FALSE;
                     }
                 }
