@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\barrio;
+use App\Models\Cobertura;
+use App\Models\gruposbarrio;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -29,16 +31,30 @@ class BarriosController extends Controller
                     $noEncontrados[] = $termino;
                 }
             
-                $resultado[] = [
-                    'valor' => $termino,
-                    'encontrado' => $barrio ? true : false,
-                    'barrio' => $barrio
-                ];
+                $resultado[] = $barrio->id;
             }
             
             // Concatenar los no encontrados en una cadena
             $cadenaNoEncontrados = implode(', ', $noEncontrados);
-            $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
+            if(!empty($cadenaNoEncontrados)){
+                $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
+            }else{
+                $data['success'] = TRUE;
+                $neighbours = barrio::whereIn('id', $resultado)
+                    ->where("codestado",1)
+                    ->whereNotNull('suma_muerte')
+                    ->where('suma_muerte','!=','')
+                    ->whereNotNull('id')
+                    ->where('id','!=','')
+                    ->groupBy('id')
+                    ->get();
+                $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                            ->where('codestado', 1)
+                            ->orderBy('suma', 'asc')
+                            ->first();
+                $data['cobertura'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
+            }
+                
         }
         return response()->json($data);
     }
