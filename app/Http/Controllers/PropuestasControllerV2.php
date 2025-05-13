@@ -615,7 +615,11 @@ class PropuestasControllerV2 extends Controller
         return response()->json($data);
     }
 
-    public function CreateProposalChat(Request $req) : JsonResponse {
+    public function validateProposal(Request $req) : JsonResponse {
+        return $this->CreateProposalChat($req,TRUE);
+    }
+
+    public function CreateProposalChat(Request $req, $valid = FALSE) : JsonResponse {
         $data = ['success' => FALSE];
         try {
             $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
@@ -657,10 +661,20 @@ class PropuestasControllerV2 extends Controller
                 ->get();
             if(count($neighbours) < 1)
                 return response()->json(['success' => FALSE, 'message' => 'El barrio o los barrios no existen']);                
-            $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
-                        ->where('codestado', 1)
-                        ->orderBy('suma', 'asc')
-                        ->first();
+            if(!empty($req['cobertura'])){
+                $coverage = Cobertura::where('nombre', $req['cobertura'])
+                                ->where('codestado', 1)
+                                ->first();
+            }else{
+                $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                                ->where('codestado', 1)
+                                ->orderBy('suma', 'asc')
+                                ->first();
+            }
+
+            if(empty($coverage))
+                return response()->json(['success' => FALSE, 'message' => 'La cobertura no es correcta']);
+            
             if($req['meses'] < 1 || $req['meses'] > 6)
                 return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto']);
             $prize = $coverage->vrMensual;
@@ -680,11 +694,18 @@ class PropuestasControllerV2 extends Controller
                 $prize_sum = $coverage->x64;
                 $promo = "6x4";
             }
+
             if($insureds){
                 foreach ($insureds as $key => $client) {
                     $forEge =  $this->ageCalculate($client->fecha_nacimiento) > 60 ? ($prize_sum * 2) : $prize_sum;
                     $prizeTotal += $forEge;
                 }
+            }
+            if($valid){
+                $data = [];
+                $data['success'] = TRUE;
+                $data['valorpropuesta'] = $prizeTotal;
+                return response()->json($data);
             }
             $arrayNeighbours['barrios'] = [];
             $neighbours->map(function($item) use (&$arrayNeighbours) {

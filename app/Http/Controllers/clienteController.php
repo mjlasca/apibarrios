@@ -135,6 +135,77 @@ class clienteController extends Controller
         return response()->json($data);
     }
 
+    /**
+     * function for create client
+     */
+    public function createClientTaker(Request $req) : JsonResponse {
+        $data = ['success' => FALSE];
+        $codempresa = $req['codempresa'];
+        $currentDate = now('America/Argentina/Buenos_Aires');
+        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+        if( empty( trim($req['nombres'])) 
+            || empty( trim($req['apellidos'])) 
+            || empty( trim($req['tipo_id'])) 
+            || empty( trim($req['fecha_nacimiento'])) 
+            || empty( trim($req['telefono'])) 
+            || empty( trim($req['codpostal']))
+        )
+            return response()->json(['success' => FALSE, 'message' => 'Nombres, Apellidos, Tipo ID, Fecha Nacimiento, Teléfono y Codpostal no pueden estar vacíos']);
+
+        if(!empty(trim($req['email']))){
+            if(!filter_var(trim($req['email']),FILTER_VALIDATE_EMAIL))
+                return response()->json(['success' => FALSE, 'message' => 'Correo electrónico inválido']);
+        }
+        
+        try {
+                $client = cliente::where('id',$req['id'])->first();
+                if($client){
+                        $client->nombres = trim($req['nombres']);
+                        $client->apellidos = trim($req['apellidos']);
+                        $client->tipo_id = trim($req['tipo_id']);
+                        $client->fecha_nacimiento = trim($req['fecha_nacimiento']);
+                        $client->telefono = trim($req['telefono']);
+                        $client->direccion = trim($req['direccion']);
+                        $client->email = trim($req['email']);
+                        $client->codpostal = trim($req['codpostal']);
+                        $client->sexo = trim($req['sexo']);
+                        $client->codestado = 1;
+                        $client->codempresa = trim($codempresa);
+                        $client->ultmod = $currentDateStr;
+                        $client->user_edit = "online";
+                        $client->save();
+                }else{
+                    $client = cliente::create([
+                        'id' => trim($req['id']),
+                        'nombres' => trim($req['nombres']),
+                        'apellidos' => trim($req['apellidos']),
+                        'tipo_id' => trim($req['tipo_id']),
+                        'fecha_nacimiento' => trim($req['fecha_nacimiento']),
+                        'telefono' => trim($req['telefono']),
+                        'direccion' => trim($req['direccion']),
+                        'email' => trim($req['email']),
+                        'codpostal' => trim($req['codpostal']),
+                        'sexo' => trim($req['sexo']),
+                        'codestado' => 1,
+                        'codempresa' => trim($codempresa),
+                        'ultmod' => $currentDateStr,
+                        'user_edit' => "online",
+                    ]);
+                }
+                Cola::create([
+                    'entity' => 'clientes',
+                    'entity_id' => $client->id,
+                    'codempresa' => $codempresa,
+                    'ptoventa' => 'O',
+                ]);
+            $data['success'] = TRUE;
+        } catch (\Exception $e) {
+            $data['success'] = FALSE;
+            $data['error'] = $e->getMessage();
+        }
+        return response()->json($data);
+    }
+
     public function validateDate($date, $format = 'Y-m-d') {
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) === $date;
