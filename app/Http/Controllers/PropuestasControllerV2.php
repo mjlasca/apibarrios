@@ -639,6 +639,8 @@ class PropuestasControllerV2 extends Controller
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             $ids = array_map('intval', explode(",", $req["asegurados"]));
+            if(  $req['agregar_tomador'] == 'SI')
+                $ids[] = $mainClient->id;
             $insureds = cliente::whereIn('id', $ids)
                 ->where('codestado', 1)
                 ->groupBy('id')
@@ -647,8 +649,6 @@ class PropuestasControllerV2 extends Controller
             $numPolizas = count($insureds);
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'No existen los asegurados que se enviaron']);
-            if(  $req['agregar_tomador'] == 'SI')
-                $ids[] = $mainClient->id;
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
             $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
             $neighbours = barrio::whereIn('id', $neighboursGroup)
