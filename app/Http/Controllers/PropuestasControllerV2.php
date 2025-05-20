@@ -647,7 +647,9 @@ class PropuestasControllerV2 extends Controller
                 ->groupBy('id')
                 ->orderBy('id', 'ASC')
                 ->get();
+                
             $numPolizas = count($insureds);
+            
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'No hay asegurados']);
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
