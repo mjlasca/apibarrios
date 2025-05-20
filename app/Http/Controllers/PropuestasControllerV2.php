@@ -790,6 +790,7 @@ class PropuestasControllerV2 extends Controller
                     'codempresa' => $req['codempresa'],
                     'ptoventa' => 'O',
                 ]);
+                $data['valorpropuesta'] = $prizeTotal;
                 $data['success'] = TRUE;
             }
         } catch (\Throwable $e) {
