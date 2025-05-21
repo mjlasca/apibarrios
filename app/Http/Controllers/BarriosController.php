@@ -52,7 +52,8 @@ class BarriosController extends Controller
                             ->where('codestado', 1)
                             ->orderBy('suma', 'asc')
                             ->first();
-                $data['cobertura'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
+                $data['cobertura'] = $coverage->nombre;
+                $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
                 $data['cuits'] = implode(',',$resultado);
             }
                 
