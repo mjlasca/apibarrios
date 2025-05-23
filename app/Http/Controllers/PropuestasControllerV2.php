@@ -637,7 +637,7 @@ class PropuestasControllerV2 extends Controller
             $dat["lista_grupos_descartar"] = $req["lista_grupos_descartar"];
 
         $error = new logs();
-        $error->saveerror(implode($dat), "", "", "JSON Pro");
+        $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
         try {
             $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
             $activity = Actividade::where('cod',$req['cod_actividad'])->first();
