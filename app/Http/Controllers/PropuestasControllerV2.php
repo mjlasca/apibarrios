@@ -621,6 +621,8 @@ class PropuestasControllerV2 extends Controller
 
     public function CreateProposalChat(Request $req, $valid = FALSE) : JsonResponse {
         $data = ['success' => FALSE];
+        $error = new logs();
+        $error->saveerror(json_encode($req), "", "", "JSON Pro");
         try {
             $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
             $activity = Actividade::where('cod',$req['cod_actividad'])->first();
