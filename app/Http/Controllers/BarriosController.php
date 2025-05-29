@@ -24,14 +24,22 @@ class BarriosController extends Controller
                 if (is_numeric($termino)) {
                     $barrio = barrio::where('id', $termino)->first();
                 } else {
-                    $barrio = barrio::where('nombre', 'LIKE', '%' . $termino . '%')->first();
+                    
+                    $stopWords = ['de', 'la', 'el', 'los', 'las'];
+                    $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
+                    $query = barrio::query();
+                    foreach ($words as $word) {
+                        $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word%"]);
+                    }
+                    $barrio = $query->first();
                 }
             
                 if (!$barrio) {
                     $noEncontrados[] = $termino;
                 }
             
-                $resultado[] = $barrio->id;
+                if(!empty($barrio))
+                    $resultado[] = $barrio->id;
             }
             
             // Concatenar los no encontrados en una cadena
