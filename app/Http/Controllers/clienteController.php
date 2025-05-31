@@ -157,7 +157,7 @@ class clienteController extends Controller
             $dat["id"] = "id:".$req["id"];
             $dat["sexo"] = "id:".$req["sexo"];
             $error = new logs();
-            $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
+            $error->saveerror(implode(";", $dat), "", "", "JSTaker");
 
             $codempresa = $req['codempresa'];
             $currentDate = now('America/Argentina/Buenos_Aires');
