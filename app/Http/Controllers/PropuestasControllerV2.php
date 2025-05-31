@@ -801,8 +801,8 @@ class PropuestasControllerV2 extends Controller
                     $line->user_edit = "online";
                     $line->codestado = 1;
                     $line->fechaDesde = $proposal->fechaDesde;
-                    $line->actividad = $activity->nombre;
-                    $line->clasificacion = $clasification->nombre;
+                    $line->actividad = $req['cod_actividad']." - ".$activity->nombre;
+                    $line->clasificacion = $req['cod_clasificacion']." - ".$clasification->nombre;
                     $line->fechaHasta = $proposal->fechaHasta;
                     $line->save();
                 }
