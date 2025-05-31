@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\cliente;
 use App\Models\Cola;
+use App\Models\logs;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -139,25 +140,41 @@ class clienteController extends Controller
      * function for create client
      */
     public function createClientTaker(Request $req) : JsonResponse {
-        $data = ['success' => FALSE];
-        $codempresa = $req['codempresa'];
-        $currentDate = now('America/Argentina/Buenos_Aires');
-        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
-        if( empty( trim($req['nombres'])) 
-            || empty( trim($req['apellidos'])) 
-            || empty( trim($req['tipo_id'])) 
-            || empty( trim($req['fecha_nacimiento'])) 
-            || empty( trim($req['telefono'])) 
-            || empty( trim($req['codpostal']))
-        )
-            return response()->json(['success' => FALSE, 'message' => 'Nombres, Apellidos, Tipo ID, Fecha Nacimiento, Teléfono y Codpostal no pueden estar vacíos']);
-
-        if(!empty(trim($req['email']))){
-            if(!filter_var(trim($req['email']),FILTER_VALIDATE_EMAIL))
-                return response()->json(['success' => FALSE, 'message' => 'Correo electrónico inválido']);
-        }
+        
+        
         
         try {
+            $data = ['success' => FALSE];
+            
+            $dat["codempresa"] = "codempresa:".$req["codempresa"];
+            $dat["nombres"] = "nombres:".$req["nombres"];
+            $dat["apellidos"] = "apellidos:".$req["apellidos"];
+            $dat["tipo_id"] = "tipo_id:".$req["tipo_id"];
+            $dat["fecha_nacimiento"] = "fecha_nacimiento:".$req["fecha_nacimiento"];
+            $dat["telefono"] = "telefono:".$req["telefono"];
+            $dat["codpostal"] = "codpostal:".$req["codpostal"];
+            $dat["email"] = "email:".$req["email"];
+            $dat["id"] = "id:".$req["id"];
+            $dat["sexo"] = "id:".$req["sexo"];
+            $error = new logs();
+            $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
+
+            $codempresa = $req['codempresa'];
+            $currentDate = now('America/Argentina/Buenos_Aires');
+            $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+            if( empty( trim($req['nombres'])) 
+                || empty( trim($req['apellidos'])) 
+                || empty( trim($req['tipo_id'])) 
+                || empty( trim($req['fecha_nacimiento'])) 
+                || empty( trim($req['telefono'])) 
+                || empty( trim($req['codpostal']))
+            )
+                return response()->json(['success' => FALSE, 'message' => 'Nombres, Apellidos, Tipo ID, Fecha Nacimiento, Teléfono y Codpostal no pueden estar vacíos']);
+
+            if(!empty(trim($req['email']))){
+                if(!filter_var(trim($req['email']),FILTER_VALIDATE_EMAIL))
+                    return response()->json(['success' => FALSE, 'message' => 'Correo electrónico inválido']);
+            }
                 $client = cliente::where('id',$req['id'])->first();
                 if($client){
                         $client->nombres = trim($req['nombres']);
