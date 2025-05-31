@@ -620,7 +620,9 @@ class PropuestasControllerV2 extends Controller
     }
 
     public function CreateProposalChat(Request $req, $valid = FALSE) : JsonResponse {
-        $data = ['success' => FALSE];
+        
+        try {
+            $data = ['success' => FALSE];
             $dat["tomador"] = "tomador:".$req["tomador"];
             $dat["agregar_tomador"] = "agregar_tomador:".$req["agregar_tomador"];
             $dat["asegurados"] = "asegurados:".$req["asegurados"];
@@ -636,9 +638,9 @@ class PropuestasControllerV2 extends Controller
             $dat["master"] = "master:".$req["master"];
             $dat["lista_grupos_descartar"] = "lista_grupos_descartar:".$req["lista_grupos_descartar"];
 
-        $error = new logs();
-        $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
-        try {
+            $error = new logs();
+            $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
+
             $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
             $activity = Actividade::where('cod',$req['cod_actividad'])->first();
             if(empty($clasification) || empty($activity)){
