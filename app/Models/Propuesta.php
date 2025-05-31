@@ -16,6 +16,7 @@ class Propuesta extends Model
     use HasFactory;
 
     protected $fillable = [
+        'reg',
         'codempresa',
         'prefijo',
         'idpropuesta',
