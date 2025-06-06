@@ -827,6 +827,7 @@ class PropuestasControllerV2 extends Controller
                     'ptoventa' => 'O',
                 ]);
                 $data['valorpropuesta'] = $prizeTotal;
+                $data['vigencia_hasta'] = $toDate->format('d/m/Y');
                 $data['success'] = TRUE;
             }
         } catch (\Throwable $e) {
