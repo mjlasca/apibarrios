@@ -84,7 +84,7 @@ class clienteController extends Controller
             
             $dat["insureds"] = "insureds:".$req["insureds"];
             $error = new logs();
-            $error->saveerror(implode(";", $dat), "", "", "JSTaker");
+            $error->saveerror(implode(";", $dat), "", "", "JSInsured");
 
             $insureds = $req['insureds'];
             $codempresa = $req['codempresa'];
