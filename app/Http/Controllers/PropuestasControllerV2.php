@@ -19,8 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use App\Models\Cobertura;
-
-
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class PropuestasControllerV2 extends Controller
 {
@@ -635,6 +635,7 @@ class PropuestasControllerV2 extends Controller
             $dat["master"] = "master:".$req["master"];
             $dat["organizador"] = "organizador:".$req["organizador"];
             $dat["productor"] = "productor:".$req["productor"];
+            $dat["fecha_desde"] = "fecha_desde:".$req["fecha_desde"];
             $dat["master"] = "master:".$req["master"];
             $dat["lista_grupos_descartar"] = "lista_grupos_descartar:".$req["lista_grupos_descartar"];
 
@@ -649,12 +650,26 @@ class PropuestasControllerV2 extends Controller
             $currentDate = now('America/Argentina/Buenos_Aires');
             $currentDateStr = $currentDate->format('Y-m-d H:i:s');
             $toDate = $currentDate;
+            $fromDate = $currentDateStr;
+            if(!empty($req["fecha_desde"])){
+                $validator = Validator::make($req->all(), [
+                    'fecha_desde' => 'date_format:Y-m-d',
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'La fecha debe tener el formato YYYY-MM-DD',
+                    ], 400);
+                }
+                $toDate = Carbon::createFromFormat('Y-m-d', $req['fecha_desde'], 'America/Argentina/Buenos_Aires');
+                $fromDate = $toDate;
+            }
             $proposal = new Propuesta();
             $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
             if($mainClient == FALSE)
-                return response()->json(['success' => FALSE, 'message' => 'El tomador no existe']);
+                return response()->json(['success' => FALSE, 'message' => 'El tomador no existe'],400);
             if(empty($mainClient->codpostal))
-                return response()->json(['success' => FALSE, 'message' => 'El tomador debe tener datos completos']);
+                return response()->json(['success' => FALSE, 'message' => 'El tomador debe tener datos completos'],400);
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             $ids = [];
@@ -669,7 +684,7 @@ class PropuestasControllerV2 extends Controller
                 ->get();
             $numPolizas = count($insureds);
             if($numPolizas == 0)
-                return response()->json(['success' => FALSE, 'message' => 'No hay asegurados']);
+                return response()->json(['success' => FALSE, 'message' => 'No hay asegurados'],400);
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
             $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
             $neighbours = barrio::whereIn('id', $neighboursGroup)
@@ -681,7 +696,7 @@ class PropuestasControllerV2 extends Controller
                 ->groupBy('id')
                 ->get();
             if(count($neighbours) < 1)
-                return response()->json(['success' => FALSE, 'message' => 'El barrio o los barrios no existen']);                
+                return response()->json(['success' => FALSE, 'message' => 'El barrio o los barrios no existen'],400);                
             if(!empty($req['cobertura'])){
                 $coverage = Cobertura::where('nombre', $req['cobertura'])
                                 ->where('codestado', 1)
@@ -694,10 +709,10 @@ class PropuestasControllerV2 extends Controller
             }
 
             if(empty($coverage))
-                return response()->json(['success' => FALSE, 'message' => 'La cobertura no es correcta']);
+                return response()->json(['success' => FALSE, 'message' => 'La cobertura no es correcta'],400);
             
             if($req['meses'] < 1 || $req['meses'] > 6)
-                return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto']);
+                return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto'],400);
             $prize = $coverage->vrMensual;
             $prize_sum = $coverage->vrMensual * $req['meses'];
             $prizeTotal = 0;
@@ -762,8 +777,8 @@ class PropuestasControllerV2 extends Controller
                 'nueva_poliza' => 1,
                 'premio' => $prize,
                 'premio_total' => $prizeTotal,
-                'fechaDesde' => $currentDateStr,
-                'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d H:i:s'),
+                'fechaDesde' => $fromDate->format('Y-m-d 00:00:01'),
+                'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d 23:59:59'),
                 'ultmod' => $currentDateStr,
                 'useredit' => "online",
                 'cobertura_suma' => $coverage->suma,
@@ -817,6 +832,7 @@ class PropuestasControllerV2 extends Controller
         } catch (\Throwable $e) {
             $data['success'] = FALSE;
             $data['error'] = $e->getMessage();
+            return response()->json($data,500);
         }
         
         
