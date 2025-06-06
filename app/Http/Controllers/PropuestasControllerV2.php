@@ -659,18 +659,15 @@ class PropuestasControllerV2 extends Controller
             $data['prefijo'] = "O";
             $ids = [];
             if(!empty($req["asegurados"]))
-                $ids = explode(",", $req["asegurados"]);
-            //if(  $req['agregar_tomador'] == 'SI')
-              //  $ids[] = $mainClient->id;
-            dump($ids);
+                $ids = array_map('intval', explode(",", $req["asegurados"]));
+            if(  $req['agregar_tomador'] == 'SI')
+                $ids[] = $mainClient->id;
             $insureds = cliente::whereIn('id', $ids)
                 ->where('codestado', 1)
                 ->groupBy('id')
                 ->orderBy('id', 'ASC')
                 ->get();
-            dd($insureds);
             $numPolizas = count($insureds);
-            
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'No hay asegurados']);
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();

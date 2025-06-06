@@ -245,7 +245,7 @@ class clienteController extends Controller
             $arrayDni = explode(',',$req['documents']);
             if(!empty( $arrayDni ))
                 $arrayDni = array_unique($arrayDni);
-            $clients = cliente::whereIn('id',$arrayDni)->groupBy('id')->get();
+            $clients = cliente::whereIn('id',$arrayDni)->where('codestado',1)->groupBy('id')->get();
             $arrFound = [];
             if(!empty($clients)){
                 $data['success'] = TRUE;
