@@ -657,16 +657,18 @@ class PropuestasControllerV2 extends Controller
                 return response()->json(['success' => FALSE, 'message' => 'El tomador debe tener datos completos']);
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
+            $ids = [];
             if(!empty($req["asegurados"]))
-                $ids = array_map('intval', explode(",", $req["asegurados"]));
-            if(  $req['agregar_tomador'] == 'SI')
-                $ids[] = $mainClient->id;
+                $ids = explode(",", $req["asegurados"]);
+            //if(  $req['agregar_tomador'] == 'SI')
+              //  $ids[] = $mainClient->id;
+            dump($ids);
             $insureds = cliente::whereIn('id', $ids)
                 ->where('codestado', 1)
                 ->groupBy('id')
                 ->orderBy('id', 'ASC')
                 ->get();
-                
+            dd($insureds);
             $numPolizas = count($insureds);
             
             if($numPolizas == 0)

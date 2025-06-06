@@ -78,13 +78,20 @@ class clienteController extends Controller
      * function for create client
      */
     public function createClientInsured(Request $req) : JsonResponse {
-        $data = ['success' => FALSE];
-        $insureds = $req['insureds'];
-        $codempresa = $req['codempresa'];
-        $currentDate = now('America/Argentina/Buenos_Aires');
-        $currentDateStr = $currentDate->format('Y-m-d H:i:s');
-        $insureds_gen = explode(';',$insureds);
+        
         try {
+            $data = ['success' => FALSE];
+            
+            $dat["insureds"] = "insureds:".$req["insureds"];
+            $error = new logs();
+            $error->saveerror(implode(";", $dat), "", "", "JSTaker");
+
+            $insureds = $req['insureds'];
+            $codempresa = $req['codempresa'];
+            $currentDate = now('America/Argentina/Buenos_Aires');
+            $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+            $insureds_gen = explode(';',$insureds);
+
             foreach ($insureds_gen as $key => $insured) {
                 $insured_expl = explode(',',$insured);
                 if(count($insured_expl) < 5)
