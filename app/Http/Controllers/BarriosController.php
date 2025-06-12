@@ -16,7 +16,6 @@ class BarriosController extends Controller
             $terminos = explode(',', $req['cuits']);
             $terminos = array_map('trim', $terminos); // Limpiar espacios
             $terminos = array_filter($terminos); // Eliminar vacíos
-            
             $noEncontrados = []; // Para acumular los que no se encuentran
             $resultado = [];     // Para almacenar el detalle de cada término
             
@@ -24,14 +23,13 @@ class BarriosController extends Controller
                 if (is_numeric($termino)) {
                     $barrio = barrio::where('id', $termino)->first();
                 } else {
-                    
-                    $stopWords = ['de', 'la', 'el', 'los', 'las'];
+                    $stopWords = ['de', 'la', 'el', 'los', 'las','la'];
                     $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
                     $query = barrio::query();
                     foreach ($words as $word) {
                         $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word%"]);
                     }
-                    $barrio = $query->first();
+                    $barrio = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->first();
                 }
             
                 if (!$barrio) {
@@ -47,7 +45,7 @@ class BarriosController extends Controller
             if(!empty($cadenaNoEncontrados)){
                 $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
             }else{
-                $data['success'] = TRUE;
+                
                 $neighbours = barrio::whereIn('id', $resultado)
                     ->where("codestado",1)
                     ->whereNotNull('suma_muerte')
@@ -60,9 +58,15 @@ class BarriosController extends Controller
                             ->where('codestado', 1)
                             ->orderBy('suma', 'asc')
                             ->first();
-                $data['cobertura'] = $coverage->nombre;
-                $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
-                $data['cuits'] = implode(',',$resultado);
+                if(!empty($coverage)){
+                    $data['success'] = TRUE;
+                    $data['cobertura'] = $coverage->nombre;
+                    $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
+                    $data['cuits'] = implode(',',$resultado);
+                }else{
+                    $data['error'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
+                }
+                
             }
                 
         }
