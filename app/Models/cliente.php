@@ -27,4 +27,8 @@ class cliente extends Model
     public function propuestas(){
         return $this->hasMany(Propuesta::class);
     }
+
+    protected $casts = [
+    'id' => 'string',
+    ];
 }
