@@ -93,7 +93,7 @@ class clienteController extends Controller
             $insureds_gen = explode(';',$insureds);
 
             foreach ($insureds_gen as $key => $insured) {
-                $insured_expl = explode(',',$insured);
+                $insured_expl = array_map('trim', explode(',', $insured));
                 if(count($insured_expl) < 5)
                     return response()->json(['success' => FALSE, 'message' => "Los datos $insured no están completos, deberían ser 5 datos"]);
                 foreach ($insured_expl as $k => $val) {
