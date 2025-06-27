@@ -13,6 +13,8 @@ class BarriosController extends Controller
 {
     public function validateCuits(Request $req) : JsonResponse {
         try {
+            $error = new logs();
+            $error->saveerror($req->getContent(), "", "", "JSON Barr");
             $data = ['success' => FALSE];
             if(!empty($req['cuits'])){
                 $terminos = explode(',', $req['cuits']);
@@ -20,9 +22,7 @@ class BarriosController extends Controller
                 $terminos = array_filter($terminos); // Eliminar vacíos
                 $noEncontrados = []; // Para acumular los que no se encuentran
                 $resultado = [];     // Para almacenar el detalle de cada término
-                $dat['cuits'] = "cuits : ".$req['cuits'];
-                $error = new logs();
-                $error->saveerror(implode(";", $dat), "", "", "JSON Barr");
+                
 
                 foreach ($terminos as $termino) {
                     if (is_numeric($termino)) {
@@ -78,7 +78,7 @@ class BarriosController extends Controller
             return response()->json($data);
         } catch (\Throwable $th) {
             $data['success'] = FALSE;
-            $data['error'] = $th->getMessage();
+            $data['error'] = $req->getContent()." | ".$th->getMessage();
             $error = new logs();
             $error->saveerror(implode(";", $data), "", "", "JSON ERR Barr");
             return response()->json($data,500);
