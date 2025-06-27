@@ -834,6 +834,8 @@ class PropuestasControllerV2 extends Controller
         } catch (\Throwable $e) {
             $data['success'] = FALSE;
             $data['error'] = $e->getMessage();
+            $error = new logs();
+            $error->saveerror(implode(";", $data), "", "", "JSON ERR Pro");
             return response()->json($data,500);
         }
         
