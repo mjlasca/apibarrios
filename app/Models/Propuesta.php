@@ -25,6 +25,7 @@ class Propuesta extends Model
         'nombre',
         'num_polizas',
         'meses',
+        'clausula',
         'id_cobertura',
         'id_barrio',
         'nueva_poliza',

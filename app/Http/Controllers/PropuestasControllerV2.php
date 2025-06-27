@@ -776,6 +776,7 @@ class PropuestasControllerV2 extends Controller
                 'id_barrio' => $req['idpropuesta'],
                 'nueva_poliza' => 1,
                 'premio' => $prize,
+                'clausula' => count($arrayNeighbours) > 5 ? 1 : 0,
                 'premio_total' => $prizeTotal,
                 'fechaDesde' => $fromDate->format('Y-m-d 00:00:01'),
                 'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d 23:59:59'),
