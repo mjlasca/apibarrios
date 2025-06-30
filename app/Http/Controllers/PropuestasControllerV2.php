@@ -673,8 +673,18 @@ class PropuestasControllerV2 extends Controller
             $data['idpropuesta'] = $proposal->consecutivo("O");
             $data['prefijo'] = "O";
             $ids = [];
-            if(!empty($req["asegurados"]))
-                $ids = array_map('intval', explode(",", $req["asegurados"]));
+            if(!empty($req["asegurados"])){
+                $ids = array_filter(
+                    array_map('intval', explode(",", $req["asegurados"])),
+                    fn($val) => $val == 0
+                );
+                if(count($ids) > 0)
+                    return response()->json(['success' => FALSE, 'message' => 'Alguno de los asegurados no está bien formado'],400);
+                $ids = array_filter(
+                    array_map('intval', explode(",", $req["asegurados"])),
+                    fn($val) => $val > 0
+                );
+            }
             if(  $req['agregar_tomador'] == 'SI')
                 $ids[] = $mainClient->id;
             $insureds = cliente::whereIn('id', $ids)
