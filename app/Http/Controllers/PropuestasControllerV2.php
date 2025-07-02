@@ -743,7 +743,7 @@ class PropuestasControllerV2 extends Controller
 
             if($insureds){
                 foreach ($insureds as $key => $client) {
-                    $forEge =  $this->ageCalculate($client->fecha_nacimiento) > 60 ? ($prize_sum * 2) : $prize_sum;
+                    $forEge =  $this->ageCalculate($client->fecha_nacimiento) >= 65 ? ($prize_sum * 2) : $prize_sum;
                     $prizeTotal += $forEge;
                 }
             }
