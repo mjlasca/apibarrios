@@ -661,6 +661,13 @@ class PropuestasControllerV2 extends Controller
                         'error' => 'La fecha debe tener el formato YYYY-MM-DD',
                     ], 400);
                 }
+                $fromCompare = Carbon::parse($req['fecha_desde'].' 23:00:00');
+                if($fromCompare < $currentDate){
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'La fecha inicial de la vigencia no puede ser menor a la fecha actual',
+                    ], 400);
+                }
                 $toDate = Carbon::createFromFormat('Y-m-d', $req['fecha_desde'], 'America/Argentina/Buenos_Aires');
                 $fromDate = $toDate;
             }
