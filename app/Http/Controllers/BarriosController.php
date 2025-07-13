@@ -28,7 +28,7 @@ class BarriosController extends Controller
                     if (is_numeric($termino)) {
                         $barrio = barrio::where('id', $termino)->first();
                     } else {
-                        $stopWords = ['de', 'la', 'el', 'los', 'las','la'];
+                        $stopWords = ['de', 'la', 'el', 'los', 'las','la','del'];
                         $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
                         $query = barrio::query();
                         foreach ($words as $word) {
