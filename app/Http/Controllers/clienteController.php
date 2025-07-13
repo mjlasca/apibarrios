@@ -56,7 +56,7 @@ class clienteController extends Controller
      * function return data client if math
      */
     public function getClient(Request $req) : JsonResponse {
-        $client = cliente::where('id',$req['document'])->where('codestado',1)->first();
+        $client = cliente::where('id',$req['document'])->whereNotNull('fecha_nacimiento')->whereNotNull('codpostal')->where('codestado',1)->first();
         $data = ['success' => FALSE];
         if(!empty($client)){
             $data = [
