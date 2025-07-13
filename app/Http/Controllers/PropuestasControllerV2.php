@@ -703,7 +703,14 @@ class PropuestasControllerV2 extends Controller
             if($numPolizas == 0)
                 return response()->json(['success' => FALSE, 'message' => 'No hay asegurados'],400);
             $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
+            $neighboursGroup = [];
             $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
+            if(!empty($req["cuits"])){
+                $arrCuits = explode(",", $req['cuits']);
+                foreach ($arrCuits as $k => $v) {
+                    $neighboursGroup[] = $v;
+                }
+            }
             $neighbours = barrio::whereIn('id', $neighboursGroup)
                 ->where("codestado",1)
                 ->whereNotNull('suma_muerte')
@@ -713,7 +720,7 @@ class PropuestasControllerV2 extends Controller
                 ->groupBy('id')
                 ->get();
             if(count($neighbours) < 1)
-                return response()->json(['success' => FALSE, 'message' => 'El barrio o los barrios no existen'],400);                
+                return response()->json(['success' => FALSE, 'message' => 'Algunos de los barrios no existen'],400);                
             if(!empty($req['cobertura'])){
                 $coverage = Cobertura::where('nombre', $req['cobertura'])
                                 ->where('codestado', 1)
