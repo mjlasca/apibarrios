@@ -51,7 +51,7 @@ class CoberturasController extends Controller
                         $cob = Cobertura::where('nombre', '=',$value['nombre'])->first();
                         Cola::create([
                             'entity' => 'coberturas',
-                            'entity_id' => $cob->reg,
+                            'entity_id' => $cob->id,
                             'codempresa' => 'all',
                         ]);
                     }
