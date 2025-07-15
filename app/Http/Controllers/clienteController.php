@@ -138,7 +138,7 @@ class clienteController extends Controller
             $data['success'] = TRUE;
         } catch (\Exception $e) {
             $data['success'] = FALSE;
-            $data['error'] = $e->getMessage();
+            $data['message'] = $e->getMessage();
             $error = new logs();
             $error->saveerror(implode(";", $data), "", "", "JSON ERR JSInsured");
         }
@@ -227,7 +227,7 @@ class clienteController extends Controller
             $data['success'] = TRUE;
         } catch (\Exception $e) {
             $data['success'] = FALSE;
-            $data['error'] = $e->getMessage();
+            $data['message'] = $e->getMessage();
             $error = new logs();
             $error->saveerror(implode(";", $data), "", "", "JSON ERR JSTaker");
         }

@@ -34,15 +34,20 @@ class BarriosController extends Controller
                         foreach ($words as $word) {
                             $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word%"]);
                         }
-                        $barrio = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->first();
+                        $barrios = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->get();
                     }
                 
-                    if (!$barrio) {
+                    if (!$barrios) {
                         $noEncontrados[] = $termino;
                     }
                 
-                    if(!empty($barrio))
-                        $resultado[] = $barrio->id;
+                    if(!empty($barrios))
+                    {
+                        foreach ($barrios as $barrio) {
+                            $resultado[] = $barrio->id;
+                        }
+                    }
+                        
                 }
                 
                 // Concatenar los no encontrados en una cadena
@@ -69,7 +74,7 @@ class BarriosController extends Controller
                         $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
                         $data['cuits'] = implode(',',$resultado);
                     }else{
-                        $data['error'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
+                        $data['message'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
                     }
                     
                 }
@@ -78,7 +83,7 @@ class BarriosController extends Controller
             return response()->json($data);
         } catch (\Throwable $th) {
             $data['success'] = FALSE;
-            $data['error'] = $req->getContent()." | ".$th->getMessage();
+            $data['message'] = $req->getContent()." | ".$th->getMessage();
             $error = new logs();
             $error->saveerror(implode(";", $data), "", "", "JSON ERR Barr");
             return response()->json($data,500);
