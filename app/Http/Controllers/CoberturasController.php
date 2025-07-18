@@ -78,7 +78,7 @@ class CoberturasController extends Controller
                         $typeQuery = 'INSERT';
                         Cola::create([
                             'entity' => 'coberturas',
-                            'entity_id' => $cober->reg,
+                            'entity_id' => $cober->id,
                             'codempresa' => 'all',
                         ]);
                     }
