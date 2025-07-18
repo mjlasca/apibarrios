@@ -81,6 +81,7 @@ class BarriosController extends Controller
                             $data['cobertura'] = $coverage->nombre;
                             $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
                             $data['cuits'] = implode(',',$resultado);
+                            $data['message'] = 'Consulta exitosa' ;
                         }else{
                             $data['message'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
                         }
