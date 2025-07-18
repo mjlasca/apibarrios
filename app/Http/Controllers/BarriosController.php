@@ -28,20 +28,20 @@ class BarriosController extends Controller
                     if (is_numeric($termino)) {
                         $barrio = barrio::where('id', $termino)->first();
                     } else {
-                        $stopWords = ['de', 'la', 'el', 'los', 'las','la','del'];
+                        $stopWords = ['de', 'la', 'el', 'los', 'las','la','del', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
                         $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
                         $query = barrio::query();
                         foreach ($words as $word) {
-                            $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word%"]);
+                            $word_2 = $this->quitarAcentos($word);
+                            $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word_2%"]);
                         }
                         $barrios = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->get();
                     }
-                
-                    if (!$barrios) {
+                    if ($barrios->count() < 1) {
                         $noEncontrados[] = $termino;
                     }
                 
-                    if(!empty($barrios))
+                    if($barrios->count() > 0 )
                     {
                         foreach ($barrios as $barrio) {
                             $resultado[] = $barrio->id;
@@ -50,12 +50,19 @@ class BarriosController extends Controller
                         
                 }
                 
-                // Concatenar los no encontrados en una cadena
+                // Concatenar los no encontrados
                 $cadenaNoEncontrados = implode(', ', $noEncontrados);
                 if(!empty($cadenaNoEncontrados)){
                     $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
+                    $data['message'] = 'Algunos barrios no fueron encontrados' ;
                 }else{
                     
+                    $neighbours = barrio::whereIn('id', $resultado)
+                        ->where("codestado",1)
+                        ->whereNotNull('suma_muerte')
+                        ->groupBy('id')
+                        ->get();
+                        
                     $neighbours = barrio::whereIn('id', $resultado)
                         ->where("codestado",1)
                         ->whereNotNull('suma_muerte')
@@ -64,17 +71,19 @@ class BarriosController extends Controller
                         ->where('id','!=','')
                         ->groupBy('id')
                         ->get();
-                    $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
-                                ->where('codestado', 1)
-                                ->orderBy('suma', 'asc')
-                                ->first();
-                    if(!empty($coverage)){
-                        $data['success'] = TRUE;
-                        $data['cobertura'] = $coverage->nombre;
-                        $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
-                        $data['cuits'] = implode(',',$resultado);
-                    }else{
-                        $data['message'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
+                    if($neighbours->count() > 0){
+                        $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                                    ->where('codestado', 1)
+                                    ->orderBy('suma', 'asc')
+                                    ->first();
+                        if(!empty($coverage)){
+                            $data['success'] = TRUE;
+                            $data['cobertura'] = $coverage->nombre;
+                            $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
+                            $data['cuits'] = implode(',',$resultado);
+                        }else{
+                            $data['message'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
+                        }
                     }
                     
                 }
@@ -90,4 +99,14 @@ class BarriosController extends Controller
         }
         
     }
+
+    public function quitarAcentos($cadena) {
+        $acentos = [
+            'á'=>'a', 'é'=>'e', 'í'=>'i', 'ó'=>'o', 'ú'=>'u',
+            'Á'=>'A', 'É'=>'E', 'Í'=>'I', 'Ó'=>'O', 'Ú'=>'U',
+            'ñ'=>'n', 'Ñ'=>'N'
+        ];
+        return strtr($cadena, $acentos);
+    }
+
 }
