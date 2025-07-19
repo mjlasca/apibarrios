@@ -74,6 +74,8 @@ class DuplicateProposalService
             $propNew->master = $prop->master;
             $propNew->organizador = $prop->organizador;
             $propNew->productor = $prop->productor;
+            $propNew->fecha_comprobante = "1000-01-01";
+            $propNew->fecha_paga = "1000-01-01 00:00:00";
 
             if($propNew->save()){
 
