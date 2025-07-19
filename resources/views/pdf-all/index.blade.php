@@ -634,7 +634,9 @@
             <br>
             Productor : {{ $data[0]->productor }}
           </p>
-          <img  src="img/firmaCeLibre.png" alt="">
+          @if ($data[0]->paga == 1)
+          <img  src="img/firmaCeLibre.png" alt="">    
+          @endif
           <p class="text-right detail-right">
             Broker del puerto<br>
             Cobranzas<br>
