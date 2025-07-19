@@ -19,11 +19,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use App\Models\Cobertura;
+use App\Services\DuplicateProposalService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class PropuestasControllerV2 extends Controller
 {
+    /**
+     * App\Services\DuplicateProposalService
+     */
+    protected $duplicator;
+
+    public function __construct(DuplicateProposalService $duplicator) {
+        $this->duplicator = $duplicator;
+    }
+
     //
     public function getReference($codempresa){
 
@@ -110,7 +120,6 @@ class PropuestasControllerV2 extends Controller
                             'premio_total' => $resp['total'],
                         ]
                     );
-    
                     return response()->json(["success" => TRUE, "data" => $resp]);
                 }
                 
@@ -168,6 +177,57 @@ class PropuestasControllerV2 extends Controller
 
             return response()->json(["success" => FALSE, "msg" => $ex->getMessage()]);
             
+        }   
+    }
+
+    public function duplicate(Request $req){
+        try{
+            $currentDate = Carbon::now('America/Argentina/Buenos_Aires');
+            if(!empty($req["fecha_desde"])){
+                $validator = Validator::make($req->all(), [
+                    'fecha_desde' => 'date_format:Y-m-d',
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha debe tener el formato YYYY-MM-DD',
+                    ], 400);
+                }
+                $fromCompare = Carbon::parse($req['fecha_desde'].' 23:00:00');
+                if($fromCompare < $currentDate){
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha inicial de la vigencia no puede ser menor a la fecha actual',
+                    ], 400);
+                }
+            }
+            $regpending = PendingDuplicate::where('prefijo', strtoupper($req['pref']))->where('idpropuesta', $req['id'])->where('status',0)->first();
+                if( $regpending ){
+                    $data= [
+                        'meses' => $regpending->meses,
+                        'premio' => $regpending->premio,
+                        'premio_total' => $regpending->premio_total,
+                        'pref' => strtoupper($req['pref']),
+                        'id' => $req['id'],
+                        'fecha_desde' => $req['fecha_desde']
+                    ];
+                    $resDuplicate = $this->duplicator->duplicate('O', $data);
+                    if($resDuplicate){
+                        $regpending->status = 1; 
+                        $regpending->save();
+
+                        return redirect()->route('downloadAll', [
+                            'id' => $resDuplicate->idpropuesta,
+                            'prefijo' => $resDuplicate->prefijo
+                        ]);
+
+                    }
+                }
+                
+                return response()->json(["success" => FALSE, 'msg' => 'No hay coincidencia con la póliza']);
+
+        }catch(Exception $ex){
+            return response()->json(["success" => FALSE, "msg" => $ex->getMessage()]);
         }   
     }
 

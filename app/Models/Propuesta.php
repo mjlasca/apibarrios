@@ -210,8 +210,8 @@ class Propuesta extends Model
                         $data['info'] = $concatInfo;
                         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
                         $domain = $_SERVER['HTTP_HOST'];
-                        $url = $protocol . $domain;
-                        $data['url'] = $url.'/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        //$url = $protocol . $domain;
+                        //$data['url'] = $url.'/propuesta-duplicate/pay/'.$pref.'/'.$id;
                         
 
                         return $data;
@@ -287,8 +287,10 @@ class Propuesta extends Model
             $propNew->fecha_paga = $propNew->ultmod;
             $propNew->formadepago = 'CREDITO';
             $propNew->usuariopaga = 'online';
-            $propNew->tipopago = $data['forma_pago'] ;
-            $propNew->compformadepago = $data['nro_comprobante'];
+            if(isset($data['forma_pago']))
+                $propNew->tipopago = $data['forma_pago'] ;
+            if(isset($data['nro_comprobante']))
+                $propNew->compformadepago = $data['nro_comprobante'];
             $propNew->fecha_nacimiento = $prop->fecha_nacimiento;
             $propNew->codempresa = $prop->codempresa;
             $propNew->data_barrios = $prop->data_barrios;
