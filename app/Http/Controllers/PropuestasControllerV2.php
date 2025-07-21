@@ -216,14 +216,14 @@ class PropuestasControllerV2 extends Controller
                         $regpending->status = 1; 
                         $regpending->save();
 
-                        return redirect()->route('downloadAll', [
-                            'id' => $resDuplicate->idpropuesta,
-                            'prefijo' => $resDuplicate->prefijo
-                        ]);
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Se ha creado la propuesta con éxito',
+                            'data' => $data
+                        ], 200);
 
                     }
                 }
-                
                 return response()->json(["success" => FALSE, 'msg' => 'No hay coincidencia con la póliza']);
 
         }catch(Exception $ex){
