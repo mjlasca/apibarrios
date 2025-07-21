@@ -213,6 +213,12 @@ class PropuestasControllerV2 extends Controller
                     ];
                     $resDuplicate = $this->duplicator->duplicate('O', $data);
                     if($resDuplicate){
+                        $data['pref'] = $resDuplicate->prefijo;
+                        $data['id'] = $resDuplicate->idpropuesta;
+                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                        $domain = $_SERVER['HTTP_HOST'];
+                        $url = $protocol . $domain;
+                        $data['url'] = $url.'/descargaseguro/'.$data['id'].'/'.$data['pref'];
                         $regpending->status = 1; 
                         $regpending->save();
 

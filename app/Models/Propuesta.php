@@ -213,7 +213,7 @@ class Propuesta extends Model
                         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
                         $domain = $_SERVER['HTTP_HOST'];
                         //$url = $protocol . $domain;
-                        //$data['url'] = $url.'/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        //$data['url'] = $url.'/propuesta-duplicate/descargaseguro/'.$id.'/'.$pref.'/;
                         
 
                         return $data;
