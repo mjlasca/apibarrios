@@ -27,6 +27,10 @@ class BarriosController extends Controller
                 foreach ($terminos as $termino) {
                     if (is_numeric($termino)) {
                         $barrio = barrio::where('id', $termino)->first();
+                        if($barrio)
+                            $resultado[] = $barrio->id;
+                        else
+                            $noEncontrados[] = $termino;
                     } else {
                         $stopWords = ['de', 'la', 'el', 'los', 'las','la','del', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
                         $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
@@ -36,15 +40,15 @@ class BarriosController extends Controller
                             $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word_2%"]);
                         }
                         $barrios = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->get();
-                    }
-                    if ($barrios->count() < 1) {
-                        $noEncontrados[] = $termino;
-                    }
-                
-                    if($barrios->count() > 0 )
-                    {
-                        foreach ($barrios as $barrio) {
-                            $resultado[] = $barrio->id;
+                            if ($barrios->count() < 1) {
+                            $noEncontrados[] = $termino;
+                        }
+                    
+                        if($barrios->count() > 0 )
+                        {
+                            foreach ($barrios as $barrio) {
+                                $resultado[] = $barrio->id;
+                            }
                         }
                     }
                         
