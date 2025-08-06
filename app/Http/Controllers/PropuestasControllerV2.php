@@ -11,16 +11,29 @@ use App\Models\logs;
 use App\Models\payregistry;
 use App\Models\PendingDuplicate;
 use App\Models\Propuesta;
+use App\Models\Clasificacione;
+use App\Models\Actividade;
 use Barryvdh\DomPDF\Facade as PDF;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
-
-
+use Illuminate\Http\JsonResponse;
+use App\Models\Cobertura;
+use App\Services\DuplicateProposalService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class PropuestasControllerV2 extends Controller
 {
+    /**
+     * App\Services\DuplicateProposalService
+     */
+    protected $duplicator;
+
+    public function __construct(DuplicateProposalService $duplicator) {
+        $this->duplicator = $duplicator;
+    }
+
     //
     public function getReference($codempresa){
 
@@ -107,7 +120,6 @@ class PropuestasControllerV2 extends Controller
                             'premio_total' => $resp['total'],
                         ]
                     );
-    
                     return response()->json(["success" => TRUE, "data" => $resp]);
                 }
                 
@@ -165,6 +177,63 @@ class PropuestasControllerV2 extends Controller
 
             return response()->json(["success" => FALSE, "msg" => $ex->getMessage()]);
             
+        }   
+    }
+
+    public function duplicate(Request $req){
+        try{
+            $currentDate = Carbon::now('America/Argentina/Buenos_Aires');
+            if(!empty($req["fecha_desde"])){
+                $validator = Validator::make($req->all(), [
+                    'fecha_desde' => 'date_format:Y-m-d',
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha debe tener el formato YYYY-MM-DD',
+                    ], 400);
+                }
+                $fromCompare = Carbon::parse($req['fecha_desde'].' 23:00:00');
+                if($fromCompare < $currentDate){
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha inicial de la vigencia no puede ser menor a la fecha actual',
+                    ], 400);
+                }
+            }
+            $regpending = PendingDuplicate::where('prefijo', strtoupper($req['pref']))->where('idpropuesta', $req['id'])->where('status',0)->first();
+                if( $regpending ){
+                    $data= [
+                        'meses' => $regpending->meses,
+                        'premio' => $regpending->premio,
+                        'premio_total' => $regpending->premio_total,
+                        'pref' => strtoupper($req['pref']),
+                        'id' => $req['id'],
+                        'fecha_desde' => $req['fecha_desde']
+                    ];
+                    $resDuplicate = $this->duplicator->duplicate('O', $data);
+                    if($resDuplicate){
+                        $data['pref'] = $resDuplicate->prefijo;
+                        $data['id'] = $resDuplicate->idpropuesta;
+                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                        $domain = $_SERVER['HTTP_HOST'];
+                        $url = $protocol . $domain;
+                        $data['url'] = $url.'/descargaseguro/'.$data['id'].'/'.$data['pref'];
+                        $regpending->status = 1; 
+                        $regpending->save();
+
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Se ha creado la propuesta con éxito',
+                            'data' => $data
+                        ], 200);
+
+                    }
+                }
+                return response()->json(["success" => FALSE, 'msg' => 'No hay coincidencia con la póliza']);
+
+        }catch(Exception $ex){
+            return response()->json(["success" => FALSE, "msg" => $ex->getMessage()]);
         }   
     }
 
@@ -612,5 +681,269 @@ class PropuestasControllerV2 extends Controller
         return response()->json($data);
     }
 
+    public function validateProposal(Request $req) : JsonResponse {
+        return $this->CreateProposalChat($req,TRUE);
+    }
+
+    public function CreateProposalChat(Request $req, $valid = FALSE) : JsonResponse {
+        
+        try {
+            $data = ['success' => FALSE];
+            $dat["tomador"] = "tomador:".$req["tomador"];
+            $dat["agregar_tomador"] = "agregar_tomador:".$req["agregar_tomador"];
+            $dat["asegurados"] = "asegurados:".$req["asegurados"];
+            $dat["cuits"] = "cuits:".$req["cuits"];
+            $dat["meses"] = "meses:".$req["meses"];
+            $dat["cobertura"] = "cobertura:".$req["cobertura"];
+            $dat["cod_actividad"] = "cod_actividad:".$req["cod_actividad"];
+            $dat["cod_clasificacion"] = "cod_clasificacion:".$req["cod_clasificacion"];
+            $dat["codempresa"] = "codempresa:".$req["codempresa"];
+            $dat["master"] = "master:".$req["master"];
+            $dat["organizador"] = "organizador:".$req["organizador"];
+            $dat["productor"] = "productor:".$req["productor"];
+            $dat["fecha_desde"] = "fecha_desde:".$req["fecha_desde"];
+            $dat["master"] = "master:".$req["master"];
+            $dat["lista_grupos_descartar"] = "lista_grupos_descartar:".$req["lista_grupos_descartar"];
+
+            $error = new logs();
+            $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
+
+            $clasification = Clasificacione::where('cod',$req['cod_clasificacion'])->first();
+            $activity = Actividade::where('cod',$req['cod_actividad'])->first();
+            if(empty($clasification) || empty($activity)){
+                return response()->json(['success' => FALSE, 'message' => 'No se encontró la clasificación o actividad']);
+            }
+            $currentDate = now('America/Argentina/Buenos_Aires');
+            $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+            $toDate = $currentDate;
+            $fromDate = $currentDateStr;
+            if(!empty($req["fecha_desde"])){
+                $validator = Validator::make($req->all(), [
+                    'fecha_desde' => 'date_format:Y-m-d',
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha debe tener el formato YYYY-MM-DD',
+                    ], 400);
+                }
+                $fromCompare = Carbon::parse($req['fecha_desde'].' 23:00:00');
+                if($fromCompare < $currentDate){
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La fecha inicial de la vigencia no puede ser menor a la fecha actual',
+                    ], 400);
+                }
+                $toDate = Carbon::createFromFormat('Y-m-d', $req['fecha_desde'], 'America/Argentina/Buenos_Aires');
+                $fromDate = $toDate;
+            }
+            $proposal = new Propuesta();
+            $mainClient = cliente::where('id',$req['tomador'])->where('codestado',1)->first();
+            if($mainClient == FALSE)
+                return response()->json(['success' => FALSE, 'message' => 'El tomador no existe'],400);
+            if(empty($mainClient->codpostal))
+                return response()->json(['success' => FALSE, 'message' => 'El tomador debe tener datos completos'],400);
+            $data['idpropuesta'] = $proposal->consecutivo("O");
+            $data['prefijo'] = "O";
+            $ids = [];
+            if(!empty($req["asegurados"])){
+                $ids = array_filter(
+                    array_map('intval', explode(",", $req["asegurados"])),
+                    fn($val) => $val == 0
+                );
+                if(count($ids) > 0)
+                    return response()->json(['success' => FALSE, 'message' => 'Alguno de los asegurados no está bien formado'],400);
+                $ids = array_filter(
+                    array_map('intval', explode(",", $req["asegurados"])),
+                    fn($val) => $val > 0
+                );
+            }
+            if(  $req['agregar_tomador'] == 'SI')
+                $ids[] = $mainClient->id;
+            $insureds = cliente::whereIn('id', $ids)
+                ->where('codestado', 1)
+                ->groupBy('id')
+                ->orderBy('id', 'ASC')
+                ->get();
+            $numPolizas = count($insureds);
+            if($numPolizas == 0)
+                return response()->json(['success' => FALSE, 'message' => 'No hay asegurados'],400);
+            $groups = gruposbarrio::whereIn('idbarrio', explode(",", $req["cuits"]))->where("codestado",1)->whereNotIn('nombre', explode(",", $req["lista_grupos_descartar"]))->groupBy('nombre')->pluck('id')->toArray();
+            $neighboursGroup = [];
+            $neighboursGroup = gruposbarrio::whereIn('id', $groups)->where("codestado",1)->where('idbarrio','!=',NULL)->where('idbarrio','!=','')->groupBy('idbarrio')->pluck('idbarrio')->toArray();
+            if(!empty($req["cuits"])){
+                $arrCuits = explode(",", $req['cuits']);
+                foreach ($arrCuits as $k => $v) {
+                    $neighboursGroup[] = $v;
+                }
+            }
+            $neighbours = barrio::whereIn('id', $neighboursGroup)
+                ->where("codestado",1)
+                ->whereNotNull('suma_muerte')
+                ->where('suma_muerte','!=','')
+                ->whereNotNull('id')
+                ->where('id','!=','')
+                ->groupBy('id')
+                ->get();
+            if(count($neighbours) < 1)
+                return response()->json(['success' => FALSE, 'message' => 'Algunos de los barrios no existen'],400);                
+            if(!empty($req['cobertura'])){
+                $coverage = Cobertura::where('nombre', $req['cobertura'])
+                                ->where('codestado', 1)
+                                ->first();
+            }else{
+                $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                                ->where('codestado', 1)
+                                ->orderBy('suma', 'asc')
+                                ->first();
+            }
+
+            if(empty($coverage))
+                return response()->json(['success' => FALSE, 'message' => 'La cobertura no es correcta'],400);
+            
+            if($req['meses'] < 1 || $req['meses'] > 6)
+                return response()->json(['success' => FALSE, 'message' => 'Los meses no están en el rango correcto'],400);
+            $prize = $coverage->vrMensual;
+            $prize_sum = $coverage->vrMensual * $req['meses'];
+            $prizeTotal = 0;
+            $promo = "";
+            
+            if($req['meses'] == 2 && !empty($coverage->x21)){
+                $prize_sum = $coverage->x21;
+                $promo = "2x1";
+            }
+            if($req['meses'] == 3 && !empty($coverage->x32)){
+                $prize_sum = $coverage->x32;
+                $promo = "3x2";
+            }
+            if($req['meses'] == 6 && !empty($coverage->x64)){
+                $prize_sum = $coverage->x64;
+                $promo = "6x4";
+            }
+
+            if($insureds){
+                foreach ($insureds as $key => $client) {
+                    $forEge =  $this->ageCalculate($client->fecha_nacimiento) >= 65 ? ($prize_sum * 2) : $prize_sum;
+                    $prizeTotal += $forEge;
+                }
+            }
+            if($valid){
+                $data = [];
+                $data['success'] = TRUE;
+                $data['valorpropuesta'] = $prizeTotal;
+                return response()->json($data);
+            }
+            $arrayNeighbours['barrios'] = [];
+            $neighbours->map(function($item) use (&$arrayNeighbours) {
+                $arrayNeighbours['barrios'][] = [
+                    'id' => null,
+                    'id_propuesta' => null,
+                    'id_barrio' => $item->id,
+                    'nombre' => $item->nombre,
+                    'ultmod' => null,
+                    'user_edit' => null,
+                    'codestado' => null,
+                    'prefijo' => null,
+                    'idprefijo' => null,
+                    'codempresa' => "",
+                    'sumamuerte' => $item->suma_muerte,
+                    'sumagm' => $item->suma_gm,
+                    'email' => null,
+                ];
+            });
+            
+            $proposal = Propuesta::create([
+                'codempresa' => $req['codempresa'],
+                'prefijo' => "O",
+                'idpropuesta' => $data['idpropuesta'],
+                'reg' => $data['idpropuesta'],
+                'codestado' => 1,
+                'documento' => $mainClient->id,
+                'nombre' => "$mainClient->nombres $mainClient->apellidos",
+                'num_polizas' => $numPolizas,
+                'meses' => $req['meses'],
+                'id_cobertura' => $coverage->nombre,
+                'id_barrio' => $req['idpropuesta'],
+                'nueva_poliza' => 1,
+                'premio' => $prize,
+                'clausula' => count($arrayNeighbours) > 0 ? 1 : 0,
+                'premio_total' => $prizeTotal,
+                'fechaDesde' => $fromDate->format('Y-m-d 00:00:01'),
+                'fechaHasta' => $toDate->modify("+".$req['meses']." months")->format('Y-m-d 23:59:59'),
+                'ultmod' => $currentDateStr,
+                'useredit' => "online",
+                'cobertura_suma' => $coverage->suma,
+                'cobertura_deducible' => $coverage->deducible,
+                'cobertura_gastos' => $coverage->gastos,
+                'promocion' => $promo,
+                'paga' => 0,
+                'fecha_paga' => "1000-01-01 00:00:00",
+                'master' => $req['master'],
+                'organizador' => $req['organizador'],
+                'productor' => $req['productor'],
+                'data_barrios' => json_encode($arrayNeighbours),
+                'version' => 1,
+                'fecha_comprobante' => "1000-01-01",
+                'fecha_nacimiento' => $mainClient->fecha_nacimiento,
+                'formadepago' => "CREDITO",
+            ]);
+
+            if($proposal){
+                foreach ($insureds as $key => $client) {
+                    $line = new LineasPropuesta();
+                    $line->id_propuesta = $data['idpropuesta'];
+                    $line->prefijo = "O";
+                    $line->codempresa = $req['codempresa'];
+                    $line->documento = $client->id;
+                    $line->tipo_documento = $client->tipo_id;
+                    $line->apellidos = $client->apellidos;
+                    $line->nombres = $client->nombres;
+                    $line->fecha_nacimiento = $client->fecha_nacimiento;
+                    $line->id_actividad = $activity->reg;
+                    $line->id_clasificacion = $clasification->reg;
+                    $line->premio = $prize;
+                    $line->ultmod = $proposal->ultmod;
+                    $line->user_edit = "online";
+                    $line->codestado = 1;
+                    $line->fechaDesde = $proposal->fechaDesde;
+                    $line->actividad = $req['cod_actividad']." - ".$activity->nombre;
+                    $line->clasificacion = $req['cod_clasificacion']." - ".$clasification->nombre;
+                    $line->fechaHasta = $proposal->fechaHasta;
+                    $line->save();
+                }
+                Cola::create([
+                    'entity' => 'propuestas',
+                    'entity_id' => $proposal->id,
+                    'codempresa' => $req['codempresa'],
+                    'ptoventa' => 'O',
+                ]);
+                $data['valorpropuesta'] = $prizeTotal;
+                $data['vigencia_hasta'] = $toDate->format('d/m/Y');
+                $data['success'] = TRUE;
+            }
+        } catch (\Throwable $e) {
+            $data['success'] = FALSE;
+            $data['message'] = $e->getMessage();
+            $error = new logs();
+            $error->saveerror(implode(";", $data), "", "", "JSON ERR Pro");
+            return response()->json($data,500);
+        }
+        
+        
+        return response()->json($data);
+    }
+
+    /**
+     * Return age
+     *
+     * @param [type] $birthDate
+     * @return void
+     */
+    public function ageCalculate($birthDate) {
+        $birthDate = new \DateTime($birthDate);
+        $today = new \DateTime();
+        $age = $birthDate->diff($today)->y;
+        return $age;
+    }
     
 }

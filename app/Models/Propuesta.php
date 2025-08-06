@@ -15,11 +15,47 @@ class Propuesta extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'reg',
+        'codempresa',
+        'prefijo',
+        'idpropuesta',
+        'codestado',
+        'documento',
+        'nombre',
+        'num_polizas',
+        'meses',
+        'clausula',
+        'id_cobertura',
+        'id_barrio',
+        'nueva_poliza',
+        'premio',
+        'premio_total',
+        'fechaDesde',
+        'fechaHasta',
+        'ultmod',
+        'useredit',
+        'cobertura_suma',
+        'cobertura_deducible',
+        'cobertura_gastos',
+        'promocion',
+        'paga',
+        'fecha_paga',
+        'master',
+        'organizador',
+        'productor',
+        'data_barrios',
+        'version',
+        'fecha_comprobante',
+        'fecha_nacimiento',
+        'formadepago',
+    ];
+
     public function consecutivo(){
         
-        $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('reg','DESC')->limit(1)->get();
-        if(count($cons) > 0)
-            return $cons[0]->reg + 1;
+        $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('idpropuesta','DESC')->first();
+        if($cons)
+            return $cons->idpropuesta + 1;
         else
             return 1;
     }
@@ -172,10 +208,12 @@ class Propuesta extends Model
                         $data['vrunit'] = $cobertura[0]->vrMensual;
                         $data['total'] = $total;
                         $data['info'] = $concatInfo;
+                        $data['pref'] = $prop[0]->prefijo;
+                        $data['id'] = $prop[0]->idpropuesta;
                         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
                         $domain = $_SERVER['HTTP_HOST'];
-                        $url = $protocol . $domain;
-                        $data['url'] = $url.'/propuesta-duplicate/pay/'.$pref.'/'.$id;
+                        //$url = $protocol . $domain;
+                        //$data['url'] = $url.'/propuesta-duplicate/descargaseguro/'.$id.'/'.$pref.'/;
                         
 
                         return $data;
@@ -251,8 +289,10 @@ class Propuesta extends Model
             $propNew->fecha_paga = $propNew->ultmod;
             $propNew->formadepago = 'CREDITO';
             $propNew->usuariopaga = 'online';
-            $propNew->tipopago = $data['forma_pago'] ;
-            $propNew->compformadepago = $data['nro_comprobante'];
+            if(isset($data['forma_pago']))
+                $propNew->tipopago = $data['forma_pago'] ;
+            if(isset($data['nro_comprobante']))
+                $propNew->compformadepago = $data['nro_comprobante'];
             $propNew->fecha_nacimiento = $prop->fecha_nacimiento;
             $propNew->codempresa = $prop->codempresa;
             $propNew->data_barrios = $prop->data_barrios;

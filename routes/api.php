@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\ClasificacionesController;
+use App\Http\Controllers\clienteController;
 use App\Http\Controllers\CoberturasController;
 use App\Http\Controllers\GrupoBarriosController;
 use App\Http\Controllers\MigracionBarriosController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\BarriosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,7 @@ Route::middleware('auth:api')->post('/propuestas/refpropuesta/{codempresa}', [ P
 Route::middleware('auth:api')->post('/propuestas/setreference/{codempresa}', [ PropuestasControllerV2::class, 'setReference' ]);
 Route::middleware('auth:api')->post('/propuestas/duplicate-pending', [ PropuestasControllerV2::class, 'duplicatePendingProposal' ]);
 Route::post('/propuestas/duplicate', [ PropuestasControllerV2::class, 'duplicateProposal' ]);
+Route::middleware('auth:api')->post('/proposal/duplicate', [ PropuestasControllerV2::class, 'duplicate' ]);
 Route::get('/propuestas/missing/{date}/{codempresa}/{prefix}', [ PropuestasControllerV2::class, 'getDateProposal' ]);
 Route::get('/propuestas/missing/{date}/{codempresa}/{prefix}/{idpropuesta}', [ PropuestasControllerV2::class, 'getDateProposal' ]);
 Route::middleware('auth:api')->get('/propuestas/report/{date}/{codempresa}', [ PropuestasControllerV2::class, 'getConsolidated' ]);
@@ -48,3 +51,10 @@ Route::middleware('auth:api')->post('/clasificaciones/setclasificaciones/{codemp
 Route::middleware('auth:api')->get('/actividades/{codempresa}', [ ActividadesController::class, 'getEmpresa' ]);
 Route::middleware('auth:api')->post('/actividades/setactividades/{codempresa}', [ ActividadesController::class, 'setActividades' ]);
 
+Route::middleware('auth:api')->post('/v2/client', [ clienteController::class, 'getClient' ]);
+Route::middleware('auth:api')->post('/v2/insured', [ clienteController::class, 'getInsured' ]);
+Route::middleware('auth:api')->post('/v2/client/create', [ clienteController::class, 'createClientTaker' ]);
+Route::middleware('auth:api')->post('/v2/client-insureds/create', [ clienteController::class, 'createClientInsured' ]);
+Route::middleware('auth:api')->post('/v2/cuits', [ BarriosController::class, 'validateCuits' ]);
+Route::middleware('auth:api')->post('/v2/proposal/create', [ PropuestasControllerV2::class, 'CreateProposalChat' ]);
+Route::middleware('auth:api')->post('/v2/proposal/validate', [ PropuestasControllerV2::class, 'validateProposal' ]);

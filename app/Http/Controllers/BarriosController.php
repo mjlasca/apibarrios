@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\barrio;
+use App\Models\Cobertura;
+use App\Models\gruposbarrio;
+use App\Models\logs;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class BarriosController extends Controller
+{
+    public function validateCuits(Request $req) : JsonResponse {
+        try {
+            $error = new logs();
+            $error->saveerror($req->getContent(), "", "", "JSON Barr");
+            $data = ['success' => FALSE];
+            if(!empty($req['cuits'])){
+                $terminos = explode(',', $req['cuits']);
+                $terminos = array_map('trim', $terminos); // Limpiar espacios
+                $terminos = array_filter($terminos); // Eliminar vacíos
+                $noEncontrados = []; // Para acumular los que no se encuentran
+                $resultado = [];     // Para almacenar el detalle de cada término
+                
+
+                foreach ($terminos as $termino) {
+                    if (is_numeric($termino)) {
+                        $barrio = barrio::where('id', $termino)->first();
+                        if($barrio)
+                            $resultado[] = $barrio->id;
+                        else
+                            $noEncontrados[] = $termino;
+                    } else {
+                        $stopWords = ['de', 'la', 'el', 'los', 'las','la','del', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                        $words = array_filter(explode(" ",$termino), fn($word) => !in_array($word, $stopWords));
+                        $query = barrio::query();
+                        foreach ($words as $word) {
+                            $word_2 = $this->quitarAcentos($word);
+                            $query->whereRaw('LOWER(nombre) LIKE ?', ["%$word_2%"]);
+                        }
+                        $barrios = $query->WhereNotNull('suma_muerte')->orderBy('suma_muerte', 'desc')->get();
+                            if ($barrios->count() < 1) {
+                            $noEncontrados[] = $termino;
+                        }
+                    
+                        if($barrios->count() > 0 )
+                        {
+                            foreach ($barrios as $barrio) {
+                                $resultado[] = $barrio->id;
+                            }
+                        }
+                    }
+                        
+                }
+                
+                // Concatenar los no encontrados
+                $cadenaNoEncontrados = implode(', ', $noEncontrados);
+                if(!empty($cadenaNoEncontrados)){
+                    $data['cadenaNoEncontrados'] = $cadenaNoEncontrados;
+                    $data['message'] = 'Algunos barrios no fueron encontrados' ;
+                }else{
+                    
+                    $neighbours = barrio::whereIn('id', $resultado)
+                        ->where("codestado",1)
+                        ->whereNotNull('suma_muerte')
+                        ->groupBy('id')
+                        ->get();
+                        
+                    $neighbours = barrio::whereIn('id', $resultado)
+                        ->where("codestado",1)
+                        ->whereNotNull('suma_muerte')
+                        ->where('suma_muerte','!=','')
+                        ->whereNotNull('id')
+                        ->where('id','!=','')
+                        ->groupBy('id')
+                        ->get();
+                    if($neighbours->count() > 0){
+                        $coverage = Cobertura::where('suma', '>=', $neighbours->max('suma_muerte'))
+                                    ->where('codestado', 1)
+                                    ->orderBy('suma', 'asc')
+                                    ->first();
+                        if(!empty($coverage)){
+                            $data['success'] = TRUE;
+                            $data['cobertura'] = $coverage->nombre;
+                            $data['cobertura_info'] = "Cobertura $coverage->nombre, Suma : $coverage->suma , Vr. Mensual : $coverage->vrMensual";
+                            $data['cuits'] = implode(',',$resultado);
+                            $data['message'] = 'Consulta exitosa' ;
+                        }else{
+                            $data['message'] = 'No hay una cobertura disponible para la suma muerte : $'. number_format( $neighbours->max('suma_muerte') );
+                        }
+                    }
+                    
+                }
+                    
+            }
+            return response()->json($data);
+        } catch (\Throwable $th) {
+            $data['success'] = FALSE;
+            $data['message'] = $req->getContent()." | ".$th->getMessage();
+            $error = new logs();
+            $error->saveerror(implode(";", $data), "", "", "JSON ERR Barr");
+            return response()->json($data,500);
+        }
+        
+    }
+
+    public function quitarAcentos($cadena) {
+        $acentos = [
+            'á'=>'a', 'é'=>'e', 'í'=>'i', 'ó'=>'o', 'ú'=>'u',
+            'Á'=>'A', 'É'=>'E', 'Í'=>'I', 'Ó'=>'O', 'Ú'=>'U',
+            'ñ'=>'n', 'Ñ'=>'N'
+        ];
+        return strtr($cadena, $acentos);
+    }
+
+}
