@@ -209,7 +209,8 @@ class PropuestasControllerV2 extends Controller
                         'premio_total' => $regpending->premio_total,
                         'pref' => strtoupper($req['pref']),
                         'id' => $req['id'],
-                        'fecha_desde' => $req['fecha_desde']
+                        'fecha_desde' => $req['fecha_desde'],
+                        'fecha_hasta' => $regpending->fechaHasta
                     ];
                     $resDuplicate = $this->duplicator->duplicate('O', $data);
                     if($resDuplicate){
