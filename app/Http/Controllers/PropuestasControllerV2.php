@@ -210,12 +210,13 @@ class PropuestasControllerV2 extends Controller
                         'pref' => strtoupper($req['pref']),
                         'id' => $req['id'],
                         'fecha_desde' => $req['fecha_desde'],
-                        'fecha_hasta' => $regpending->fechaHasta
+                        
                     ];
                     $resDuplicate = $this->duplicator->duplicate('O', $data);
                     if($resDuplicate){
                         $data['pref'] = $resDuplicate->prefijo;
                         $data['id'] = $resDuplicate->idpropuesta;
+                        $data['fecha_hasta'] = $resDuplicate->fechaHasta;
                         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
                         $domain = $_SERVER['HTTP_HOST'];
                         $url = $protocol . $domain;
