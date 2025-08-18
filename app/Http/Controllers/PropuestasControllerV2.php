@@ -216,7 +216,7 @@ class PropuestasControllerV2 extends Controller
                     if($resDuplicate){
                         $data['pref'] = $resDuplicate->prefijo;
                         $data['id'] = $resDuplicate->idpropuesta;
-                        $data['fecha_hasta'] = $resDuplicate->fechaHasta;
+                        $data['fecha_hasta'] = !empty($resDuplicate->fechaHasta) ?  substr($resDuplicate->fechaHasta,0,10) : '' ;
                         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
                         $domain = $_SERVER['HTTP_HOST'];
                         $url = $protocol . $domain;
