@@ -425,6 +425,7 @@ class MigracionBarriosController extends Controller
                                 'entity_id' => $cons[0]->reg,
                                 'codempresa' => $cons[0]->codempresa,
                             ]);
+                            
                         }else{
                             $perf->nombre = $value["nombre"];
                             $perf->modulo = $value["modulo"];
@@ -438,9 +439,10 @@ class MigracionBarriosController extends Controller
                             if($perf->save()){
                                 Cola::create([
                                     'entity' => 'perfiles',
-                                    'entity_id' => $perf->reg,
+                                    'entity_id' => $perf->id,
                                     'codempresa' => $perf->codempresa,
                                 ]);
+                                
                             }
                         }
                     }
