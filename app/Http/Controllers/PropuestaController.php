@@ -422,7 +422,7 @@ class PropuestaController extends Controller
                                         $query->where('codempresa', $req['codempresa'])
                                               ->orWhere('codempresa', 'all');
                                     })
-                                    ->where('updated_at', '>=', Carbon::now()->subDays(90))
+                                    ->where('updated_at', '>=', Carbon::now()->subDays(60))
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','DESC')
                                     ->get(['entity', 'entity_id'])
