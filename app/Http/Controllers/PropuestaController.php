@@ -462,6 +462,56 @@ class PropuestaController extends Controller
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
                                     $sql = "SELECT t1.* FROM propuestas t1 
                                     WHERE t1.codempresa = '".$req["codempresa"]."' AND t1.id IN (".implode(',',$colas['propuestas']).")  ORDER BY t1.ultmod DESC;";
+                                    if(!empty($req['reset']) && $req['reset']== 1){
+                                        $sql = "SELECT t1.id, 
+                                                t1.reg, 
+                                                t1.documento, 
+                                                t1.nombre, 
+                                                t1.num_polizas, 
+                                                t1.meses,
+                                                t1.id_cobertura, 
+                                                t1.id_barrio, 
+                                                t1.nueva_poliza, 
+                                                t1.premio, 
+                                                t1.premio_total, 
+                                                t1.fechaDesde, 
+                                                t1.fechaHasta, 
+                                                t1.clausula, 
+                                                t1.servidor, 
+                                                t1.codestado, 
+                                                t1.cobertura_suma, 
+                                                t1.cobertura_deducible, 
+                                                t1.cobertura_gastos, 
+                                                t1.promocion, 
+                                                t1.paga, 
+                                                t1.fecha_paga, 
+                                                t1.referencia, 
+                                                t1.prima, 
+                                                t1.master, 
+                                                t1.organizador, 
+                                                t1.productor, 
+                                                t1.puntodeventa, 
+                                                t1.prefijo, 
+                                                t1.updated_at, 
+                                                t1.created_at, 
+                                                t1.formadepago, 
+                                                t1.usuariopaga, 
+                                                t1.tipopago, 
+                                                t1.comformadepago, 
+                                                t1.carl, 
+                                                t1.fecha_nacimiento, 
+                                                t1.codempresa, 
+                                                t1.idpropuesta, 
+                                                t1.nota,
+                                                '[]' as data_barrios, 
+                                                t1.version, 
+                                                t1.valor_pagado, 
+                                                t1.imputacion, 
+                                                t1.fecha_comprobante, 
+                                                t1.created_user, 
+                                                t1.updated_user FROM propuestas t1 
+                                        WHERE t1.codempresa = '".$req["codempresa"]."' AND t1.id IN (".implode(',',$colas['propuestas']).")  ORDER BY t1.ultmod DESC;";
+                                    }
                                     $datos["propuestas"] = DB::select($sql);
                                     $idsPropuesta = array_map(function($pro) {
                                         return $pro->id;
