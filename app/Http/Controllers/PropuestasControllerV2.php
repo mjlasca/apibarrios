@@ -645,8 +645,15 @@ class PropuestasControllerV2 extends Controller
             ->where('codempresa', $codempresa)
             ->get();
         }
-        
-                                
+
+        if($date == -1){
+            $proposal = Propuesta::select("id","reg","documento","nombre","num_polizas","meses","id_cobertura","id_barrio","nueva_poliza","premio","premio_total","fechaDesde","fechaHasta","clausula","barrio_beneficiario","ultmod","useredit as user_edit","codestado","cobertura_suma","cobertura_deducible","cobertura_gastos","promocion","paga","fecha_paga","referencia","prima","master","organizador","productor","puntodeventa","prefijo","updated_at","created_at","formadepago","usuariopaga","tipopago","compformadepago as compformapago","csrf","fecha_nacimiento","codempresa","idpropuesta","nota","data_barrios","version","valor_pagado","imputacion","fecha_comprobante")
+            ->where('prefijo',$prefix)
+            ->where('codempresa', $codempresa)
+            ->orderBy('id','desc')
+            ->limit(50)
+            ->get();
+        }
                             
         $idsPropuesta =  $proposal->map(function($pro) {
             return $pro->id;
@@ -706,6 +713,13 @@ class PropuestasControllerV2 extends Controller
             $dat["fecha_desde"] = "fecha_desde:".$req["fecha_desde"];
             $dat["master"] = "master:".$req["master"];
             $dat["lista_grupos_descartar"] = "lista_grupos_descartar:".$req["lista_grupos_descartar"];
+
+            //Forma de pago, no. coprobante, valor pagado, valor póliza, fecha comprobante, fecha paga
+            $dat["tipo_pago"] = "tipo_pago:".($req["tipo_pago"] ?? "");
+            $dat["nro_comprobante"] = "nro_comprobante:".($req["nro_comprobante"] ?? "");
+            $dat["valor_pagado"] = "valor_pagado:".($req["valor_pagado"] ?? "");
+            $dat["fecha_comprobante"] = "fecha_comprobante:".($req["fecha_comprobante"] ?? "");
+            $dat["fecha_paga"] = "fecha_paga:".($req["fecha_paga"] ?? "");
 
             $error = new logs();
             $error->saveerror(implode(";", $dat), "", "", "JSON Pro");
@@ -879,15 +893,18 @@ class PropuestasControllerV2 extends Controller
                 'cobertura_gastos' => $coverage->gastos,
                 'promocion' => $promo,
                 'paga' => 0,
-                'fecha_paga' => "1000-01-01 00:00:00",
+                'fecha_paga' => $request["fecha_paga"] ?? "1001-01-01",
                 'master' => $req['master'],
                 'organizador' => $req['organizador'],
                 'productor' => $req['productor'],
                 'data_barrios' => json_encode($arrayNeighbours),
                 'version' => 1,
-                'fecha_comprobante' => "1000-01-01",
+                'fecha_comprobante' => $request["fecha_comprobante"] ?? "1001-01-01",
                 'fecha_nacimiento' => $mainClient->fecha_nacimiento,
                 'formadepago' => "CREDITO",
+                'tipopago' => $request["tipo_pago"] ?? NULL,
+                'valor_pagado' => $request["valor_pagado"] ?? NULL,
+                'compformapago' => $request["nro_comprobante"] ?? NULL,
             ]);
 
             if($proposal){

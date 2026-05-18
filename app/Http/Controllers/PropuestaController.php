@@ -457,6 +457,10 @@ class PropuestaController extends Controller
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
+                                    
+                                    if(empty($colas['barrios']) && $req['solicitud'] == 'solicitud_barrios'){
+                                        $colas['barrios'] = '-1';
+                                    }
                             }
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
@@ -484,8 +488,13 @@ class PropuestaController extends Controller
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["barrios"] = DB::table('barrios')->get();
-                                    else
-                                        $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
+                                    else{
+                                        if($colas['barrios'] == -1){
+                                            $datos["barrios"] = DB::table('barrios')->where('suma_muerte',"!=","''")->orderByDesc('ultmod')->limit(50)->get();
+                                        }else{
+                                            $datos["barrios"] = DB::table('barrios')->whereIn('reg',$colas['barrios'])->get();
+                                        }
+                                    }
                                 }
                                 
                                 if($req["solicitud"] == "solicitud_clientes" && !empty($colas['clientes']) ){

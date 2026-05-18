@@ -530,6 +530,7 @@ class MigracionBarriosController extends Controller
                                 "codempresa" =>  $value["codempresa"],
                                 "puntodeventa" =>  $req["prefpuntodeventa"],
                                 "categoria" => $value["categoria"],
+                                "cuir" => $value["cuir"],
                                 "codestado" => $value["codestado"] ?? 0
                             ]);
                             Cola::create([
@@ -556,6 +557,9 @@ class MigracionBarriosController extends Controller
                         $cliente->ultmod = $value["ultmod"];
                         $cliente->user_edit = $value["user_edit"];
                         $cliente->codestado = $value["codestado"] ?? 1;
+                        if(isset($value["cuir"])){
+                            $cliente->cuir = $value["cuir"];
+                        }
                         if(isset($value["codempresa"])){
                             $cliente->codempresa = $value["codempresa"];
                             $cliente->puntodeventa = $req["prefpuntodeventa"];
