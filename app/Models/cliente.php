@@ -21,6 +21,7 @@ class cliente extends Model
         'codpostal',
         'sexo',
         'codestado',
+        'cuir',
         'ultmod'];
     use HasFactory;
 
