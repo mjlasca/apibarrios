@@ -6,7 +6,7 @@ use App\Models\Cola;
 use App\Models\logs;
 use App\Models\User;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -177,8 +177,10 @@ class UserController extends Controller
     public function enabled($email, $active){
         $cons = User::where('email',$email)->first();
         if($cons){
+            
             $cons->update([
-                "active" => $active
+                "active" => $active,
+                "api_token" => Str::random(80)
             ]);
             
             DB::table('usuarios')->where('loggin', $email)->update([
@@ -190,7 +192,7 @@ class UserController extends Controller
                     'entity_id' => $usuario->reg,
                     'codempresa' => $usuario->codempresa,
                 ]);
-            return response()->json(['res' => "success"], 200);
+            return response()->json(['res' => "success", "token" => $cons->api_token], 200);
         }
         else
             return response()->json(['res' => "fail"], 400);
