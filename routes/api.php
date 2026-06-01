@@ -23,6 +23,8 @@ Route::middleware('auth:api')->post('/propuestas', [ MigracionBarriosController:
 Route::middleware('auth:api')->post('/editarpuntodeventa', [ UserController::class, 'editarpuntodeventa' ]);
 Route::middleware('auth:api')->post('/getPuntos', [ UserController::class, 'getPuntos' ]);
 Route::middleware('auth:api')->get('/confirmarpuntodeventa', [ UserController::class, 'confirmarpuntodeventa' ]);
+Route::middleware('auth:api')->post('/enabled/{email}/{active}', [ UserController::class, 'enabled' ]);
+Route::middleware('auth:api')->get('/stateuser/{email}', [ UserController::class, 'stateuser' ]);
 
 Route::middleware('auth:api')->post('/parametros', [ PropuestaController::class, 'consultaparametros' ]);
 Route::middleware('auth:api')->post('/paypro', [ PropuestaController::class, 'paypro' ]);
