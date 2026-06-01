@@ -190,10 +190,10 @@ class UserController extends Controller
                     'entity_id' => $usuario->reg,
                     'codempresa' => $usuario->codempresa,
                 ]);
-            return response()->json(['res' => 'Usuario actualizado'], 200);
+            return response()->json(['res' => "success"], 200);
         }
         else
-            return response()->json(['res' => 'El usuario no existe'], 400);
+            return response()->json(['res' => "fail"], 400);
     }
 
     public function stateuser($email){
