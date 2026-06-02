@@ -512,7 +512,7 @@ class PropuestaController extends Controller
                                 }
                                 if($req["solicitud"] == "solicitud_perfiles"  && !empty($colas['perfiles']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
-                                        $datos["perfiles"] = DB::table('perfiles')->where('codempresa',$req['codempresa'])->get();
+                                        $datos["perfiles"] = DB::table('perfiles')->get();
                                     else
                                         $datos["perfiles"] = DB::table('perfiles')->whereIn('reg',$colas['perfiles'])->get();
                                 }
