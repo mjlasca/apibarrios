@@ -273,11 +273,14 @@
   <div class="sello text-center">
     @if($data[0]->paga == 1)
       @if ($data[0]->codempresa == "SEGUROSDELPILAR")
-        <img  width="140" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+        <img  width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+        <br>  
       @else
         <img width="140" src="img/imgpago.png" alt=""><br>
       @endif
+      
     <small style="font-size: 9px">Documento Generado en {{$data[0]->ultmod}}</small>
+    
     @endif
   </div>
 
