@@ -6,7 +6,7 @@ use App\Models\Cola;
 use App\Models\logs;
 use App\Models\User;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -143,6 +143,7 @@ class UserController extends Controller
                             $user->aseguradora = $value["aseguradora"];
                             $user->codmaster = $value["codmaster"];
                             $user->codorganizador = $value["codorganizador"];
+                            $user->active = 1;
                             try{
                                 if (!$user->save()) {
                                     $errores .= "No se pudo guardar el registro con usuario " . $user->email;
@@ -171,5 +172,38 @@ class UserController extends Controller
             
             return $errores = "HAY errores";
         }
+    }
+
+    public function enabled($email, $active){
+        $cons = User::where('email',$email)->first();
+        if($cons){
+            
+            $cons->update([
+                "active" => $active,
+                "api_token" => Str::random(80)
+            ]);
+            
+            DB::table('usuarios')->where('loggin', $email)->update([
+                "codestado" => $active
+            ]);
+            $usuario = DB::table('usuarios')->where('loggin', $email)->first();
+            Cola::create([
+                    'entity' => 'usuarios',
+                    'entity_id' => $usuario->reg,
+                    'codempresa' => $usuario->codempresa,
+                ]);
+            return response()->json(['res' => "success", "token" => $cons->api_token], 200);
+        }
+        else
+            return response()->json(['res' => "fail"], 400);
+    }
+
+    public function stateuser($email){
+        $cons = User::where('email',$email)->where('active', 1)->first();
+        if($cons){
+            return response()->json(['res' => $cons->active], 200);
+        }
+        else
+            return response()->json(['res' => 'El usuario no existe o no está activo'], 400);
     }
 }

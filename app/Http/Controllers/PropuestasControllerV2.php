@@ -627,8 +627,8 @@ class PropuestasControllerV2 extends Controller
      */
     public function getDateProposal($date, $codempresa, $prefix, $idpropuesta = null){
         
-        $proposal = Propuesta::select("id","reg","documento","nombre","num_polizas","meses","id_cobertura","id_barrio","nueva_poliza","premio","premio_total","fechaDesde","fechaHasta","clausula","barrio_beneficiario","ultmod","useredit as user_edit","codestado","cobertura_suma","cobertura_deducible","cobertura_gastos","promocion","paga","fecha_paga","referencia","prima","master","organizador","productor","puntodeventa","prefijo","updated_at","created_at","formadepago","usuariopaga","tipopago","compformadepago as compformapago","csrf","fecha_nacimiento","codempresa","idpropuesta","nota","data_barrios","version","valor_pagado","imputacion","fecha_comprobante")->where('codempresa', $codempresa)
-                            ->where('prefijo','!=',$prefix)
+        $proposal = Propuesta::select("id","reg","documento","nombre","num_polizas","meses","id_cobertura","id_barrio","nueva_poliza","premio","premio_total","fechaDesde","fechaHasta","clausula","barrio_beneficiario","ultmod","useredit as user_edit","codestado","cobertura_suma","cobertura_deducible","cobertura_gastos","promocion","paga","fecha_paga","referencia","prima","master","organizador","productor","puntodeventa","prefijo","updated_at","created_at","formadepago","usuariopaga","tipopago","compformadepago as compformapago","csrf","fecha_nacimiento","codempresa","idpropuesta","nota","data_barrios","version","valor_pagado","imputacion","fecha_comprobante")
+                            ->where('codempresa', $codempresa)
                             ->where(function($query) use ($date) {
                                     $query->where('fecha_paga', '>', $date.' 00:00:01')
                                     ->where('fecha_paga', '<', $date.' 23:59:59')

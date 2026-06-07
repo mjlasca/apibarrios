@@ -272,9 +272,15 @@
 
   <div class="sello text-center">
     @if($data[0]->paga == 1)
-    
-    <img width="140" src="img/imgpago.png" alt=""><br>
+      @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+        <img  width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+        <br>  
+      @else
+        <img width="140" src="img/imgpago.png" alt=""><br>
+      @endif
+      
     <small style="font-size: 9px">Documento Generado en {{$data[0]->ultmod}}</small>
+    
     @endif
   </div>
 
@@ -282,10 +288,22 @@
     <table>
       <tr>
         <td class="text-right">
-          <img width="140" src="img/brokerlogo.png" alt="">
+          @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+            <img width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarlogo.png" alt="">    
+          @else
+            <img width="140" src="img/brokerlogo.png" alt="">
+          @endif
         </td>
         <td>
-          <p class="text-center">
+          @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+            <p class="text-center">
+            El mejor Seguro, estés donde estés.
+            <br>segurosdelpilar.com.ar
+            <br>Tel. (113291-6722)
+            <br>Av. Sgto. Cayetano Beliera 2650, B 1629 Pilar,<br>provincia de Buenos Aires
+          </p>
+          @else
+            <p class="text-center">
             BROKER DEL PUERTO ...
             <br>TU TRANQUILIDAD VALE
             <br>www.brokerdelpuerto.com
@@ -293,6 +311,8 @@
             <br>Tel. (03327-485189) Cel. 15-55841038
             <br>Sarmiento 3314 (1621 - Benavidez)
           </p>
+          @endif
+          
         </td>
       </tr>
     </table>
@@ -403,8 +423,13 @@
           <tr>
             
               @if($data[0]->paga == 1)
-              <td style="text-align: center" colspan="6">
-              <img  width="70%" src="img/imgpago.png" alt="">
+                <td style="text-align: center" colspan="6">
+                @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+                  <img  width="70%" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+                @else
+                  <img  width="70%" src="img/imgpago.png" alt="">
+                @endif
+              
               
               @else
               <td>
@@ -484,7 +509,11 @@
           <tr>
             @if($data[0]->paga == 1)
               <td style="text-align: center" colspan="6">
-              <img  width="70%" src="img/imgpago.png" alt="">
+                @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+                  <img  width="70%" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+                @else
+                  <img  width="70%" src="img/imgpago.png" alt="">
+                @endif
               
               @else
               <td>
@@ -580,7 +609,12 @@
           <tr>
             @if($data[0]->paga == 1)
               <td style="text-align: center" colspan="12">
-              <img  width="35%" src="img/imgpago.png" alt="">
+                @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+                  <img  width="35%" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
+                @else
+                  <img  width="35%" src="img/imgpago.png" alt="">
+                @endif
+              
               
               @else
               <td>
@@ -635,13 +669,25 @@
             Productor : {{ $data[0]->productor }}
           </p>
           @if ($data[0]->paga == 1)
-          <img  src="img/firmaCeLibre.png" alt="">    
+            @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+            <img  src="https://barriosprivadosstage.niveldigitalcol.com/img/firmaCeLibre_sdp.png" alt="">
+            @else
+            <img  src="img/firmaCeLibre.png" alt="">
+            @endif
           @endif
-          <p class="text-right detail-right">
+          @if ($data[0]->codempresa == "SEGUROSDELPILAR")
+            <p class="text-right detail-right">
+            Seguros del pilar<br>
+            Cobranzas<br>
+          </p>    
+          @else
+            <p class="text-right detail-right">
             Broker del puerto<br>
             Cobranzas<br>
             Nayibe El Mailki
           </p>
+          @endif
+          
         </div>
         
           
