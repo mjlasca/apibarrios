@@ -200,9 +200,9 @@ class Propuesta extends Model
                         $total =  $total_prom * count($prop_lines);
                         foreach ($prop_lines as $key => $value) {
 
-                            if( $this->calculateAge( $value->fecha_nacimiento ) >= 65){
+                            /*if( $this->calculateAge( $value->fecha_nacimiento ) >= 65){
                                 $total += $total_prom;
-                            }
+                            }*/
                             $concatInfo .= $value->apellidos. " ". $value->nombres . " ". $value->tipo_documento. ":".$value->documento. " ".$value->fecha_nacimiento. " ";
                         }
                         $data['vrunit'] = $cobertura[0]->vrMensual;
