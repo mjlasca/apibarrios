@@ -530,7 +530,7 @@ class MigracionBarriosController extends Controller
                                 "codempresa" =>  $value["codempresa"],
                                 "puntodeventa" =>  $req["prefpuntodeventa"],
                                 "categoria" => $value["categoria"],
-                                "cuir" => $value["cuir"],
+                                "cuir" => $value["cuir"] ?? NULL,
                                 "codestado" => $value["codestado"] ?? 0
                             ]);
                             Cola::create([
