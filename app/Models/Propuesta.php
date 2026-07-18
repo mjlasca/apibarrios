@@ -60,7 +60,7 @@ class Propuesta extends Model
             return 1;
     }
 
-    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default", $version = 0, $fecha_comprobante = null, $valor_pagado = 0){
+    public function pagarpropuesta($idpropuesta, $prefijo,$formadepago,$idpago,$userpay = "online",$fecha_paga = "", $codempresa = "default", $version = 0, $fecha_comprobante = null, $valor_pagado = 0, $cuit_pagador = ""){
 
         try{
             $propuesta = new Propuesta();
@@ -80,6 +80,7 @@ class Propuesta extends Model
                         "version" => $version + 1,
                         "fecha_comprobante" => $fecha_comprobante,
                         "valor_pagado" => $valor_pagado,
+                        "cuit_pagador" => $cuit_pagador
                     ]);
                 $propuesta = Propuesta::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
                     
@@ -98,6 +99,7 @@ class Propuesta extends Model
                 $pay->compformadepago = $idpago;
                 $pay->fecha_comprobante = $fecha_comprobante;
                 $pay->valor_pagado = $valor_pagado;
+                $pay->cuit_pagador = $cuit_pagador;
                 $pay->save();
                 
                 Cola::create([

@@ -343,7 +343,8 @@ class PropuestaController extends Controller
                     $req["codempresa"],
                     $req["version"],
                     $req["fecha_comprobante"],
-                    $req["valor_pagado"]
+                    $req["valor_pagado"],
+                    $req["cuit_pagador"],
                 ))
                     return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
             }else{
