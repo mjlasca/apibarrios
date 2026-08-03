@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FormsAuth;
+use App\Http\Controllers\ProposalIssueController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
@@ -30,5 +31,11 @@ Route::post('/savepropuesta', [ PropuestaController::class, 'savepropuesta' ]);
 Route::get('/paypropuesta', [ PropuestaController::class, 'paypropuesta' ]);
 Route::get('/propuesta-duplicate/pay/{pref}/{id}', [ FormsAuth::class, 'formPay' ]);
 Route::post('/webhooksmp', webhookcontroller::class);
+
+Route::prefix('propuesta/emision')->middleware('auth')->group(function () {
+    Route::get('/', [ProposalIssueController::class, 'create'])->name('propuesta.emision');
+    Route::get('/clientes/search', [ProposalIssueController::class, 'searchClients']);
+    Route::post('/clientes/save', [ProposalIssueController::class, 'saveClient']);
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
