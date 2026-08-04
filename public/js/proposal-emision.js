@@ -322,14 +322,15 @@
 
         state.insured.forEach(function (line, index) {
             var row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 transition-colors';
             row.innerHTML =
-                '<td><strong>' + escapeHtml(line.documento) + '</strong></td>' +
-                '<td>' + escapeHtml(line.tipo_id) + '</td>' +
-                '<td>' + escapeHtml(line.nombres) + ' ' + escapeHtml(line.apellidos) + '</td>' +
-                '<td>' + escapeHtml(line.actividad_nombre) + '</td>' +
-                '<td>' + escapeHtml(line.clasificacion_nombre) + '</td>' +
-                '<td style="text-align: center;"><button type="button" class="btn-remove" data-index="' + index + '" title="Quitar cliente">\u2715</button></td>';
-            row.querySelector('.btn-remove').addEventListener('click', function () {
+                '<td class="px-4 py-3 text-sm font-semibold text-gray-900">' + escapeHtml(line.documento) + '</td>' +
+                '<td class="px-4 py-3 text-sm text-gray-700">' + escapeHtml(line.tipo_id) + '</td>' +
+                '<td class="px-4 py-3 text-sm text-gray-700">' + escapeHtml(line.nombres) + ' ' + escapeHtml(line.apellidos) + '</td>' +
+                '<td class="px-4 py-3 text-sm text-gray-700">' + escapeHtml(line.actividad_nombre) + '</td>' +
+                '<td class="px-4 py-3 text-sm text-gray-700">' + escapeHtml(line.clasificacion_nombre) + '</td>' +
+                '<td class="px-4 py-3 text-sm text-center"><button type="button" class="inline-flex items-center justify-center h-6 w-6 rounded text-red-600 hover:bg-red-100 transition-colors" data-index="' + index + '" title="Quitar cliente">\u2715</button></td>';
+            row.querySelector('button[title="Quitar cliente"]').addEventListener('click', function () {
                 state.insured.splice(parseInt(this.dataset.index, 10), 1);
                 renderLines();
             });
@@ -348,7 +349,7 @@
     var modalSearch = document.getElementById('modal-barrios-search');
 
     document.getElementById('btn-open-modal').addEventListener('click', function () {
-        modalOverlay.classList.add('open');
+        modalOverlay.classList.remove('hidden');
         modalOverlay.setAttribute('aria-hidden', 'false');
         modalSearch.value = '';
         syncModalCheckboxes();
@@ -362,11 +363,11 @@
     });
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modalOverlay.classList.contains('open')) closeModal();
+        if (e.key === 'Escape' && !modalOverlay.classList.contains('hidden')) closeModal();
     });
 
     function closeModal() {
-        modalOverlay.classList.remove('open');
+        modalOverlay.classList.add('hidden');
         modalOverlay.setAttribute('aria-hidden', 'true');
     }
 
@@ -394,7 +395,7 @@
 
         if (all.length === 0) {
             var empty = document.createElement('p');
-            empty.className = 'empty-cell';
+            empty.className = 'text-sm text-gray-400 text-center py-4';
             empty.textContent = 'Sin coincidencias';
             modalBarriosList.appendChild(empty);
             return;
@@ -403,10 +404,11 @@
         var visible = all.slice(0, 150);
         visible.forEach(function (neighborhood) {
             var label = document.createElement('label');
-            label.className = 'modal-check-item';
+            label.className = 'flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer transition-colors';
 
             var input = document.createElement('input');
             input.type = 'checkbox';
+            input.className = 'h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500';
             input.value = neighborhood.id;
             input.dataset.kind = 'barrio';
             input.dataset.name = neighborhood.nombre;
@@ -416,6 +418,7 @@
             });
 
             var span = document.createElement('span');
+            span.className = 'text-sm text-gray-700';
             span.textContent = neighborhood.nombre + ' (' + neighborhood.id + ')';
 
             label.appendChild(input);
@@ -425,7 +428,7 @@
 
         if (visible.length < all.length) {
             var more = document.createElement('p');
-            more.className = 'empty-cell';
+            more.className = 'text-sm text-gray-400 text-center py-4';
             more.textContent = 'Refine la búsqueda para ver más resultados';
             modalBarriosList.appendChild(more);
         }
@@ -481,9 +484,9 @@
 
     function addChip(container, label, onRemove) {
         var chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.innerHTML = escapeHtml(label) + ' <button type="button" class="chip-remove" aria-label="Quitar">\u2715</button>';
-        chip.querySelector('.chip-remove').addEventListener('click', onRemove);
+        chip.className = 'chip inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800';
+        chip.innerHTML = escapeHtml(label) + ' <button type="button" class="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full text-indigo-600 hover:bg-indigo-200 transition-colors" aria-label="Quitar">\u2715</button>';
+        chip.querySelector('button').addEventListener('click', onRemove);
         container.appendChild(chip);
     }
 
@@ -512,7 +515,7 @@
 
         var promoBadge = document.getElementById('promo-badge');
         promoBadge.textContent = promo;
-        promoBadge.hidden = !promo;
+        promoBadge.classList.toggle('hidden', !promo);
     }
 
     document.getElementById('c-cobertura').addEventListener('change', updateTotals);

@@ -1,3 +1,13 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+@layer components {
+    select,
+    input[type="date"] {
+        @apply block w-full rounded-md border-gray-300 shadow-sm
+               text-sm text-gray-700
+               focus:border-indigo-500 focus:ring-indigo-500
+               disabled:bg-gray-100 disabled:cursor-not-allowed;
+    }
+}
