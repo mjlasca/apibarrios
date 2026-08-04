@@ -14,6 +14,9 @@
         <h1>Emisión de Propuesta</h1>
         <div class="meta-badges">
             <div class="badge">Prefijo: <span>O</span></div>
+            @if (isset($proposal) && $proposal)
+                <div class="badge badge-edit">Editando: {{ $proposal['prefijo'] }}-{{ $proposal['idpropuesta'] }}</div>
+            @endif
         </div>
     </header>
 
@@ -183,6 +186,13 @@
         <footer class="footer-bar">
             <div class="totals-group">
                 <div class="total-item">
+                    <label>Premio Unitario</label>
+                    <div class="total-value total-value-sm">
+                        <span id="unit-premio">$0,00</span>
+                        <span class="promo-badge" id="promo-badge" hidden>2x1</span>
+                    </div>
+                </div>
+                <div class="total-item">
                     <label>Premio Total Estimado</label>
                     <div class="total-value" id="total-premio">$0,00</div>
                 </div>
@@ -235,7 +245,8 @@
         activities: @json($actividades),
         coverages: @json($coberturas),
         neighborhoods: @json($barrios),
-        groups: @json($grupos)
+        groups: @json($grupos),
+        proposal: @json($proposal ?? null)
     };
 </script>
 <script src="{{ asset('js/proposal-emision.js') }}"></script>

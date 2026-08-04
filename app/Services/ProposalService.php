@@ -11,6 +11,7 @@ use App\Models\Cola;
 use App\Models\gruposbarrio;
 use App\Models\LineasPropuesta;
 use App\Models\Propuesta;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -18,6 +19,12 @@ use Throwable;
 class ProposalService
 {
     public const PREFIX = 'O';
+
+    /**
+     * Business dayzone: timestamps are stored in UTC but day boundaries
+     * must match the local calendar the operators work with.
+     */
+    public const LOCAL_TIMEZONE = 'America/Argentina/Buenos_Aires';
 
     public function __construct(
         private readonly ClientService $clients,
@@ -34,51 +41,7 @@ class ProposalService
     public function create(array $payload): Propuesta
     {
         return DB::transaction(function () use ($payload) {
-            $coverage = $this->resolveCoverage($payload['cobertura']);
-            $policyholder = $this->clients->findOrUpsert($payload['tomador']);
-            $insured = $this->resolveInsured($payload['asegurados']);
-            $neighborhoods = $this->resolveNeighborhoods(
-                $payload['barrios'] ?? [],
-                $payload['grupos'] ?? [],
-                $coverage->suma,
-            );
-
-            $number = $this->nextNumber();
-            $months = (int) $payload['meses'];
-            $dateFrom = $this->resolveStartDate($payload['fecha_desde'] ?? null);
-
-            $proposal = Propuesta::query()->create([
-                'codempresa' => auth()->user()->codempresa ?: 'default',
-                'prefijo' => self::PREFIX,
-                'idpropuesta' => $number,
-                'reg' => $number,
-                'codestado' => 1,
-                'documento' => $policyholder->id,
-                'nombre' => $policyholder->full_name,
-                'num_polizas' => count($insured),
-                'meses' => $months,
-                'id_cobertura' => $coverage->nombre,
-                'id_barrio' => $neighborhoods->isNotEmpty() ? $neighborhoods->first()->id : null,
-                'nueva_poliza' => 1,
-                'premio' => $coverage->vrMensual,
-                'premio_total' => $coverage->prizeForMonths($months) * count($insured),
-                'clausula' => $neighborhoods->isNotEmpty() ? 1 : 0,
-                'fechaDesde' => $dateFrom->format('Y-m-d 00:00:01'),
-                'fechaHasta' => $dateFrom->modify("+{$months} months")->format('Y-m-d 23:59:59'),
-                'ultmod' => now(),
-                'useredit' => auth()->user()->name ?? 'online',
-                'cobertura_suma' => $coverage->suma,
-                'cobertura_deducible' => $coverage->deducible,
-                'cobertura_gastos' => $coverage->gastos,
-                'promocion' => $coverage->promotionLabel($months),
-                'paga' => 0,
-                'data_barrios' => $this->neighborhoodsPayload($neighborhoods),
-                'version' => 1,
-                'fecha_nacimiento' => $policyholder->fecha_nacimiento,
-                'formadepago' => 'CREDITO',
-            ]);
-
-            $this->createLines($proposal, $insured);
+            $proposal = $this->persist(new Propuesta(), $payload);
 
             Cola::query()->create([
                 'entity' => 'propuestas',
@@ -89,6 +52,128 @@ class ProposalService
 
             return $proposal;
         });
+    }
+
+    /**
+     * Replace the content of an existing proposal with a new payload.
+     * Existing lines are deleted and recreated, so the stored insured list
+     * always matches the submitted rows. No Cola row is enqueued here:
+     * the original proposal was already queued on creation.
+     *
+     * @throws Throwable
+     */
+    public function update(Propuesta $proposal, array $payload): Propuesta
+    {
+        return DB::transaction(function () use ($proposal, $payload) {
+            return $this->persist($proposal, $payload);
+        });
+    }
+
+    /**
+     * UTC boundaries of a local calendar day, used to filter proposals
+     * by their creation date.
+     *
+     * @return array{Carbon, Carbon}
+     */
+    public function localDayRange(string $date): array
+    {
+        $day = Carbon::parse($date, self::LOCAL_TIMEZONE);
+
+        return [
+            $day->copy()->startOfDay()->utc(),
+            $day->copy()->endOfDay()->utc(),
+        ];
+    }
+
+    /**
+     * Whether the proposal was created within the given local calendar day.
+     */
+    public function isCreatedOnDay(Propuesta $proposal, string $date): bool
+    {
+        [$from, $to] = $this->localDayRange($date);
+
+        return $proposal->created_at !== null && $proposal->created_at->between($from, $to);
+    }
+
+    /**
+     * Mark a proposal as cancelled (codestado = 0) so it is visually
+     * highlighted in the listing.
+     */
+    public function cancel(Propuesta $proposal): Propuesta
+    {
+        $proposal->codestado = 0;
+        $proposal->save();
+
+        return $proposal;
+    }
+
+    /**
+     * Shared create/update routine: resolves every entity, computes the
+     * derived fields and replaces the proposal lines.
+     */
+    private function persist(Propuesta $proposal, array $payload): Propuesta
+    {
+        $coverage = $this->resolveCoverage($payload['cobertura']);
+        $policyholder = $this->clients->findOrUpsert($payload['tomador']);
+        $insured = $this->resolveInsured($payload['asegurados']);
+        $neighborhoods = $this->resolveNeighborhoods(
+            $payload['barrios'] ?? [],
+            $payload['grupos'] ?? [],
+            $coverage->suma,
+        );
+
+        $months = (int) $payload['meses'];
+        $dateFrom = $this->resolveStartDate($payload['fecha_desde'] ?? null);
+
+        $attributes = [
+            'codempresa' => auth()->user()->codempresa ?: 'default',
+            'codestado' => 1,
+            'documento' => $policyholder->id,
+            'nombre' => $policyholder->full_name,
+            'num_polizas' => count($insured),
+            'meses' => $months,
+            'id_cobertura' => $coverage->nombre,
+            'id_barrio' => $neighborhoods->isNotEmpty() ? $neighborhoods->first()->id : null,
+            'nueva_poliza' => 1,
+            'premio' => $coverage->vrMensual,
+            'premio_total' => $coverage->prizeForMonths($months) * count($insured),
+            'clausula' => $neighborhoods->isNotEmpty() ? 1 : 0,
+            'fechaDesde' => $dateFrom->format('Y-m-d 00:00:01'),
+            'fechaHasta' => $dateFrom->modify("+{$months} months")->format('Y-m-d 23:59:59'),
+            'ultmod' => now(),
+            'useredit' => auth()->user()->name ?? 'online',
+            'cobertura_suma' => $coverage->suma,
+            'cobertura_deducible' => $coverage->deducible,
+            'cobertura_gastos' => $coverage->gastos,
+            'promocion' => $coverage->promotionLabel($months),
+            'data_barrios' => $this->neighborhoodsPayload($neighborhoods),
+            'fecha_nacimiento' => $policyholder->fecha_nacimiento,
+        ];
+
+        if (! $proposal->exists) {
+            $number = $this->nextNumber();
+            $proposal->prefijo = self::PREFIX;
+            $proposal->idpropuesta = $number;
+            $proposal->reg = $number;
+            $proposal->version = 1;
+            $attributes['formadepago'] = 'CREDITO';
+            $attributes['paga'] = 0;
+        } else {
+            $proposal->version = (int) $proposal->version + 1;
+        }
+
+        $proposal->fill($attributes);
+        $proposal->save();
+
+        LineasPropuesta::query()
+            ->where('id_propuesta', $proposal->idpropuesta)
+            ->where('prefijo', $proposal->prefijo)
+            ->where('codempresa', $proposal->codempresa)
+            ->delete();
+
+        $this->createLines($proposal, $insured);
+
+        return $proposal;
     }
 
     private function resolveCoverage(string $name): Cobertura

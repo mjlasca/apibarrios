@@ -199,12 +199,40 @@ td { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
     background: #f1f5f9;
     padding: 24px;
     border-radius: var(--radius);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
     margin-top: 32px;
+
+    /* Keep the prize summary and save button always visible on scroll */
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
 }
 .totals-group { display: flex; gap: 32px; }
 .total-item { display: flex; flex-direction: column; }
 .total-item label { text-transform: uppercase; font-size: 0.75rem; }
-.total-value { font-size: 1.75rem; font-weight: 700; color: var(--text); }
+.total-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+}
+.total-value-sm { font-size: 1.25rem; }
+
+/* Badge shown when the selected months apply a promotional rate (2x1, 3x2, 6x4) */
+.promo-badge {
+    display: inline-block;
+    background: var(--success);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    line-height: 1.4;
+}
+.promo-badge[hidden] { display: none; }
 
 .action-buttons { display: flex; gap: 12px; }
 .btn-action {

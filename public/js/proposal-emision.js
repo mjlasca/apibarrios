@@ -496,16 +496,23 @@
         var months = parseInt(document.getElementById('c-meses').value, 10) || 1;
         var coverage = DATA.coverages.find(function (c) { return c.nombre === cobertura; });
         var total = 0;
+        var unitPrize = 0;
+        var promo = '';
 
         if (coverage) {
-            var prize = coverage.vrMensual * months;
-            if (months === 2 && coverage.x21 > 0) prize = coverage.x21;
-            if (months === 3 && coverage.x32 > 0) prize = coverage.x32;
-            if (months === 6 && coverage.x64 > 0) prize = coverage.x64;
-            total = prize * state.insured.length;
+            unitPrize = coverage.vrMensual * months;
+            if (months === 2 && coverage.x21 > 0) { unitPrize = coverage.x21; promo = '2x1'; }
+            if (months === 3 && coverage.x32 > 0) { unitPrize = coverage.x32; promo = '3x2'; }
+            if (months === 6 && coverage.x64 > 0) { unitPrize = coverage.x64; promo = '6x4'; }
+            total = unitPrize * state.insured.length;
         }
 
+        document.getElementById('unit-premio').textContent = formatMoney(unitPrize);
         document.getElementById('total-premio').textContent = formatMoney(total);
+
+        var promoBadge = document.getElementById('promo-badge');
+        promoBadge.textContent = promo;
+        promoBadge.hidden = !promo;
     }
 
     document.getElementById('c-cobertura').addEventListener('change', updateTotals);
@@ -555,8 +562,9 @@
         button.textContent = 'Guardando...';
 
         try {
-            var res = await fetch('/propuesta/emision/store', {
-                method: 'POST',
+            var url = state.editing ? '/propuesta/' + state.editing.id : '/propuesta/emision/store';
+            var res = await fetch(url, {
+                method: state.editing ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -586,8 +594,8 @@
             var data = await res.json();
 
             if (data.success) {
-                alert('Propuesta ' + data.data.prefijo + '-' + data.data.idpropuesta + ' guardada correctamente');
-                resetForm();
+                alert('Propuesta ' + data.data.prefijo + '-' + data.data.idpropuesta + (state.editing ? ' actualizada correctamente' : ' guardada correctamente'));
+                window.location.href = '/propuesta/listar';
             } else {
                 alert(data.message || 'Error al guardar la propuesta');
             }
@@ -595,7 +603,7 @@
             alert('Error de conexión al guardar la propuesta');
         } finally {
             button.disabled = false;
-            button.textContent = 'Guardar Propuesta';
+            button.textContent = state.editing ? 'Guardar Cambios' : 'Guardar Propuesta';
         }
     }
 
@@ -616,5 +624,47 @@
         state.selectedGrupos.clear();
         renderLines();
         renderChips();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /*  Modo edición: precarga una propuesta existente                   */
+    /* ---------------------------------------------------------------- */
+
+    function initFromProposal(p) {
+        state.editing = { id: p.id };
+
+        var tomador = p.tomador;
+        document.getElementById('t-doc').value = tomador.documento;
+        fillTomador(tomador);
+
+        document.getElementById('c-cobertura').value = p.cobertura;
+        document.getElementById('c-meses').value = String(p.meses);
+        document.getElementById('v-desde').value = p.fecha_desde || '';
+
+        state.insured = p.asegurados.map(function (line) {
+            return {
+                tipo_id: line.tipo_id,
+                documento: line.documento,
+                nombres: line.nombres,
+                apellidos: line.apellidos,
+                fecha_nacimiento: line.fecha_nacimiento,
+                id_actividad: line.id_actividad,
+                id_clasificacion: line.id_clasificacion,
+                actividad_nombre: line.actividad_nombre,
+                clasificacion_nombre: line.clasificacion_nombre
+            };
+        });
+
+        state.selectedBarrios = new Set(p.barrios || []);
+        state.selectedGrupos = new Set();
+
+        document.getElementById('btn-save-proposal').textContent = 'Guardar Cambios';
+        renderLines();
+        renderChips();
+        updateTotals();
+    }
+
+    if (DATA.proposal) {
+        initFromProposal(DATA.proposal);
     }
 })();

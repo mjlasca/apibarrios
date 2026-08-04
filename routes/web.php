@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\FormsAuth;
+use App\Http\Controllers\ProposalEditController;
 use App\Http\Controllers\ProposalIssueController;
+use App\Http\Controllers\ProposalListController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\PropuestasControllerV2;
@@ -39,6 +41,13 @@ Route::prefix('propuesta/emision')->middleware('auth')->group(function () {
     Route::get('/actividades/{actividad}/clasificaciones', [ProposalIssueController::class, 'classificationsByActivity']);
     Route::post('/clientes/save', [ProposalIssueController::class, 'saveClient']);
     Route::post('/store', [ProposalIssueController::class, 'store'])->name('propuesta.emision.store');
+});
+
+Route::prefix('propuesta')->middleware('auth')->group(function () {
+    Route::get('/listar', [ProposalListController::class, 'index'])->name('propuesta.listar');
+    Route::get('/{propuesta}/editar', [ProposalEditController::class, 'edit'])->name('propuesta.editar');
+    Route::put('/{propuesta}', [ProposalEditController::class, 'update'])->name('propuesta.update');
+    Route::post('/{propuesta}/anular', [ProposalEditController::class, 'cancel'])->name('propuesta.cancelar');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
