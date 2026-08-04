@@ -97,7 +97,6 @@ input:focus, select:focus {
     background: #fff;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow: hidden;
     margin-bottom: 28px;
 }
 
@@ -113,7 +112,7 @@ input:focus, select:focus {
 /* Fila de Añadido Rápido (Formulario inline) */
 .quick-add-row {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 2fr 2fr 2fr 2fr 60px;
+    grid-template-columns: 1.2fr 0.8fr 1.5fr 1.5fr 1.2fr 1.5fr 1.5fr 60px;
     gap: 10px;
     padding: 16px 20px;
     background: #f8fafc;
@@ -121,8 +120,23 @@ input:focus, select:focus {
     align-items: end;
 }
 
+/* Allow grid items to shrink below their intrinsic min-width (selects/dates
+   overflow the grid otherwise on intermediate viewports). */
+.quick-add-row > * { min-width: 0; }
+
+/* Keep the add button square inside multi-column grids instead of stretching */
+.quick-add-row .btn-add {
+    justify-self: start;
+    width: 44px;
+    height: 44px;
+}
+
 /* Tabla de la Grilla */
-.table-container { overflow-x: auto; }
+.table-container {
+    overflow-x: auto;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+}
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th {
     background: #f8fafc;
@@ -209,32 +223,8 @@ td { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
 .btn-policy { background: var(--success); color: white; }
 .btn-policy:hover { background: var(--success-hover); }
 
-/* Autocomplete dropdown */
+/* Contenedor del lookup de cliente por documento */
 .autocomplete-wrapper { position: relative; }
-.autocomplete-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    max-height: 240px;
-    overflow-y: auto;
-    display: none;
-}
-.autocomplete-item {
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 0.875rem;
-    border-bottom: 1px solid #f1f5f9;
-    transition: background 0.15s;
-}
-.autocomplete-item:last-child { border-bottom: none; }
-.autocomplete-item:hover { background: #f1f5f9; }
-.autocomplete-item small { color: var(--text-light); margin-left: 8px; }
 
 .save-client-indicator {
     display: none;
@@ -251,21 +241,154 @@ td { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
     background: var(--danger);
     flex-shrink: 0;
 }
-.btn-save-client {
-    background: var(--success);
-    color: white;
+
+/* Botón para agregar al tomador resuelto como asegurado */
+.btn-add-policy {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 8px 14px;
     border: none;
-    padding: 6px 16px;
     border-radius: var(--radius);
-    font-size: 0.8rem;
+    background: var(--primary);
+    color: white;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
 }
-.btn-save-client:hover { background: var(--success-hover); }
+.btn-add-policy:hover { background: var(--primary-hover); }
+
+/* Celdas vacías y textos de ayuda */
+.empty-cell {
+    text-align: center;
+    padding: 24px !important;
+    color: var(--text-light);
+    font-style: italic;
+}
+.hint-text { font-size: 0.85rem; color: var(--text-light); }
+
+/* Chips de barrios seleccionados */
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    min-height: 28px;
+}
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.chip-remove {
+    background: none;
+    border: none;
+    color: #1e40af;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0;
+    line-height: 1;
+}
+.chip-remove:hover { color: var(--danger); }
+.chip-placeholder { color: var(--text-light); font-size: 0.85rem; }
+
+/* Modal de barrios / grupos */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: #fff;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.modal-header h2 { font-size: 1.1rem; }
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    line-height: 1;
+}
+.modal-close:hover { color: var(--danger); }
+.modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+.modal-body h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin: 18px 0 10px;
+    letter-spacing: 0.5px;
+}
+.modal-body h3:first-child { margin-top: 0; }
+.modal-list {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #fafafa;
+}
+.modal-check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.modal-check-item:last-child { border-bottom: none; }
+.modal-check-item:hover { background: #f1f5f9; }
+.modal-check-item input { width: auto; }
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Responsive layout for the quick-add grid: it must never overflow, so the
+   columns re-flow into fewer tracks as the viewport shrinks. */
+@media (max-width: 1400px) {
+    .quick-add-row { grid-template-columns: repeat(4, 1fr); }
+}
 
 @media (max-width: 1024px) {
-    .quick-add-row { grid-template-columns: 1fr; gap: 12px; }
-    .btn-add { height: 44px; }
+    .quick-add-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .footer-bar { flex-direction: column; gap: 24px; align-items: stretch; }
     .action-buttons { flex-direction: column; }
+}
+
+@media (max-width: 600px) {
+    .quick-add-row { grid-template-columns: 1fr; }
 }

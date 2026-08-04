@@ -35,7 +35,10 @@ Route::post('/webhooksmp', webhookcontroller::class);
 Route::prefix('propuesta/emision')->middleware('auth')->group(function () {
     Route::get('/', [ProposalIssueController::class, 'create'])->name('propuesta.emision');
     Route::get('/clientes/search', [ProposalIssueController::class, 'searchClients']);
+    Route::get('/clientes/resolve/{documento}', [ProposalIssueController::class, 'resolveClient']);
+    Route::get('/actividades/{actividad}/clasificaciones', [ProposalIssueController::class, 'classificationsByActivity']);
     Route::post('/clientes/save', [ProposalIssueController::class, 'saveClient']);
+    Route::post('/store', [ProposalIssueController::class, 'store'])->name('propuesta.emision.store');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

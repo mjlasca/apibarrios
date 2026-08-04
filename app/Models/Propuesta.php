@@ -49,6 +49,22 @@ class Propuesta extends Model
         'fecha_comprobante',
         'fecha_nacimiento',
         'formadepago',
+        'referencia',
+        'prima',
+        'puntodeventa',
+        'usuariopaga',
+        'tipopago',
+        'compformadepago',
+        'csrf',
+        'nota',
+        'valor_pagado',
+        'imputacion',
+        'cuit_pagador',
+    ];
+
+    protected $casts = [
+        'data_barrios' => 'array',
+        'fecha_nacimiento' => 'date',
     ];
 
     public function consecutivo(){
@@ -366,7 +382,11 @@ class Propuesta extends Model
     }
     
     public function cliente(){
-        return $this->belongsTo(cliente::class);
+        return $this->belongsTo(cliente::class, 'documento', 'id');
+    }
+
+    public function lineas(){
+        return $this->hasMany(LineasPropuesta::class, 'id_propuesta', 'idpropuesta');
     }
     
 }

@@ -21,7 +21,16 @@ class User extends Authenticatable
         'email',
         'password',
         'active',
-        "api_token",
+        'api_token',
+        'prefijo',
+        'rol',
+        'perfil',
+        'codempresa',
+        'master',
+        'organizador',
+        'aseguradora',
+        'codmaster',
+        'codorganizador',
     ];
 
     /**

@@ -2,96 +2,102 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveClientRequest;
+use App\Http\Requests\StoreProposalRequest;
+use App\Http\Resources\ActividadResource;
+use App\Http\Resources\BarrioResource;
+use App\Http\Resources\ClasificacionResource;
+use App\Http\Resources\ClienteResource;
+use App\Http\Resources\CoberturaResource;
+use App\Http\Resources\GrupoBarrioResource;
+use App\Models\Actividade;
 use App\Models\cliente;
+use App\Services\ClientService;
+use App\Services\ProposalCatalogService;
+use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProposalIssueController extends Controller
 {
+    public function __construct(
+        private readonly ProposalCatalogService $catalog,
+        private readonly ClientService $clients,
+        private readonly ProposalService $proposals,
+    ) {
+    }
+
     public function create(): View
     {
-        return view('propuesta.emision');
+        return view('propuesta.emision', [
+            'actividades' => ActividadResource::collection($this->catalog->activities())->resolve(),
+            'coberturas' => CoberturaResource::collection($this->catalog->coverages())->resolve(),
+            'barrios' => BarrioResource::collection($this->catalog->neighborhoods())->resolve(),
+            'grupos' => GrupoBarrioResource::collection($this->catalog->neighborhoodGroups())->resolve(),
+        ]);
     }
 
     public function searchClients(Request $request): JsonResponse
     {
-        $query = $request->input('q');
+        $query = trim((string) $request->input('q', ''));
 
-        if (empty($query) || strlen($query) < 2) {
-            return response()->json([]);
+        if (mb_strlen($query) < 2) {
+            return ClienteResource::collection([])->response();
         }
 
-        $clients = cliente::where('id', 'LIKE', "%{$query}%")
-            ->where('codestado', '1')
-            ->limit(10)
-            ->get(['id', 'nombres', 'apellidos', 'tipo_id', 'fecha_nacimiento', 'telefono', 'email']);
-
-        return response()->json($clients);
+        return ClienteResource::collection($this->clients->search($query))->response();
     }
 
-    public function saveClient(Request $request): JsonResponse
+    public function resolveClient(string $document): JsonResponse
     {
-        $data = [
-            'success' => false,
-            'message' => null,
-        ];
+        $client = $this->clients->findByDocument(trim($document));
 
-        try {
-            $id = trim($request->input('id'));
-            $nombres = trim($request->input('nombres'));
-            $apellidos = trim($request->input('apellidos'));
-            $tipoId = trim($request->input('tipo_id', 'DNI'));
-            $fechaNacimiento = trim($request->input('fecha_nacimiento'));
-            $telefono = trim($request->input('telefono'));
-            $email = trim($request->input('email'));
-
-            if (empty($id) || empty($nombres) || empty($apellidos) || empty($fechaNacimiento)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Documento, nombres, apellidos y fecha de nacimiento son obligatorios',
-                ]);
-            }
-
-            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El correo electrónico no es válido',
-                ]);
-            }
-
-            $client = cliente::where('id', $id)->first();
-
-            if ($client) {
-                $client->nombres = $nombres;
-                $client->apellidos = $apellidos;
-                $client->tipo_id = $tipoId;
-                $client->fecha_nacimiento = $fechaNacimiento;
-                $client->telefono = $telefono;
-                $client->email = $email;
-                $client->codestado = '1';
-                $client->ultmod = now();
-                $client->save();
-            } else {
-                $client = cliente::create([
-                    'id' => $id,
-                    'nombres' => $nombres,
-                    'apellidos' => $apellidos,
-                    'tipo_id' => $tipoId,
-                    'fecha_nacimiento' => $fechaNacimiento,
-                    'telefono' => $telefono,
-                    'email' => $email,
-                    'codestado' => '1',
-                    'ultmod' => now(),
-                ]);
-            }
-
-            $data['success'] = true;
-            $data['message'] = 'Cliente guardado correctamente';
-        } catch (\Exception $e) {
-            $data['message'] = 'Error al guardar el cliente: ' . $e->getMessage();
+        if (! $client) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
         }
 
-        return response()->json($data);
+        return (new ClienteResource($client))->response();
+    }
+
+    public function classificationsByActivity(Actividade $actividad): JsonResponse
+    {
+        return ClasificacionResource::collection(
+            $this->catalog->classificationsForActivity($actividad->id)
+        )->response();
+    }
+
+    public function saveClient(SaveClientRequest $request): JsonResponse
+    {
+        $client = $this->clients->findOrUpsert($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cliente guardado correctamente',
+            'data' => new ClienteResource($client),
+        ]);
+    }
+
+    public function store(StoreProposalRequest $request): JsonResponse
+    {
+        try {
+            $proposal = $this->proposals->create($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Propuesta guardada correctamente',
+                'data' => [
+                    'prefijo' => $proposal->prefijo,
+                    'idpropuesta' => $proposal->idpropuesta,
+                ],
+            ], 201);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo guardar la propuesta. Intente nuevamente.',
+            ], 500);
+        }
     }
 }
