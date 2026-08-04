@@ -9,6 +9,8 @@ use Illuminate\View\View;
 
 class ProposalListController extends Controller
 {
+    private const PER_PAGE = 30;
+
     public function __construct(
         private readonly ProposalService $proposals,
     ) {
@@ -41,7 +43,10 @@ class ProposalListController extends Controller
             });
         }
 
-        $proposals = $query->orderByDesc('created_at')->get();
+        $proposals = $query
+            ->orderByDesc('created_at')
+            ->paginate(self::PER_PAGE)
+            ->withQueryString();
 
         return view('propuesta.lista', [
             'proposals' => $proposals,

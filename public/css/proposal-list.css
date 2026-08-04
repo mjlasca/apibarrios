@@ -90,6 +90,50 @@ tr.row-cancelled td .muted { color: #b91c1c; }
     font-weight: 600;
 }
 
+/* Paginación */
+.pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+.pagination {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.page-item .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.page-item .page-link:hover { background: #f1f5f9; }
+.page-item.active .page-link {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+.page-item.disabled .page-link {
+    opacity: 0.5;
+    pointer-events: none;
+    background: #f8fafc;
+}
+
 .badge-status {
     display: inline-block;
     font-size: 0.75rem;

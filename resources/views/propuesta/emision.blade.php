@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Emisión de Propuesta</title>
-    <link href="{{ asset('css/proposal-emision.css') }}" rel="stylesheet">
-</head>
-<body>
-
+@extends('layouts.app')
+@section('title', 'Emisión de Propuesta')
+@section('linkstyle')
+<link href="{{ asset('css/proposal-emision.css') }}" rel="stylesheet">
+@endsection
+@section('content')
 <div class="container">
     <header>
         <h1>Emisión de Propuesta</h1>
@@ -239,7 +234,6 @@
         </div>
     </div>
 </div>
-
 <script>
     window.EMISSION_DATA = {
         activities: @json($actividades),
@@ -250,5 +244,6 @@
     };
 </script>
 <script src="{{ asset('js/proposal-emision.js') }}"></script>
-</body>
-</html>
+@endsection
+
+

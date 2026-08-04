@@ -1,15 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Lista de Propuestas</title>
-    <link href="{{ asset('css/proposal-emision.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/proposal-list.css') }}" rel="stylesheet">
-</head>
-<body>
-
+@extends('layouts.app')
+@section('title', 'Lista de Propuestas')
+@section('linkstyle')
+<link href="{{ asset('css/proposal-emision.css') }}" rel="stylesheet">
+<link href="{{ asset('css/proposal-list.css') }}" rel="stylesheet">
+@endsection
+@section('content')
 <div class="container">
     <header>
         <h1>Propuestas</h1>
@@ -57,8 +52,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($proposals as $proposal)
-                    <tr class="{{ (int) $proposal->codestado === 0 ? 'row-cancelled' : '' }}">
+                @forelse ($proposals as $proposal)                    <tr class="{{ (int) $proposal->codestado === 0 ? 'row-cancelled' : '' }}">
                         <td><strong>{{ $proposal->prefijo }}-{{ $proposal->idpropuesta }}</strong></td>
                         <td>
                             {{ $proposal->nombre }}
@@ -107,7 +101,12 @@
             </tbody>
         </table>
     </div>
-</div>
 
-</body>
-</html>
+    <div class="pagination-footer">
+        <span class="muted">
+            Mostrando {{ $proposals->firstItem() ?? 0 }}–{{ $proposals->lastItem() ?? 0 }} de {{ $proposals->total() }} propuestas
+        </span>
+        {{ $proposals->links('pagination::bootstrap-4') }}
+    </div>
+</div>
+@endsection
