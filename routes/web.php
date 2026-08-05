@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Catalog\ActividadController;
+use App\Http\Controllers\Catalog\BarrioController;
+use App\Http\Controllers\Catalog\ClasificacionController;
+use App\Http\Controllers\Catalog\CoberturaController;
+use App\Http\Controllers\Catalog\ClienteController;
+use App\Http\Controllers\Catalog\GrupoBarrioController;
 use App\Http\Controllers\FormsAuth;
 use App\Http\Controllers\ProposalEditController;
 use App\Http\Controllers\ProposalIssueController;
@@ -49,6 +55,50 @@ Route::prefix('propuesta')->middleware('auth')->group(function () {
     Route::put('/{propuesta}', [ProposalEditController::class, 'update'])->name('propuesta.update');
     Route::post('/{propuesta}/anular', [ProposalEditController::class, 'cancel'])->name('propuesta.cancelar');
     Route::post('/pagar', [ProposalEditController::class, 'pay'])->name('propuesta.pagar');
+});
+
+Route::prefix('catalogo')->middleware('auth')->group(function () {
+    Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
+    Route::get('/clientes/crear', [ClienteController::class, 'create'])->name('clientes.create');
+    Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+    Route::get('/clientes/{id}/editar', [ClienteController::class, 'edit'])->name('clientes.edit');
+    Route::put('/clientes/{id}', [ClienteController::class, 'update'])->name('clientes.update');
+    Route::post('/clientes/{id}/anular', [ClienteController::class, 'deactivate'])->name('clientes.deactivate');
+
+    Route::get('/coberturas', [CoberturaController::class, 'index'])->name('coberturas.index');
+    Route::get('/coberturas/crear', [CoberturaController::class, 'create'])->name('coberturas.create');
+    Route::post('/coberturas', [CoberturaController::class, 'store'])->name('coberturas.store');
+    Route::get('/coberturas/{id}/editar', [CoberturaController::class, 'edit'])->name('coberturas.edit');
+    Route::put('/coberturas/{id}', [CoberturaController::class, 'update'])->name('coberturas.update');
+    Route::post('/coberturas/{id}/anular', [CoberturaController::class, 'deactivate'])->name('coberturas.deactivate');
+
+    Route::get('/actividades', [ActividadController::class, 'index'])->name('actividades.index');
+    Route::get('/actividades/crear', [ActividadController::class, 'create'])->name('actividades.create');
+    Route::post('/actividades', [ActividadController::class, 'store'])->name('actividades.store');
+    Route::get('/actividades/{id}/editar', [ActividadController::class, 'edit'])->name('actividades.edit');
+    Route::put('/actividades/{id}', [ActividadController::class, 'update'])->name('actividades.update');
+    Route::post('/actividades/{id}/anular', [ActividadController::class, 'deactivate'])->name('actividades.deactivate');
+
+    Route::get('/clasificaciones', [ClasificacionController::class, 'index'])->name('clasificaciones.index');
+    Route::get('/clasificaciones/crear', [ClasificacionController::class, 'create'])->name('clasificaciones.create');
+    Route::post('/clasificaciones', [ClasificacionController::class, 'store'])->name('clasificaciones.store');
+    Route::get('/clasificaciones/{id}/editar', [ClasificacionController::class, 'edit'])->name('clasificaciones.edit');
+    Route::put('/clasificaciones/{id}', [ClasificacionController::class, 'update'])->name('clasificaciones.update');
+    Route::post('/clasificaciones/{id}/anular', [ClasificacionController::class, 'deactivate'])->name('clasificaciones.deactivate');
+
+    Route::get('/barrios', [BarrioController::class, 'index'])->name('barrios.index');
+    Route::get('/barrios/crear', [BarrioController::class, 'create'])->name('barrios.create');
+    Route::post('/barrios', [BarrioController::class, 'store'])->name('barrios.store');
+    Route::get('/barrios/{id}/editar', [BarrioController::class, 'edit'])->name('barrios.edit');
+    Route::put('/barrios/{id}', [BarrioController::class, 'update'])->name('barrios.update');
+    Route::post('/barrios/{id}/anular', [BarrioController::class, 'deactivate'])->name('barrios.deactivate');
+
+    Route::get('/grupos-barrios', [GrupoBarrioController::class, 'index'])->name('grupos-barrios.index');
+    Route::get('/grupos-barrios/crear', [GrupoBarrioController::class, 'create'])->name('grupos-barrios.create');
+    Route::post('/grupos-barrios', [GrupoBarrioController::class, 'store'])->name('grupos-barrios.store');
+    Route::get('/grupos-barrios/{id}/editar', [GrupoBarrioController::class, 'edit'])->name('grupos-barrios.edit');
+    Route::put('/grupos-barrios/{id}', [GrupoBarrioController::class, 'update'])->name('grupos-barrios.update');
+    Route::post('/grupos-barrios/{id}/anular', [GrupoBarrioController::class, 'deactivate'])->name('grupos-barrios.deactivate');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

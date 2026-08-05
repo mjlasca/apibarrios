@@ -27,6 +27,31 @@
                         <a href="{{ route('propuesta.listar') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
                             Propuestas
                         </a>
+                        <div x-data="{ open: false }" class="relative inline-flex items-center">
+                            <button @click="open = !open" @keydown.escape="open = false"
+                                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                                Catálogos
+                                <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="open" @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute left-0 mt-6 w-56 bg-white rounded-md shadow-lg py-1 z-50"
+                                style="display: none;">
+                                <a href="{{ route('clientes.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Clientes</a>
+                                <a href="{{ route('coberturas.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Coberturas</a>
+                                <a href="{{ route('actividades.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Actividades</a>
+                                <a href="{{ route('clasificaciones.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Clasificaciones</a>
+                                <a href="{{ route('barrios.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Barrios</a>
+                                <a href="{{ route('grupos-barrios.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Grupos de Barrios</a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center">
