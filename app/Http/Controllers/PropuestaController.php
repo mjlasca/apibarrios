@@ -16,7 +16,7 @@ use App\Models\Propuesta;
 use App\Models\rendicione;
 use Illuminate\Http\Request;
 use PhpParser\Node\Stmt\Foreach_;
-use Barryvdh\DomPDF\Facade as PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +27,7 @@ use MercadoPago;
 
 class PropuestaController extends Controller
 {
-    
+
     //
     public function __invoke()
     {
@@ -36,22 +36,22 @@ class PropuestaController extends Controller
 
     public  function savepropuesta()
     {
-        
+
         try
         {
             $request = request()->all();
-            
+
             $datos["barriosagregados"] = json_decode( $request["barriosagregados"] );
             $datos["personasaseguradas"] = json_decode( $request["personasaseguradas"] );
             $datos["coberturavigen"] = json_decode( $request["coberturavigen"] );
             $datos["tomador"] = json_decode( $request["tomador"] );
             $datos["parametros"] = json_decode( $request["parametros"] );
-        
+
 
             $propuesta = new Propuesta();
             $propuesta->prefijo = "O";
             $propuesta->documento = $datos["tomador"]->documento;
-            
+
             $propuesta->nombre = $datos["tomador"]->nombres . " ".$datos["tomador"]->apellidos;
             $propuesta->num_polizas =  count($datos["personasaseguradas"]);
             $propuesta->meses = $datos["coberturavigen"]->meses;
@@ -168,13 +168,13 @@ class PropuestaController extends Controller
                     $cliente->categoria = "ONLINE";
                     $cliente->save();
                 }
-                
 
-                
-                
+
+
+
 
                 if (count($datos["personasaseguradas"])> 0) {
-                    
+
                     DB::table('lineas_propuestas')->where('id_propuesta',$propuesta->reg)->where('prefijo',$propuesta->prefijo)->delete();
 
                     foreach ($datos["personasaseguradas"] as $value) {
@@ -197,16 +197,16 @@ class PropuestaController extends Controller
                         $lineaspropuestas->prefijo = $propuesta->prefijo;
                         $lineaspropuestas->actividad = $value->nomactividad;
                         $lineaspropuestas->clasificacion = $value->nomclasificacion;
-                        
-                        
+
+
                         $lineaspropuestas->save();
                     }
                 }
 
-        
-                
+
+
                 if ( count($datos["barriosagregados"]) > 0 ) {
-                    
+
                     DB::table('barrios_propuestas')->where('id_propuesta',$propuesta->reg)->where('prefijo',$propuesta->prefijo)->delete();
 
                     foreach ($datos["barriosagregados"] as $value) {
@@ -219,8 +219,8 @@ class PropuestaController extends Controller
                         $barriospropuestas->user_edit = $propuesta->useredit;
                         $barriospropuestas->codestado = 1;
                         $barriospropuestas->prefijo = $propuesta->prefijo;
-                        $barriospropuestas->save(); 
-                        
+                        $barriospropuestas->save();
+
                     }
                 }
 
@@ -243,12 +243,12 @@ class PropuestaController extends Controller
 
                 $preference->items = array($item);
                 $preference->save();
-                
+
                 //total=590&idpropuesta=2&prefijo=O&tomador=MARIO%20LASLUISA%20CASTAÑO
-            
+
                 return response()->json(
                     [
-                        'res' => 'Se ha generado la propuesta con éxito', 'success'=>true, 
+                        'res' => 'Se ha generado la propuesta con éxito', 'success'=>true,
                         'idpropuesta' => $propuesta->reg,
                         'prefijo' => $propuesta->prefijo,
                         'total' => $propuesta->premio_total,
@@ -263,7 +263,7 @@ class PropuestaController extends Controller
             return response()->json(['res' => 'No se ha podido guardar la propuesta error #101', 'success'=>false], 400);
         }
 
-        
+
     }
 
 
@@ -291,7 +291,7 @@ class PropuestaController extends Controller
                 $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
 
             $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
-        
+
             $pdf = PDF::loadView('pdf-propuesta.index', compact('cliente','data','lineasdata','barriospropuesta'));
 
             return $pdf->stream();
@@ -322,7 +322,7 @@ class PropuestaController extends Controller
         $preference->save();*/
 
         return view('cotizadoronline.index', compact('data'));
-        
+
     }
 
     public function paypro(){
@@ -348,13 +348,13 @@ class PropuestaController extends Controller
                 ))
                     return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
             }else{
-                return response()->json(['res' => 'La propuesta no existe'], 404 );    
+                return response()->json(['res' => 'La propuesta no existe'], 404 );
             }
-            
+
             return response()->json(['res' => 'No se pudo hacer el pago de la propuesta'], 400);
-            
+
         }
-        
+
     }
 
 
@@ -371,7 +371,7 @@ class PropuestaController extends Controller
         return view('polizas.index', compact('data','success','estado'));
     }
 
-    
+
 
     public function consultapoliza()
     {
@@ -379,10 +379,10 @@ class PropuestaController extends Controller
         $estado = "";
 
 
-        $sql = "SELECT lp.* 
-                FROM propuestas p 
+        $sql = "SELECT lp.*
+                FROM propuestas p
                 INNER JOIN lineas_propuestas lp ON p.prefijo = lp.prefijo AND p.reg = lp.id_propuesta  AND (p.codempresa = lp.codempresa OR p.codempresa IS NULL)
-                WHERE 
+                WHERE
                 ((lp.fechaHasta >= '".date("Y-m-d H:i:s")."' AND lp.fecha_nacimiento = '".$data['fechanacimiento']."' AND lp.documento = '".$data['documento']."')
                  OR
                 (p.fechaHasta >= '".date("Y-m-d H:i:s")."' AND p.fecha_nacimiento = '".$data['fechanacimiento']."' AND p.documento = '".$data['documento']."'))
@@ -391,7 +391,7 @@ class PropuestaController extends Controller
                 ";
         $data = DB::select($sql);
 
-        $success = false;        
+        $success = false;
 
         if (count($data) > 0) {
             $success = true;
@@ -404,7 +404,7 @@ class PropuestaController extends Controller
         }
     }
 
-    
+
 
     public function consultaparametros()
     {
@@ -452,20 +452,20 @@ class PropuestaController extends Controller
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','DESC')
                                     ->limit(30)
-                                    ->get(['entity', 'entity_id']) 
+                                    ->get(['entity', 'entity_id'])
                                     ->groupBy('entity')
                                     ->map(function ($group) {
                                         return $group->pluck('entity_id')->toArray();
                                     })
                                     ->toArray();
-                                    
+
                                     if(empty($colas['barrios']) && $req['solicitud'] == 'solicitud_barrios'){
                                         $colas['barrios'] = '-1';
                                     }
                             }
                             if(!empty($colas)){
                                 if($req["solicitud"] == "solicitud_propuestas" && !empty($colas['propuestas'])){
-                                    $sql = "SELECT t1.* FROM propuestas t1 
+                                    $sql = "SELECT t1.* FROM propuestas t1
                                     WHERE t1.codempresa = '".$req["codempresa"]."' AND t1.id IN (".implode(',',$colas['propuestas']).")  ORDER BY t1.ultmod DESC;";
                                     $datos["propuestas"] = DB::select($sql);
                                     $idsPropuesta = array_map(function($pro) {
@@ -476,7 +476,7 @@ class PropuestaController extends Controller
                                     }, $datos["propuestas"]);
                                     //líneas propuestas
                                     $sql = "SELECT t1.* FROM lineas_propuestas t1 INNER JOIN propuestas t2 ON t1.prefijo = t2.prefijo AND t1.id_propuesta = t2.idpropuesta WHERE t2.id IN (".implode(',',$idsPropuesta).")  AND ( t2.prefijo != '".$req["prefijositio"]."' OR (t2.usuariopaga != '' AND t2.prefijo = '".$req["prefijositio"]."'))";
-                                    
+
                                     $datos["lineas_propuestas"] = DB::select($sql);
 
                                     $idsClientes_ = array_map(function($lin) {
@@ -485,7 +485,7 @@ class PropuestaController extends Controller
                                     if(empty($req['reset']))
                                         $datos["clientes"] = DB::table('clientes')->whereIn('id',array_unique(array_merge($idsClientes,$idsClientes_)))->groupBy('id')->get();
                                 }
-                                
+
                                 if($req["solicitud"] == "solicitud_barrios" && !empty($colas['barrios'])){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["barrios"] = DB::table('barrios')->get();
@@ -497,14 +497,14 @@ class PropuestaController extends Controller
                                         }
                                     }
                                 }
-                                
+
                                 if($req["solicitud"] == "solicitud_clientes" && !empty($colas['clientes']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["clientes"] = DB::table('clientes')->where('codempresa',$req['codempresa'])->groupBy('id')->get();
                                     else
                                         $datos["clientes"] = DB::table('clientes')->whereIn('reg',$colas['clientes'])->groupBy('id')->get();
                                 }
-        
+
                                 if($req["solicitud"] == "solicitud_usuarios"  && !empty($colas['usuarios']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["usuarios"] = DB::table('usuarios')->where('codempresa',$req['codempresa'])->get();
@@ -517,59 +517,59 @@ class PropuestaController extends Controller
                                     else
                                         $datos["perfiles"] = DB::table('perfiles')->whereIn('reg',$colas['perfiles'])->get();
                                 }
-                                
-                                
+
+
                                 if($req["solicitud"] == "solicitud_arqueos" && !empty($colas['arqueos']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["arqueos"] = DB::table('arqueos')->where('codempresa',$req['codempresa'])->limit(30)->where('puntodeventa','!=',$req["prefijositio"])->get();
                                     else
                                         $datos["arqueos"] = DB::table('arqueos')->whereIn('reg',$colas['arqueos'])->where('puntodeventa','!=',$req["prefijositio"])->get();
                                 }
-                                
-    
+
+
                                 if($req["solicitud"] == "solicitud_rendiciones" && !empty($colas['rendiciones']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1){
                                         $datos["rendiciones"] = rendicione::where('codempresa',$req['codempresa'])->orderBy('id','DESC')->limit(30)->get();
                                         $groupLineas = $datos["rendiciones"]->pluck('id')->toArray();
                                         if(!empty($groupLineas)){
-                                            $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                            $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg
                                             WHERE t2.id IN (".implode(',',$groupLineas).") ";
                                             $datos["lineas_rendiciones"] = DB::select($sql);
                                         }
-                                        
+
                                     }
                                     else{
                                         $datos["rendiciones"] = DB::table('rendiciones')->whereIn('reg',$colas['rendiciones'])->where('puntodeventa','!=',$req["prefijositio"])->get();
-                                        $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg 
+                                        $sql = "SELECT t1.* FROM lineas_rendiciones t1 INNER JOIN rendiciones t2 ON t1.idrendicion = t2.reg
                                         WHERE t2.id IN (".implode(',',$colas['rendiciones']).") ";
                                         $datos["lineas_rendiciones"] = DB::select($sql);
                                     }
-                                    
+
                                 }
-        
-                            
+
+
                                 if($req["solicitud"] == "solicitud_actividades" && !empty($colas['actividades']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["actividades"] = DB::table('actividades')->limit(2)->get();
                                     else
                                         $datos["actividades"] = DB::table('actividades')->whereIn('reg',$colas['actividades'])->get();
                                 }
-    
-                                
+
+
                                 if($req["solicitud"] == "solicitud_coberturas" && !empty($colas['coberturas']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["coberturas"] = DB::table('coberturas')->limit(2)->get();
                                     else
                                         $datos["coberturas"] = DB::table('coberturas')->whereIn('reg',$colas['coberturas'])->get();
                                 }
-    
+
                                 if($req["solicitud"] == "solicitud_clasificaciones" && !empty($colas['clasificaciones']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["clasificaciones"] = DB::table('clasificaciones')->limit(2)->get();
                                     else
                                         $datos["clasificaciones"] = DB::table('clasificaciones')->whereIn('reg',$colas['clasificaciones'])->get();
                                 }
-    
+
                                 if($req["solicitud"] == "solicitud_gruposbarrios" && !empty($colas['gruposbarrios']) ){
                                     if( !empty($req['reset']) && $req['reset'] == 1)
                                         $datos["gruposbarrios"] = DB::table('gruposbarrios')->get();
@@ -577,7 +577,7 @@ class PropuestaController extends Controller
                                         $datos["gruposbarrios"] = DB::table('gruposbarrios')->whereIn('reg',$colas['gruposbarrios'])->get();
                                 }
                                 if($req["solicitud"] == "solicitud_provincias"){
-                                    $datos["provincias"] = DB::table('provincias')->get();  
+                                    $datos["provincias"] = DB::table('provincias')->get();
                                 }
                                 if(!empty($req['reset']) && $req['reset']== 1){
                                     $colas = Cola::where('id', '>', $req['cola'])
@@ -589,7 +589,7 @@ class PropuestaController extends Controller
                                     ->where('updated_at', '>=', Carbon::now()->subDays(30))
                                     ->groupBy('entity', 'entity_id')
                                     ->orderBy('id','DESC')
-                                    ->select('entity', 'entity_id','id') 
+                                    ->select('entity', 'entity_id','id')
                                     ->groupBy('entity')
                                     ->first();
                                     if(empty($colas)){
@@ -617,7 +617,7 @@ class PropuestaController extends Controller
                                     ->groupBy('entity', 'id')
                                     ->orderBy('id','DESC')
                                     ->limit(30)
-                                    ->select('entity', 'entity_id','id') 
+                                    ->select('entity', 'entity_id','id')
                                     ->groupBy('entity','id')
                                     ->get();
                                     $datos['colas'] = $colas;
@@ -629,7 +629,7 @@ class PropuestaController extends Controller
                                                 "COLA-{$req['prefijositio']}",
                                                 $req['solicitud'],
                                                 $req['prefijositio']
-                                            );    
+                                            );
                                             $datos['colas'][] = [
                                                 "entity" => str_replace('solicitud_','', $req['solicitud']),
                                                 "entity_id" => '',
@@ -638,16 +638,16 @@ class PropuestaController extends Controller
                                         }
                                     }
                                 }
-                                
+
                             }
                         }
                     }
                 }
             }
-            
+
             return response()->json($datos, 200);
 
-            
+
         }catch (Exception $ex){
             $jsonData = json_encode($req);
             $logs = new logs();
@@ -655,8 +655,8 @@ class PropuestaController extends Controller
             return response()->json("Error en importarción ".$ex->getMessage(), 404);
 
         }
-        
-        
+
+
     }
 
 }

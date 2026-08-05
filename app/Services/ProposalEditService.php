@@ -65,6 +65,7 @@ class ProposalEditService
                 'email' => $client->email ?? '',
             ],
             'asegurados' => $this->insuredRows($proposal),
+            'formadepago' => $proposal->formadepago ?? 'CREDITO',
             'barrios' => array_values(array_map(
                 fn (array $row) => (string) $row['id_barrio'],
                 $proposal->data_barrios['barrios'] ?? [],

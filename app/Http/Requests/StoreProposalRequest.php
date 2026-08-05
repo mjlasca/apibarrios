@@ -26,6 +26,7 @@ class StoreProposalRequest extends FormRequest
             'cobertura' => ['required', 'string', 'max:100'],
             'meses' => ['required', 'integer', 'min:1', 'max:6'],
             'fecha_desde' => ['nullable', 'date_format:Y-m-d'],
+            'formadepago' => ['sometimes', 'string', Rule::in(['CONTADO', 'CREDITO'])],
 
             'asegurados' => ['required', 'array', 'min:1'],
             'asegurados.*.documento' => ['required', 'string', 'max:100'],

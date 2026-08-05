@@ -578,6 +578,7 @@
                     cobertura: document.getElementById('c-cobertura').value,
                     meses: parseInt(document.getElementById('c-meses').value, 10),
                     fecha_desde: document.getElementById('v-desde').value || null,
+                    formadepago: document.getElementById('v-forma-pago').value,
                     asegurados: state.insured.map(function (line) {
                         return {
                             tipo_id: line.tipo_id,
@@ -618,6 +619,9 @@
         document.getElementById('v-desde').value = '';
         document.getElementById('c-cobertura').value = '';
         document.getElementById('c-meses').value = '1';
+        var formaPagoSelect = document.getElementById('v-forma-pago');
+        formaPagoSelect.value = 'CREDITO';
+        formaPagoSelect.disabled = false;
 
         quickFields().doc.value = '';
         clearQuick();
@@ -636,6 +640,10 @@
     function initFromProposal(p) {
         state.editing = { id: p.id };
 
+        var downloadBtn = document.getElementById('btn-download-proposal');
+        downloadBtn.href = '/descargaseguro/' + p.idpropuesta + '/' + p.prefijo;
+        downloadBtn.classList.remove('hidden');
+
         var tomador = p.tomador;
         document.getElementById('t-doc').value = tomador.documento;
         fillTomador(tomador);
@@ -643,6 +651,10 @@
         document.getElementById('c-cobertura').value = p.cobertura;
         document.getElementById('c-meses').value = String(p.meses);
         document.getElementById('v-desde').value = p.fecha_desde || '';
+
+        var formaPagoSelect = document.getElementById('v-forma-pago');
+        formaPagoSelect.value = p.formadepago || 'CREDITO';
+        formaPagoSelect.disabled = true;
 
         state.insured = p.asegurados.map(function (line) {
             return {

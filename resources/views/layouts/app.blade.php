@@ -16,6 +16,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
     <div id="app">
+        @auth
         <nav class="bg-white shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
@@ -29,55 +30,48 @@
                     </div>
 
                     <div class="flex items-center">
-                        @guest
-                            @if (Route::has('login'))
-                                <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
-                                    {{ __('Login') }}
+                        <div x-data="{ open: false }" class="relative">
+                            <button
+                                @click="open = !open"
+                                @keydown.escape="open = false"
+                                class="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                            >
+                                {{ Auth::user()->name }}
+                                <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div
+                                x-show="open"
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                                style="display: none;"
+                            >
+                                <a
+                                    href="{{ route('logout') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                >
+                                    {{ __('Logout') }}
                                 </a>
-                            @endif
-                        @else
-                            <div x-data="{ open: false }" class="relative">
-                                <button
-                                    @click="open = !open"
-                                    @keydown.escape="open = false"
-                                    class="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
-                                >
-                                    {{ Auth::user()->name }}
-                                    <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
 
-                                <div
-                                    x-show="open"
-                                    @click.away="open = false"
-                                    x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="transform opacity-0 scale-95"
-                                    x-transition:enter-end="transform opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="transform opacity-100 scale-100"
-                                    x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
-                                    style="display: none;"
-                                >
-                                    <a
-                                        href="{{ route('logout') }}"
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                                    >
-                                        {{ __('Logout') }}
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                                        @csrf
-                                    </form>
-                                </div>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
                             </div>
-                        @endguest
+                        </div>
                     </div>
                 </div>
             </div>
         </nav>
+        @endauth
 
         <main class="py-6">
             @yield('content')

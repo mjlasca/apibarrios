@@ -48,6 +48,7 @@ Route::prefix('propuesta')->middleware('auth')->group(function () {
     Route::get('/{propuesta}/editar', [ProposalEditController::class, 'edit'])->name('propuesta.editar');
     Route::put('/{propuesta}', [ProposalEditController::class, 'update'])->name('propuesta.update');
     Route::post('/{propuesta}/anular', [ProposalEditController::class, 'cancel'])->name('propuesta.cancelar');
+    Route::post('/pagar', [ProposalEditController::class, 'pay'])->name('propuesta.pagar');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

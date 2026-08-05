@@ -100,6 +100,21 @@
                                         </button>
                                     </form>
                                 @endif
+                                @if ((int) $proposal->paga === 0 && (int) $proposal->codestado !== 0)
+                                    <button type="button"
+                                        class="btn-pay-proposal inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition-colors"
+                                        data-id="{{ $proposal->id }}"
+                                        data-ref="{{ $proposal->prefijo }}-{{ $proposal->idpropuesta }}"
+                                        data-amount="${{ number_format((float) $proposal->premio_total, 2, ',', '.') }}"
+                                        data-raw="{{ (float) $proposal->premio_total }}">
+                                        Pagar
+                                    </button>
+                                @endif
+                                <a href="{{ url('/descargaseguro/' . $proposal->idpropuesta . '/' . $proposal->prefijo) }}"
+                                    target="_blank"
+                                    class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-sky-700 bg-sky-100 hover:bg-sky-200 transition-colors">
+                                    Descargar
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -123,4 +138,137 @@
         </div>
     </div>
 </div>
+
+{{-- MODAL PAGAR PROPUESTA --}}
+<div class="fixed inset-0 z-50 hidden" id="pay-modal-overlay" aria-hidden="true">
+    <div class="flex items-center justify-center min-h-screen px-4 py-20">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" id="pay-modal-backdrop"></div>
+
+        <div class="relative bg-white rounded-lg shadow-xl w-full md:max-w-[50%] mx-auto overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900">Forma de Pago</h2>
+                <button type="button" id="btn-close-pay-modal" aria-label="Cerrar"
+                    class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ url('/propuesta/pagar') }}" id="pay-form">
+                @csrf
+                <input type="hidden" name="id" id="pay-id" value="">
+                <div class="px-5 py-4 space-y-3">
+                    <p class="text-sm text-gray-600">
+                        <span id="pay-ref" class="font-semibold text-gray-900"></span>
+                        &mdash; <span id="pay-amount" class="font-semibold text-gray-900"></span>
+                    </p>
+
+                    <div>
+                        <label for="pay-tipopago" class="block text-sm font-medium text-gray-700 mb-1">Forma de pago</label>
+                        <select name="tipopago" id="pay-tipopago" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="EFECTIVO" selected>Efectivo</option>
+                            <option value="CBU">CBU</option>
+                            <option value="TRANSFERENCIA">Transferencia</option>
+                            <option value="MEDIO DE PAGO">Medio de Pago</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+
+                    <div id="pay-fields-extra" class="hidden space-y-3">
+                        <div>
+                            <label for="pay-compformadepago" class="block text-sm font-medium text-gray-700 mb-1">No. Comprobante</label>
+                            <input type="text" name="compformadepago" id="pay-compformadepago" autocomplete="off"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="pay-valor_pagado" class="block text-sm font-medium text-gray-700 mb-1">Valor pagado</label>
+                                <input type="number" name="valor_pagado" id="pay-valor_pagado" step="0.01" min="0"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label for="pay-fecha_comprobante" class="block text-sm font-medium text-gray-700 mb-1">Fecha comprobante</label>
+                                <input type="date" name="fecha_comprobante" id="pay-fecha_comprobante"
+                                    max="{{ $today }}"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="pay-cuit_pagador" class="block text-sm font-medium text-gray-700 mb-1">CUIT pagador</label>
+                        <input type="text" name="cuit_pagador" id="pay-cuit_pagador" autocomplete="off" required
+                            placeholder="Ej: 20-12345678-9"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+                    <button type="button" id="btn-cancel-pay"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
+                        Aceptar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var overlay = document.getElementById('pay-modal-overlay');
+    var payId = document.getElementById('pay-id');
+    var payRef = document.getElementById('pay-ref');
+    var payAmount = document.getElementById('pay-amount');
+    var payValorPagado = document.getElementById('pay-valor_pagado');
+    var payTipopago = document.getElementById('pay-tipopago');
+    var payFieldsExtra = document.getElementById('pay-fields-extra');
+    var payCompformadepago = document.getElementById('pay-compformadepago');
+    var payFechaComprobante = document.getElementById('pay-fecha_comprobante');
+    var today = '{{ $today }}';
+
+    function toggleExtraFields() {
+        var isEfectivo = payTipopago.value === 'EFECTIVO';
+        payFieldsExtra.classList.toggle('hidden', isEfectivo);
+        payCompformadepago.required = !isEfectivo;
+        payValorPagado.required = !isEfectivo;
+        payFechaComprobante.required = !isEfectivo;
+    }
+
+    payTipopago.addEventListener('change', toggleExtraFields);
+
+    function openPayModal(id, ref, amount, rawAmount) {
+        payId.value = id;
+        payRef.textContent = ref;
+        payAmount.textContent = amount;
+        payValorPagado.value = rawAmount;
+        payFechaComprobante.value = today;
+        payTipopago.value = 'EFECTIVO';
+        toggleExtraFields();
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closePayModal() {
+        overlay.classList.add('hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('.btn-pay-proposal').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openPayModal(this.dataset.id, this.dataset.ref, this.dataset.amount, this.dataset.raw);
+        });
+    });
+
+    document.getElementById('btn-close-pay-modal').addEventListener('click', closePayModal);
+    document.getElementById('btn-cancel-pay').addEventListener('click', closePayModal);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closePayModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closePayModal(); });
+})();
+</script>
 @endsection

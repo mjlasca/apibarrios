@@ -156,8 +156,17 @@ class ProposalService
             $proposal->idpropuesta = $number;
             $proposal->reg = $number;
             $proposal->version = 1;
-            $attributes['formadepago'] = 'CREDITO';
-            $attributes['paga'] = 0;
+
+            $formadepago = $payload['formadepago'] ?? 'CREDITO';
+            $attributes['formadepago'] = $formadepago;
+
+            if ($formadepago === 'CONTADO') {
+                $attributes['paga'] = 1;
+                $attributes['fecha_paga'] = now()->toDateTimeString();
+                $attributes['usuariopaga'] = auth()->user()->name ?? 'online';
+            } else {
+                $attributes['paga'] = 0;
+            }
         } else {
             $proposal->version = (int) $proposal->version + 1;
         }

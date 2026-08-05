@@ -14,6 +14,7 @@ use App\Services\ProposalEditService;
 use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProposalEditController extends Controller
@@ -74,5 +75,49 @@ class ProposalEditController extends Controller
         return redirect()
             ->route('propuesta.listar')
             ->with('success', 'Propuesta ' . $proposal->prefijo . '-' . $proposal->idpropuesta . ' anulada correctamente');
+    }
+
+    public function pay(Request $request): RedirectResponse
+    {
+        $isEfectivo = $request->input('tipopago') === 'EFECTIVO';
+
+        $rules = [
+            'id' => ['required', 'integer', 'exists:propuestas,id'],
+            'tipopago' => ['required', 'string', 'max:20'],
+            'cuit_pagador' => ['required', 'string', 'max:20'],
+        ];
+
+        if (! $isEfectivo) {
+            $rules['compformadepago'] = ['required', 'string', 'max:50'];
+            $rules['valor_pagado'] = ['required', 'numeric', 'min:0'];
+            $rules['fecha_comprobante'] = ['required', 'date', 'before_or_equal:today'];
+        }
+
+        $request->validate($rules);
+
+        $proposal = Propuesta::findOrFail($request->input('id'));
+
+        $this->edit->assertCompanyMatches($proposal);
+
+        $data = [
+            'paga' => 1,
+            'fecha_paga' => now()->toDateTimeString(),
+            'usuariopaga' => auth()->user()->name ?? 'online',
+            'tipopago' => $request->input('tipopago'),
+            'formadepago' => 'CREDITO',
+            'cuit_pagador' => $request->input('cuit_pagador'),
+        ];
+
+        if (! $isEfectivo) {
+            $data['compformadepago'] = $request->input('compformadepago');
+            $data['valor_pagado'] = $request->input('valor_pagado');
+            $data['fecha_comprobante'] = $request->input('fecha_comprobante');
+        }
+
+        $proposal->update($data);
+
+        return redirect()
+            ->route('propuesta.listar')
+            ->with('success', 'Propuesta ' . $proposal->prefijo . '-' . $proposal->idpropuesta . ' pagada correctamente');
     }
 }

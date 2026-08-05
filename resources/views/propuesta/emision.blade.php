@@ -211,10 +211,26 @@
                 <span id="total-premio" class="text-lg font-bold text-gray-900">$0,00</span>
             </div>
         </div>
-        <button type="button" id="btn-save-proposal"
-            class="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
-            Guardar Propuesta
-        </button>
+        <div class="flex items-center gap-3">
+            <a id="btn-download-proposal" href="#" target="_blank"
+                class="hidden inline-flex items-center px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-md text-sky-700 bg-white hover:bg-sky-50 transition-colors self-end">
+                <svg class="h-4 w-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Descargar
+            </a>
+            <div>
+                <label for="v-forma-pago" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Forma de Pago</label>
+                <select id="v-forma-pago" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="CREDITO">Crédito</option>
+                    <option value="CONTADO">Contado</option>
+                </select>
+            </div>
+            <button type="button" id="btn-save-proposal"
+                class="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors self-end">
+                Guardar Propuesta
+            </button>
+        </div>
     </div>
 </footer>
 
