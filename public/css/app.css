@@ -174,7 +174,7 @@ textarea {
   line-height: inherit; /* 1 */
   color: inherit; /* 1 */
   margin: 0; /* 2 */
-  padding: 0; /* 3 */
+  padding: 7px; /* 3 */
 }
 
 /*

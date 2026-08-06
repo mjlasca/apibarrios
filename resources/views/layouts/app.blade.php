@@ -27,6 +27,9 @@
                         <a href="{{ route('propuesta.listar') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
                             Propuestas
                         </a>
+                        <a href="{{ route('reports.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                            Informes
+                        </a>
                         <div x-data="{ open: false }" class="relative inline-flex items-center">
                             <button @click="open = !open" @keydown.escape="open = false"
                                 class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">

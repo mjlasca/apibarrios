@@ -12,6 +12,7 @@ use App\Http\Controllers\ProposalIssueController;
 use App\Http\Controllers\ProposalListController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropuestaController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PropuestasControllerV2;
 use App\Http\Controllers\webhookcontroller;
 use App\Models\Propuesta;
@@ -47,6 +48,14 @@ Route::prefix('propuesta/emision')->middleware('auth')->group(function () {
     Route::get('/actividades/{actividad}/clasificaciones', [ProposalIssueController::class, 'classificationsByActivity']);
     Route::post('/clientes/save', [ProposalIssueController::class, 'saveClient']);
     Route::post('/store', [ProposalIssueController::class, 'store'])->name('propuesta.emision.store');
+});
+
+Route::prefix('informes')->middleware('auth')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/generar', [ReportController::class, 'generate'])->name('reports.generate');
+    Route::get('/descargar/fin-del-dia', [ReportController::class, 'downloadFinDelDia'])->name('reports.download.fin_del_dia');
+    Route::get('/descargar/envio-colectivo', [ReportController::class, 'downloadEnvioColectivo'])->name('reports.download.envio_colectivo');
+    Route::get('/descargar/envio-individual', [ReportController::class, 'downloadEnvioIndividual'])->name('reports.download.envio_individual');
 });
 
 Route::prefix('propuesta')->middleware('auth')->group(function () {
