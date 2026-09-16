@@ -60,3 +60,4 @@ Route::middleware('auth:api')->post('/v2/client-insureds/create', [ clienteContr
 Route::middleware('auth:api')->post('/v2/cuits', [ BarriosController::class, 'validateCuits' ]);
 Route::middleware('auth:api')->post('/v2/proposal/create', [ PropuestasControllerV2::class, 'CreateProposalChat' ]);
 Route::middleware('auth:api')->post('/v2/proposal/validate', [ PropuestasControllerV2::class, 'validateProposal' ]);
+Route::middleware('auth:api')->post('/v2/paypro', [ PropuestaController::class, 'paypro' ]);

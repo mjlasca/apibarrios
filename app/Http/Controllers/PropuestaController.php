@@ -21,17 +21,24 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\PayPropuestaService;
+use Illuminate\Validation\ValidationException;
 
 // SDK de Mercado Pago
 use MercadoPago;
 
 class PropuestaController extends Controller
 {
-    
-    //
+    private PayPropuestaService $payService;
+
+    public function __construct(PayPropuestaService $payService)
+    {
+        $this->payService = $payService;
+    }
+
     public function __invoke()
     {
-        //return response()->json( $get, 200);
+        //
     }
 
     public  function savepropuesta()
@@ -325,36 +332,21 @@ class PropuestaController extends Controller
         
     }
 
-    public function paypro(){
-
-        $req = request()->all();
-
-        if(!empty($req)){
-            $propExist = Propuesta::where('idpropuesta',$req["idpropuesta"])->where('prefijo',$req["prefijopropuesta"])->first();
-            if(!empty($propExist)){
-                $prop = new Propuesta();
-                if($prop->pagarpropuesta(
-                    $req["idpropuesta"],
-                    $req["prefijopropuesta"],
-                    $req["tipopago"],
-                    $req["compformapago"],
-                    $req["usuariopaga"],
-                    $req["fecha_paga"],
-                    $req["codempresa"],
-                    $req["version"],
-                    $req["fecha_comprobante"],
-                    $req["valor_pagado"],
-                    $req["cuit_pagador"],
-                ))
-                    return response()->json(['res' => 'Se ha hecho el pago de la propuesta con éxito'], 200);
-            }else{
-                return response()->json(['res' => 'La propuesta no existe'], 404 );    
-            }
-            
-            return response()->json(['res' => 'No se pudo hacer el pago de la propuesta'], 400);
-            
+    public function paypro(Request $request)
+    {
+        try {
+            $result = $this->payService->pay($request->all());
+            return response()->json($result, 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'res' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $status = str_contains($message, 'no existe') ? 404 : 400;
+            return response()->json(['res' => $message], $status);
         }
-        
     }
 
 
