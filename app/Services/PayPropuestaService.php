@@ -55,6 +55,7 @@ class PayPropuestaService
             'fecha_comprobante' => 'nullable|date_format:Y-m-d',
             'valor_pagado' => 'required|numeric|min:0',
             'cuit_pagador' => 'required|string',
+            'banco_destino' => 'nullable|string|max:100',
         ];
 
         $validator = Validator::make($data, $rules);
@@ -121,6 +122,7 @@ class PayPropuestaService
                         'valor_pagado' => $data['valor_pagado'],
                         'cuit_pagador' => $data['cuit_pagador'],
                         'comprobante_bitrix' => $data['comprobante_bitrix'] ?? NULL,
+                        'banco_destino' => $data['banco_destino'] ?? NULL,
                     ]);
 
                 $this->lineaModel
@@ -147,7 +149,11 @@ class PayPropuestaService
                     'codempresa' => $propuesta->codempresa,
                 ]);
 
-                return ['success' => true, 'message' => 'Se ha hecho el pago de la propuesta con éxito'];
+                return [
+                    'success' => true,
+                    'message' => 'Se ha hecho el pago de la propuesta con éxito',
+                    'url_descarga' => url('/descargaseguro/'.$data['idpropuesta'].'/'.$data['prefijopropuesta']),
+                ];
             });
         } catch (\Exception $ex) {
             $this->logsModel->saveerror($ex->getMessage(), '', '', '150');

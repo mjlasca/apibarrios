@@ -462,7 +462,8 @@ Content-Type: application/json
   "fecha_comprobante": "2026-09-15",
   "valor_pagado": 15750.50,
   "cuit_pagador": "20345678901",
-  "comprobante_bitrix": "https://bitrix.barrrios.com/comprobantes/BTRX-001234.pdf"
+  "comprobante_bitrix": "https://bitrix.barrrios.com/comprobantes/BTRX-001234.pdf",
+  "banco_destino": "NACION"
 }
 ```
 
@@ -479,6 +480,7 @@ Content-Type: application/json
 | valor_pagado | float | Sí | Monto total pagado (min 0) |
 | cuit_pagador | string | Sí | CUIT del pagador (numérico) |
 | comprobante_bitrix | string | No | URL del comprobante Bitrix |
+| banco_destino | string | No | Banco destino (max 100 chars) |
 
 ### Validaciones de negocio
 
@@ -502,7 +504,8 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Se ha hecho el pago de la propuesta con éxito"
+  "message": "Se ha hecho el pago de la propuesta con éxito",
+  "url_descarga": "https://tudominio.com/descargaseguro/1521/MA"
 }
 ```
 
