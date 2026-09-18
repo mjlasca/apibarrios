@@ -443,7 +443,7 @@ Content-Type: application/json
 
 ## 8. POST /v2/paypro
 
-Realiza el pago de una propuesta existente.
+Realiza el pago de una propuesta existente. Registra el pago en `propuestas`, actualiza las `lineas_propuestas`, crea registro en `payregistries` y genera entrada en `Cola`. Todo dentro de una transacción.
 
 ### Request
 
@@ -459,10 +459,10 @@ Content-Type: application/json
   "usuariopaga": "admin@barrios.com",
   "fecha_paga": "2026-09-15 14:30:00",
   "codempresa": "BARRIOS",
-  "version": 0,
   "fecha_comprobante": "2026-09-15",
   "valor_pagado": 15750.50,
-  "cuit_pagador": "20345678901"
+  "cuit_pagador": "20345678901",
+  "comprobante_bitrix": "https://bitrix.barrrios.com/comprobantes/BTRX-001234.pdf"
 }
 ```
 
@@ -470,22 +470,31 @@ Content-Type: application/json
 |-------|------|-----------|-------------|
 | idpropuesta | int | Sí | ID numérico de la propuesta |
 | prefijopropuesta | string | Sí | Prefijo de la propuesta (max 5 chars) |
-| tipopago | string | Sí | Tipo de pago (max 50 chars) |
-| compformapago | string | Sí | Número de comprobante (max 100 chars) |
-| usuariopaga | string | Sí | Usuario que realiza el pago (max 100 chars) |
-| fecha_paga | string | Sí | Fecha de pago formato `YYYY-MM-DD HH:mm:ss` |
+| tipopago | string | Sí | Tipo de pago: `DEBITO_AUTOMATICO`, `TARJETA_CREDITO`, `TARJETA_DEBITO`, `TRANSFERENCIA`, `EFECTIVO` (max 50 chars) |
+| compformapago | string | Sí | Número de comprobante de pago (max 100 chars) |
+| usuariopaga | string | Sí | Usuario o sistema que procesa el pago (max 100 chars) |
+| fecha_paga | string | Sí | Fecha y hora del pago formato `YYYY-MM-DD HH:mm:ss` |
 | codempresa | string | Sí | Código de empresa (max 50 chars) |
-| version | int | Sí | Versión actual de la propuesta (min 0) |
-| fecha_comprobante | string | No | Fecha comprobante formato `YYYY-MM-DD` |
-| valor_pagado | float | Sí | Monto pagado (min 0) |
-| cuit_pagador | string | Sí | CUIT del pagador (exactamente 11 dígitos) |
+| fecha_comprobante | string | No | Fecha del comprobante formato `YYYY-MM-DD` |
+| valor_pagado | float | Sí | Monto total pagado (min 0) |
+| cuit_pagador | string | Sí | CUIT del pagador (numérico) |
+| comprobante_bitrix | string | No | URL del comprobante Bitrix |
 
-### Validaciones
+### Validaciones de negocio
 
-- La propuesta debe existir (idpropuesta + prefijo + codempresa)
-- `codestado` debe ser `1`
-- `paga` debe ser `0` (no pagada previamente)
-- `cuit_pagador` debe ser numérico de exactamente 11 caracteres
+1. La propuesta debe existir (idpropuesta + prefijo + codempresa)
+2. `codestado` debe ser `1` (propuesta activa)
+3. `paga` debe ser `0` (aún no pagada)
+4. No debe existir registro previo en `payregistries` para esta propuesta
+
+### Qué hace internamente
+
+- Marca la propuesta como pagada (`paga=1`, `codestado=1`)
+- Limpia el campo `csrf`
+- Incrementa `version` en +1
+- Actualiza `lineas_propuestas` con `codestado=1`
+- Crea registro en `payregistries`
+- Registra en `Cola` para sincronización
 
 ### Respuestas
 
@@ -507,13 +516,19 @@ Content-Type: application/json
 **400 - Error de negocio**
 ```json
 {
-  "res": "La propuesta no tiene estado válido para pago (codestado debe ser 1)"
+  "res": "La propuesta se encuentra anulada"
 }
 ```
 
 ```json
 {
   "res": "La propuesta ya se encuentra pagada"
+}
+```
+
+```json
+{
+  "res": "El pago de esta propuesta ya fue registrado"
 }
 ```
 
@@ -529,7 +544,13 @@ Content-Type: application/json
   "res": "Error de validación",
   "errors": {
     "idpropuesta": ["El campo idpropuesta es obligatorio."],
-    "cuit_pagador": ["El campo cuit_pagador debe ser exactamente 11 caracteres."]
+    "tipopago": ["El campo tipopago es obligatorio."],
+    "compformapago": ["El campo compformapago es obligatorio."],
+    "usuariopaga": ["El campo usuariopaga es obligatorio."],
+    "fecha_paga": ["El campo fecha_paga no coincide con el formato Y-m-d H:i:s."],
+    "codempresa": ["El campo codempresa es obligatorio."],
+    "valor_pagado": ["El campo valor_pagado es obligatorio."],
+    "cuit_pagador": ["El campo cuit_pagador es obligatorio."]
   }
 }
 ```
