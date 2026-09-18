@@ -49,10 +49,11 @@ class Propuesta extends Model
         'fecha_comprobante',
         'fecha_nacimiento',
         'formadepago',
+        'banco_destino'
     ];
 
     public function consecutivo(){
-        
+
         $cons = DB::table('propuestas')->where('prefijo','O')->orderBy('idpropuesta','DESC')->first();
         if($cons)
             return $cons->idpropuesta + 1;
@@ -66,9 +67,9 @@ class Propuesta extends Model
             $propuesta = new Propuesta();
             $pay_ = payregistry::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
             if(empty($pay_)){
-                if($fecha_paga == "")   
+                if($fecha_paga == "")
                 $fecha_paga = date("Y-m-d H:i:s");
-                
+
                 $propuesta = $propuesta->where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
                         "codestado" => 1,
                         "paga" => 1,
@@ -83,7 +84,7 @@ class Propuesta extends Model
                         "cuit_pagador" => $cuit_pagador
                     ]);
                 $propuesta = Propuesta::where('idpropuesta',$idpropuesta)->where('prefijo',$prefijo)->first();
-                    
+
                 $lineapropuesta = new LineasPropuesta();
 
                 $lineapropuesta->where('id_propuesta',$idpropuesta)->where('prefijo',$prefijo)->where('codempresa',$codempresa)->update([
@@ -101,7 +102,7 @@ class Propuesta extends Model
                 $pay->valor_pagado = $valor_pagado;
                 $pay->cuit_pagador = $cuit_pagador;
                 $pay->save();
-                
+
                 Cola::create([
                     'entity' => 'propuestas',
                     'entity_id' => $propuesta->id,
@@ -117,7 +118,7 @@ class Propuesta extends Model
         }catch(Exception $ex){
             $logs = new logs();
             $logs->saveerror($ex->getMessage(), "", "", "150");
-            
+
             return false;
         }
     }
@@ -128,7 +129,7 @@ class Propuesta extends Model
         $data = [];
 
             if (isset($req['ref']) && $req['ref'] != "" && strpos($req['ref'],'-') > -1) {
-    
+
                 $partes = explode('-', $req['ref']);
                 $req['pref'] = strtoupper($partes[0]);
                 $req['id'] = $partes[1];
@@ -141,12 +142,12 @@ class Propuesta extends Model
                 ->where(function ($query) use ($prefijo, $idPropuesta) {
                     $query->where('prefijo', $prefijo)
                         ->where('idpropuesta', $idPropuesta);
-                })->get();    
+                })->get();
             }
 
             if(count($data) > 0)
                 return $data;
-    
+
             if(isset($req['ref']) && $req['ref'] != "" ){
                 $referencia = $req['ref'];
                 $data = Propuesta::query()
@@ -164,12 +165,12 @@ class Propuesta extends Model
             $prop = Propuesta::where('prefijo', $pref)->where('idpropuesta', $id)->get();
             $concatInfo = "";
             if(count($prop)>0){
-                
+
                 $prop_lines = LineasPropuesta::where('prefijo',$pref)->where('id_propuesta', $id)->get();
-                
+
                 if(count($prop_lines) > 0){
-                    
-                    
+
+
                     $cobertura = Cobertura::query()->where('nombre',$prop[0]->id_cobertura)->get();
                     $total = 0;
                     $total_prom = $cobertura[0]->vrMensual * $monthly;
@@ -178,8 +179,8 @@ class Propuesta extends Model
                         if($cobertura[0]->x21 != '' && $cobertura[0]->x21 > 0){
                             $total_prom = $cobertura[0]->x21;
                         }
-                            
-                            
+
+
                     }
 
                     if($monthly == 3){
@@ -187,16 +188,16 @@ class Propuesta extends Model
                             $total_prom = $cobertura[0]->vrTrimestral;
                         if($cobertura[0]->x32 != '' && $cobertura[0]->x32 > 0)
                             $total_prom = $cobertura[0]->x32;
-                    } 
+                    }
 
                     if($monthly == 6){
                         if($cobertura[0]->vrSemestral != '' && $cobertura[0]->vrSemestral > 0)
                             $total_prom = $cobertura[0]->vrSemestral;
                         if($cobertura[0]->x64 != '' && $cobertura[0]->x64 > 0)
                             $total_prom = $cobertura[0]->x64;
-                    } 
+                    }
 
-                    
+
                     if(count($cobertura) > 0){
 
                         $total =  $total_prom * count($prop_lines);
@@ -216,12 +217,12 @@ class Propuesta extends Model
                         $domain = $_SERVER['HTTP_HOST'];
                         //$url = $protocol . $domain;
                         //$data['url'] = $url.'/propuesta-duplicate/descargaseguro/'.$id.'/'.$pref.'/;
-                        
+
 
                         return $data;
                     }
-                    
-                    
+
+
                 }
             }
 
@@ -251,14 +252,14 @@ class Propuesta extends Model
             $propNew->premio_total = isset($data['premio_total']) ? $data['premio_total'] : $prop->premio_total;
 
             $fecha = new DateTime(now('America/Argentina/Buenos_Aires'));
-            
+
             $fecha_hasta_a = new DateTime( $prop->fechaHasta );
-            
+
             if($fecha < $fecha_hasta_a){
                 $fecha = $fecha_hasta_a->modify("+1 day");
             }
 
-            $propNew->fechaDesde = $fecha->format('Y-m-d H:i:s');                
+            $propNew->fechaDesde = $fecha->format('Y-m-d H:i:s');
             $propNew->fechaHasta =  isset($data['meses']) ? $fecha->modify("+".$data['meses']." months")->format('Y-m-d H:i:s') : $fecha->modify("+1 months")->format('Y-m-d H:i:s');
             $propNew->clausula = $prop->clausula;
             $propNew->barrio_beneficiario = $prop->barrio_beneficiario;
@@ -278,8 +279,8 @@ class Propuesta extends Model
             else
                 $fecha_1 = $fecha_1->format('Y-m-d H:i:s');
 
-            
-                                
+
+
             $propNew->ultmod = $fecha_1;
             $propNew->useredit = 'online';
             $propNew->codestado = '1';
@@ -344,13 +345,13 @@ class Propuesta extends Model
         $currentDate = date('Y-m-d');
         list($year, $mont, $day) = explode("-", $date);
         list($currentYear, $currentMont, $currentDay) = explode("-", $currentDate);
-    
+
         $age = $currentYear - $year;
-    
+
         if ($currentMont < $mont || ($currentMont == $mont && $currentDay < $day)) {
             $age--;
         }
-    
+
         return $age;
     }
 
@@ -360,13 +361,13 @@ class Propuesta extends Model
         $newid = 1;
         if ($maxid) {
             $newid = $maxid + 1;
-        } 
+        }
 
         return $newid;
     }
-    
+
     public function cliente(){
         return $this->belongsTo(cliente::class);
     }
-    
+
 }
