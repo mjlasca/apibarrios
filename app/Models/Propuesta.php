@@ -50,7 +50,8 @@ class Propuesta extends Model
         'fecha_nacimiento',
         'formadepago',
         'comprobante_bitrix',
-        'banco_destino'
+        'banco_destino',
+        'separar_grupo_id'
     ];
 
     public function consecutivo(){
