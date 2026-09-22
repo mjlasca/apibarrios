@@ -264,12 +264,13 @@ class PropuestasControllerV2 extends Controller
 
     }
 
-    public function downloadAll($id,$prefijo){
+
+    public function downloadEmision($id,$prefijo){
         if(!empty($id) && !empty($prefijo)){
             $data = DB::table('propuestas')->where('idpropuesta',$id)->where('prefijo', $prefijo)->get();
-
+            $separar_barrios = FALSE;
             if (count($data) > 0) {
-
+                $separar_barrios = $data[0]->separar_grupo_id ?? FALSE;
                 $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
                 if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
                     $barriospropuesta = json_decode( $data[0]->data_barrios);
@@ -280,21 +281,34 @@ class PropuestasControllerV2 extends Controller
 
                 $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
 
-                $pdf = PDF::loadView('pdf-all.index', compact('cliente','data','lineasdata','barriospropuesta'));
-                /*$dompdf = $pdf->getDomPDF();
-                $canvas = $dompdf->getCanvas();
+                $pdf = PDF::loadView('emision.index', compact('cliente','data','lineasdata','barriospropuesta','separar_barrios'));
+                return $pdf->stream();
+            } else {
+                return response()->json(['res' => 'El documento solicitado no existe o no se ha generado en la nube'], 400);
+            }
+        }
 
-                // Aplica la contraseña: usuario, propietario, permisos
-                $canvas->get_cpdf()->setEncryption(
-                    $cliente[0]->id, // Contraseña de usuario (para abrir el PDF)
-                    $cliente[0]->id, // Contraseña de propietario (para controlar permisos)
-                    [
-                        'print' => true,
-                        'modify' => false,
-                        'copy' => false,
-                        'annot-forms' => false,
-                    ]
-                );*/
+        return response()->json(['res' => 'El documento solicitado no existe o no se ha generado'], 404);
+
+    }
+
+    public function downloadAll($id,$prefijo){
+        if(!empty($id) && !empty($prefijo)){
+            $data = DB::table('propuestas')->where('idpropuesta',$id)->where('prefijo', $prefijo)->get();
+            $separar_barrios = FALSE;
+            if (count($data) > 0) {
+                $separar_barrios = $data[0]->separar_grupo_id ?? FALSE;
+                $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
+                if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
+                    $barriospropuesta = json_decode( $data[0]->data_barrios);
+                    $barriospropuesta = $barriospropuesta->barrios;
+                }
+                else
+                    $barriospropuesta = DB::table('barrios_propuestas')->where('id_propuesta',$data[0]->reg)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->get();
+
+                $cliente = DB::table('clientes')->where('id',$data[0]->documento)->get();
+
+                $pdf = PDF::loadView('pdf-all.index', compact('cliente','data','lineasdata','barriospropuesta','separar_barrios'));
                 return $pdf->stream();
             } else {
                 return response()->json(['res' => 'El documento solicitado no existe o no se ha generado en la nube'], 400);
