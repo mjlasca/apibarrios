@@ -41,25 +41,25 @@ class MigracionBarriosController extends Controller
                 $exporta->save();
             }
 
-            
+
             return response()->json(['res' => 'Se han subido todos los datos de migracion con exito', 'fechamigracion' => date("Y-m-d h:i:s")], 200);
         }
-            
+
     }
 
     private function savepropuesta($req)
     {
 
-        
+
         $errores = "";
         try{
             if ($req["listpropuestas"] != null) {
                 foreach ($req["listpropuestas"] as $value) {
                     $propuesta = new Propuesta();
                     $cons = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->get();
-                    
+
                     if(count($cons) > 0){
-                        
+
                         if(isset($value["version"])){
                             $res = false;
                             if($value["tipopago"] != "" && $value["usuariopaga"] != "" && $value["paga"] = 1 &&  $value["formadepago"] = 'CREDITO'){
@@ -103,10 +103,11 @@ class MigracionBarriosController extends Controller
                                     "version" => $value["version"],
                                     "prefijo" => $value["prefijo"],
                                     "imputacion" => isset($value["imputacion"]) ? $value["imputacion"] : 0,
-                                    
+                                    "separar_grupo_id" => isset($value["separar_grupo_id"]) ? $value["separar_grupo_id"] : null,
+
                                 ]);
                             }else{
-                                
+
                                 $res = $propuesta->where('prefijo',$value["prefijo"])->where('idpropuesta',$value["idpropuesta"])->where('codempresa',$value["codempresa"])->where('version','<',$value["version"])->update([
                                     "documento" => $value["documento"],
                                     "nombre" => $value["nombre"],
@@ -143,9 +144,10 @@ class MigracionBarriosController extends Controller
                                     "data_barrios" => isset($value["data_barrios"]) ? $value["data_barrios"] : "",
                                     "prefijo" => $value["prefijo"],
                                     "imputacion" => isset($value["imputacion"]) ? $value["imputacion"] : 0,
+                                    "separar_grupo_id" => isset($value["separar_grupo_id"]) ? $value["separar_grupo_id"] : null,
                                 ]);
                             }
-    
+
                             if(isset($value["codempresa"]) && $res){
                                 //DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$value["prefijo"]."' AND id_propuesta = '".$value["idpropuesta"]."' AND codempresa = '".$value["codempresa"]."'  ");
                                 Cola::create([
@@ -190,7 +192,7 @@ class MigracionBarriosController extends Controller
                         $propuesta->formadepago = $value["formadepago"];
                         $propuesta->usuariopaga = $value["usuariopaga"];
                         $propuesta->tipopago = $value["tipopago"];
-    
+
                         $propuesta->compformadepago = $value["compformapago"];
                         if (isset($value["codempresa"]))
                             $propuesta->codempresa = $value["codempresa"];
@@ -208,6 +210,8 @@ class MigracionBarriosController extends Controller
                             $propuesta->valor_pagado = $value["valor_pagado"];
                         if( isset($value["imputacion"]) )
                             $propuesta->imputacion = $value["imputacion"];
+                        if( isset($value["separar_grupo_id"]) )
+                            $propuesta->separar_grupo_id = $value["separar_grupo_id"];
                         if( isset($value["fecha_comprobante"]))
                             $propuesta->fecha_comprobante = $value["fecha_comprobante"];
                         if($propuesta->save()){
@@ -342,7 +346,7 @@ class MigracionBarriosController extends Controller
             $logs = new Logs();
             $logs->saveerror("LIENAS RENDICIONES ".$ex->getMessage(), "", "", "173");
         }
-        
+
 
 
         try{
@@ -366,7 +370,7 @@ class MigracionBarriosController extends Controller
                                 "codempresa" => $value["codempresa"],
                                 "adminempresa" => $value["adminempresa"]
                             ]);
-                            
+
                             Cola::create([
                                 'entity' => 'usuarios',
                                 'entity_id' => $cons[0]->reg,
@@ -425,7 +429,7 @@ class MigracionBarriosController extends Controller
                                 'entity_id' => $cons[0]->reg,
                                 'codempresa' => $cons[0]->codempresa,
                             ]);
-                            
+
                         }else{
                             $perf->nombre = $value["nombre"];
                             $perf->modulo = $value["modulo"];
@@ -435,14 +439,14 @@ class MigracionBarriosController extends Controller
                             $perf->eliminar = $value["eliminar"];
                             $perf->exportar = $value["exportar"];
                             $perf->codempresa = $value["codempresa"];
-                            
+
                             if($perf->save()){
                                 Cola::create([
                                     'entity' => 'perfiles',
                                     'entity_id' => $perf->id,
                                     'codempresa' => $perf->codempresa,
                                 ]);
-                                
+
                             }
                         }
                     }
@@ -453,7 +457,7 @@ class MigracionBarriosController extends Controller
             $logs->saveerror($ex->getMessage(), "", "", "116");
         }
 
-        
+
 
         try{
 
@@ -466,7 +470,7 @@ class MigracionBarriosController extends Controller
                     $lineaspropuestas->codempresa = $value["codempresa"];
                     DB::select("DELETE FROM lineas_propuestas WHERE prefijo = '".$lineaspropuestas->prefijo."' AND id_propuesta = '".$lineaspropuestas->id_propuesta."' AND codempresa = '".$lineaspropuestas->codempresa."' ");
                 }
-                
+
                 foreach ($req["listlineaspropuestas"] as $value) {
                     $lineaspropuestas = new LineasPropuesta();
                     $lineaspropuestas->reg = $value["id"];
@@ -496,7 +500,7 @@ class MigracionBarriosController extends Controller
                     }
                 }
             }
-            
+
         }catch(Exception $ex){
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "113");
@@ -511,7 +515,7 @@ class MigracionBarriosController extends Controller
                     if(count($cons) > 0){
 
                         if(isset($value["codempresa"]) && !empty($value["telefono"]) && !empty($value["codpostal"])){
-                            
+
                             $cliente->where('id',$value["id"])->update([
                                 "nombres" => $value["nombres"],
                                 "apellidos" => $value["apellidos"],
@@ -564,9 +568,9 @@ class MigracionBarriosController extends Controller
                             $cliente->codempresa = $value["codempresa"];
                             $cliente->puntodeventa = $req["prefpuntodeventa"];
                         }
-                            
+
                         $cliente->categoria = $value["categoria"];
-                        
+
                         if($cliente->save()){
                             $cliente = cliente::where('id',$value['id'])->where('codempresa',$value['codempresa'])->first();
                             Cola::create([
@@ -585,7 +589,7 @@ class MigracionBarriosController extends Controller
         }
 
         try{
-       
+
             if ($req["listbarrios"] != null) {
                 foreach ($req["listbarrios"] as $value) {
                     $barrio = new barrio();
@@ -631,7 +635,7 @@ class MigracionBarriosController extends Controller
                         $barrio->user_edit = $value["user_edit"];
                         $barrio->codestado = $value["codestado"];
 
-                
+
                         if (!$barrio->save()) {
                             $errores .= "No se pudo guardar el barrio " . $barrio->id;
                         }else{
@@ -643,8 +647,8 @@ class MigracionBarriosController extends Controller
                                 'ptoventa' => $req["prefpuntodeventa"]
                             ]);
                         }
-                    
-                        
+
+
                     }
                 }
             }
@@ -653,14 +657,14 @@ class MigracionBarriosController extends Controller
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "114");
         }
-        
+
         try{
-            
+
             if ($req["listgrupobarrios"] != null) {
                 foreach ($req["listgrupobarrios"] as $value) {
-                    
+
                     $cons = gruposbarrio::where('id',$value['id'])->where('idbarrio',$value['idbarrio'])->first();
-                    
+
                     if(!empty($cons)){
                         $cons->delete();
                     };
@@ -672,7 +676,7 @@ class MigracionBarriosController extends Controller
                         'ultmod' => $value["ultmod"],
                         'codestado' => $value["codestado"]
                     ]);
-                    
+
                     if($gbarrio){
                         Cola::create([
                             'entity' => 'gruposbarrios',
@@ -688,7 +692,7 @@ class MigracionBarriosController extends Controller
             $logs = new Logs();
             $logs->saveerror($ex->getMessage(), "", "", "114");
         }
-        
+
 
         if($req["rolpuntodeventa"] != "PRINCIPAL"){
             return $errores;
@@ -698,13 +702,13 @@ class MigracionBarriosController extends Controller
             if($req["apiversion"] == "2"){
                 return $errores;
             }
-            
+
             /*if($req["apiversion"] == "3"){
                 return $errores;
             }*/
         }
 
-        
+
 
 
         if ($req["listactividades"] != null) {

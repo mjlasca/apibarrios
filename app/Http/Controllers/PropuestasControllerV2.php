@@ -271,6 +271,10 @@ class PropuestasControllerV2 extends Controller
             $separar_barrios = FALSE;
             if (count($data) > 0) {
                 $separar_barrios = $data[0]->separar_grupo_id ?? FALSE;
+                if($separar_barrios){
+                    $tempsep = explode('*', $separar_barrios);
+                    $separar_barrios = $tempsep[1];
+                }
                 $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
                 if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
                     $barriospropuesta = json_decode( $data[0]->data_barrios);
@@ -298,6 +302,10 @@ class PropuestasControllerV2 extends Controller
             $separar_barrios = FALSE;
             if (count($data) > 0) {
                 $separar_barrios = $data[0]->separar_grupo_id ?? FALSE;
+                if($separar_barrios){
+                    $tempsep = explode('*', $separar_barrios);
+                    $separar_barrios = $tempsep[1];
+                }
                 $lineasdata = DB::table('lineas_propuestas')->where('id_propuesta',$data[0]->idpropuesta)->where('prefijo',$data[0]->prefijo)->where('codempresa',$data[0]->codempresa)->groupBy('documento')->get();
                 if(isset($data[0]->data_barrios) && $data[0]->data_barrios != ""){
                     $barriospropuesta = json_decode( $data[0]->data_barrios);
