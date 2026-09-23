@@ -4,6 +4,7 @@
     'february' => 'Febrero',
     'march' => 'Marzo',
     'april' => 'Abril',
+    'may' => 'Mayo',
     'june' => 'Junio',
     'july' => 'Julio',
     'august' => 'Agosto',
@@ -12,22 +13,6 @@
     'november' => 'Noviembre',
     'december' => 'Diciembre'
   );
-
-  $separarIds = [];
-  $barriosSeparados = collect();
-  $barriosCol = is_array($barriospropuesta) ? collect($barriospropuesta) : $barriospropuesta;
-  $barriosRestantes = $barriosCol;
-
-  if(!empty($separar_barrios) && $separar_barrios !== FALSE) {
-      $separarIds = array_map('trim', explode(',', (string)$separar_barrios));
-      $separarIds = array_filter($separarIds);
-      $barriosSeparados = $barriosCol->filter(function($b) use ($separarIds) {
-          return in_array((string)$b->id_barrio, $separarIds);
-      });
-      $barriosRestantes = $barriosCol->filter(function($b) use ($separarIds) {
-          return !in_array((string)$b->id_barrio, $separarIds);
-      });
-  }
 @endphp
 <!doctype html>
 <html lang="es">
@@ -207,7 +192,7 @@
             $concatbarrios = "";
           @endphp
 
-          @foreach($barriosRestantes as $val)
+          @foreach($barriospropuesta as $val)
             @php
               $concatbarrios .=$val->nombre." - ". $val->id_barrio  .", ";
             @endphp
@@ -337,49 +322,30 @@
 
   </div>
 
-  @php
-    $concatbarriosSeparados = "";
-    foreach($barriosSeparados as $val) {
-        $concatbarriosSeparados .= $val->nombre." - ".$val->id_barrio.", ";
-    }
-    $showAnexoSeparados = !empty($separarIds) && count($barriosSeparados) > 0;
-    $showAnexoOverflow = strlen($concatbarrios) > 236;
-
-    $anexoHeader = '
+  @if(strlen($concatbarrios) > 236)
+  <div class="page-break"></div>
       <div class="anexo">
         <img src="img/cabeceraanexo.png" width="100%" alt="">
       </div>
-      <h4 class="text-center">
+      <h4  class="text-center">
         SEGURO DE ACCIDENTES PERSONALES<br>
         EN OCASIÓN DEL TRABAJO - BARRIOS PRIVADOS<br>
         VIGENCIA : DEL
-        '.($data[0]->codempresa
-            ? $data[0]->fechaDesde.' A '.$data[0]->fechaHasta
-            : $data[0]->fechaDesde.' A '.substr($data[0]->fechaHasta, 0,10).' 00:00:00').'
+        @if($data[0]->codempresa)
+        {{ $data[0]->fechaDesde }} A {{ $data[0]->fechaHasta }}
+        @else
+          {{ $data[0]->fechaDesde }} A {{  substr($data[0]->fechaHasta, 0,10) . " 00:00:00" }}
+        @endif
       </h4>
-      <p><b>PROPUESTA EN EMISIÓN : '.$data[0]->prefijo.'-'.$data[0]->idpropuesta.'</b></p>
-      <p class="text-justify">Se deja expresa constancia por el presente que las personas que se detallan en la Propuesta No. '.$data[0]->prefijo.'-'.$data[0]->idpropuesta.' se encuentran
+
+
+
+      <p><b>PROPUESTA EN EMISIÓN : {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</b></p>
+      <p class="text-justify">Se deja expresa constancia por el presente que las personas que se detallan en la Propuesta No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}} se encuentran
         cubiertas en esta aseguradora, amparadas por los riesgos de MUERTE e INVALIDEZ (total o parcial permanente) por
         ACCIDENTE y Asistencia Médica Farmacéutica según las condiciones contratadas
       </p>
-      <p><b>Destino: Barrios Privados</b></p>';
-  @endphp
-
-  @if($showAnexoSeparados)
-  <div class="page-break"></div>
-      {!! $anexoHeader !!}
-      <p><b>ANEXO DE NO REPETICIÓN:</b></p>
-      <p class="text-justify">
-        {{ $concatbarriosSeparados }}<br>
-        Ya sea con fundamentos en la Ley 24.557 o en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a
-        otorgar o abonar al Asegurado declarado en la presente Póliza/Certificado, comprendido en la cobertura de la presente Póliza/Certificado de Accidentes
-        Personales con motivo de la profesión o actividad declarada e In Itinere.
-      </p>
-  @endif
-
-  @if($showAnexoOverflow)
-  <div class="page-break"></div>
-      {!! $anexoHeader !!}
+      <p><b>Destino: Barrios Privados</b></p>
       <p><b>ANEXO DE NO REPETICIÓN:</b></p>
       <p class="text-justify">
         {{ $concatbarrios }}<br>
