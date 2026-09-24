@@ -131,7 +131,7 @@
     .detail-right{
       margin-top: -70px;
     }
-    
+
   </style>
 
 </head>
@@ -187,7 +187,7 @@
         <td class="text-center">BARRIOS PRIVADOS en los que realizará la tarea declarada</td>
         <td colspan="3">
           A QUIEN CORRESPONDA<br>
-          
+
           @php
             $concatbarrios = "";
           @endphp
@@ -200,7 +200,7 @@
           @endforeach
 
           @if(strlen($concatbarrios) > 236)
-            
+
             {{substr($concatbarrios,0,236)}}
             ...<br>
             <b>Ver listado completo de barrios en la parte de abajo</b>
@@ -231,19 +231,19 @@
         <td class="text-center">{{ \Carbon\Carbon::parse($val->fecha_nacimiento)->format('d/m/Y')}} </td>
         <td class="text-left">{{$val->actividad}} </td>
       </tr>
-      @endforeach 
+      @endforeach
     </tbody>
   </table>
 
   <div>
-    <p class="text-center"> <b> VIGENCIA : DEL 
+    <p class="text-center"> <b> VIGENCIA : DEL
       @if($data[0]->codempresa)
         {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y h:i A') }} A {{ \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y h:i A') }}
       @else
         {{ \Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y') }} A {{ substr( \Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y'), 0,10) . " 00:00:00" }}
       @endif
       <br>
-      
+
     </b></p>
     <p>
       <b>Nota: Verificar la exigencia del barrio y la cobertura ya que se dará cobertura a los barrios conforme Suma asegurada mencionada en el presente certificado. Si no adquieres la suma asegurada correcta el barrio puede no dejarte ingresar y tendrás que volver a aumentar la suma asegurada</b>
@@ -262,25 +262,25 @@
       <p><b>NO REPETICIÓN</b></p>
       <p>La compañía aseguradora renuncia expresamente y de manera irrevocable al derecho de repetición contra cualquier tercero, ya sea persona física o jurídica, que pudiera ser considerado responsable, directa o indirectamente, del siniestro cubierto por la presente póliza. En virtud de esta renuncia, la aseguradora no podrá ejercer acciones de recuperación o subrogación contra ningún individuo, empresa, entidad pública o privada, eximiéndolos de cualquier obligación de reembolso derivada del pago de indemnizaciones efectuadas en cumplimiento de la cobertura contratada. {{substr($concatbarrios,0,236)}}. Se extiende el presente en Benavidez, {{date('d/m/Y')}}. Esta constancia tendrá validez si se presenta con el correspondiente recibo de pago.    </p>
       @endif
-      
+
 
     </p>
   </div>
 
 
-  
+
 
   <div class="sello text-center">
     @if($data[0]->paga == 1)
       @if ($data[0]->codempresa == "SEGUROSDELPILAR")
         <img  width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarpagado.png" alt="">
-        <br>  
+        <br>
       @else
         <img width="140" src="img/imgpago.png" alt=""><br>
       @endif
-      
+
     <small style="font-size: 9px">Documento Generado en {{$data[0]->ultmod}}</small>
-    
+
     @endif
   </div>
 
@@ -289,7 +289,7 @@
       <tr>
         <td class="text-right">
           @if ($data[0]->codempresa == "SEGUROSDELPILAR")
-            <img width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarlogo.png" alt="">    
+            <img width="120" src="https://barriosprivadosstage.niveldigitalcol.com/img/pilarlogo.png" alt="">
           @else
             <img width="140" src="img/brokerlogo.png" alt="">
           @endif
@@ -312,12 +312,12 @@
             <br>Sarmiento 3314 (1621 - Benavidez)
           </p>
           @endif
-          
+
         </td>
       </tr>
     </table>
 
-    
+
 
 
   </div>
@@ -337,9 +337,9 @@
           {{ $data[0]->fechaDesde }} A {{  substr($data[0]->fechaHasta, 0,10) . " 00:00:00" }}
         @endif
       </h4>
-      
-        
-      
+
+
+
       <p><b>PROPUESTA EN EMISIÓN : {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}</b></p>
       <p class="text-justify">Se deja expresa constancia por el presente que las personas que se detallan en la Propuesta No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}} se encuentran
         cubiertas en esta aseguradora, amparadas por los riesgos de MUERTE e INVALIDEZ (total o parcial permanente) por
@@ -365,7 +365,7 @@
             <td colspan="3">
               <img src="img/imgsancor1.png" alt="">
             </td>
-      
+
             <td class="text-right" colspan="3">
               No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}<br>
               Accidentes Personales
@@ -421,7 +421,7 @@
             <td class="text-center td-b" >{{$data[0]->premio_total}}</td>
           </tr>
           <tr>
-            
+
               @if($data[0]->paga == 1)
                 <td style="text-align: center" colspan="6">
                 @if ($data[0]->codempresa == "SEGUROSDELPILAR")
@@ -429,8 +429,8 @@
                 @else
                   <img  width="70%" src="img/imgpago.png" alt="">
                 @endif
-              
-              
+
+
               @else
               <td>
               <br>
@@ -442,7 +442,7 @@
               @endif
             </td>
           </tr>
-    
+
         </table>
       </div>
       <div style="padding : 10px;width: 47%;float: left;border:1px solid;">
@@ -451,7 +451,7 @@
             <td colspan="3">
               <img src="img/imgsancor1.png" alt="">
             </td>
-      
+
             <td class="text-right" colspan="3">
               No. {{$data[0]->prefijo}}-{{$data[0]->idpropuesta}}<br>
               Accidentes Personales
@@ -514,7 +514,7 @@
                 @else
                   <img  width="70%" src="img/imgpago.png" alt="">
                 @endif
-              
+
               @else
               <td>
               <br>
@@ -526,11 +526,11 @@
               @endif
             </td>
           </tr>
-    
+
         </table>
       </div>
     </div>
-    
+
     <div style="display: block;">
       <div style="padding : 10px;margin-top: 320px;border:1px solid;">
         <table>
@@ -614,8 +614,8 @@
                 @else
                   <img  width="35%" src="img/imgpago.png" alt="">
                 @endif
-              
-              
+
+
               @else
               <td>
               <br>
@@ -627,11 +627,11 @@
               @endif
             </td>
           </tr>
-    
+
         </table>
       </div>
     </div>
-    
+
   </section>
 
   <section id="recibo">
@@ -645,22 +645,22 @@
       <h2>CERTIFICADO DE LIBRE DEUDA</h2>
     </div>
     <div class="text-right">
-        Buenos Aires, {{date('d')}}  {{ strtoupper($month[strtolower(date('F'))]) }} de {{date('Y')}} 
+        Buenos Aires, {{date('d')}}  {{ strtoupper($month[strtolower(date('F'))]) }} de {{date('Y')}}
     </div>
     <br>
     <div>
-      Por la presente certificamos que la constancia de póliza de Accidentes Personales No. {{ $data[0]->prefijo }}-{{ $data[0]->idpropuesta }} contratada en esta compañía por cuenta del asegurado 
+      Por la presente certificamos que la constancia de póliza de Accidentes Personales No. {{ $data[0]->prefijo }}-{{ $data[0]->idpropuesta }} contratada en esta compañía por cuenta del asegurado
         @foreach($lineasdata as $val)
         {{$val->apellidos}} {{$val->nombres}} {{$val->tipo_documento}}:{{$val->documento}},
         @endforeach
         no presenta deuda exigible durante el período de vigencia comprendido entre el
-         {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}. Conforme a nuestros registros, se encuentra abonada en su totalidad. 
-        
+         {{\Carbon\Carbon::parse($data[0]->fechaDesde)->format('d/m/Y')}} y el {{\Carbon\Carbon::parse($data[0]->fechaHasta)->format('d/m/Y')}}. Conforme a nuestros registros, se encuentra abonada en su totalidad.
+
     </div>
-    
+
     <div class="footer-certificated">
-      
-        
+
+
       <div>
         <div >
           <p>
@@ -679,7 +679,7 @@
             <p class="text-right detail-right">
             Seguros del pilar<br>
             Cobranzas<br>
-          </p>    
+          </p>
           @else
             <p class="text-right detail-right">
             Broker del puerto<br>
@@ -687,18 +687,18 @@
             Nayibe El Mailki
           </p>
           @endif
-          
+
         </div>
-        
-          
-        
-        
+
+
+
+
 
       </div>
-      
-      
+
+
     </div>
-    
+
 
 
   </section>
